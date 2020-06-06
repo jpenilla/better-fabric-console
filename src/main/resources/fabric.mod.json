@@ -1,0 +1,36 @@
+{
+  "schemaVersion": 1,
+  "id": "jline4mcdsrv",
+  "version": "0.0.0",
+
+  "name": "JLine for Minecraft Dedicated Server",
+  "description": "Enables command history, auto completion and syntax highlighting on the server console.",
+  "authors": [
+    "Chris Xiong"
+  ],
+  "contact": {
+    "homepage": "https://chrisoft.org/",
+    "sources": "https://github.com/chirs241097/jline4mcdsrv"
+  },
+
+  "license": "MIT",
+  "icon": "assets/jline4mcdsrv/icon.png",
+
+  "environment": "server",
+  "entrypoints": {
+    "main": [
+      "org.chrisoft.jline4mcdsrv.JLineForMcDSrvMain"
+    ]
+  },
+  "mixins": [
+    "jline4mcdsrv.mixins.json"
+  ],
+
+  "depends": {
+    "fabricloader": ">=0.7.4",
+    "minecraft": "1.15.x"
+  },
+  "suggests": {
+    "flamingo": "*"
+  }
+}
