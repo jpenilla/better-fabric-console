@@ -1,5 +1,5 @@
 plugins {
-	id 'fabric-loom' version '0.2.7-SNAPSHOT'
+	id 'fabric-loom' version '0.4-SNAPSHOT'
 	id 'maven-publish'
 }
 
@@ -10,6 +10,15 @@ archivesBaseName = project.archives_base_name
 version = project.mod_version
 group = project.maven_group
 
+repositories {
+	maven { url "https://repo1.maven.org/maven2/" }
+}
+
+configurations {
+	provided
+	compile.extendsFrom(provided)
+}
+
 dependencies {
 	//to change the versions see the gradle.properties file
 	minecraft "com.mojang:minecraft:${project.minecraft_version}"
@@ -19,7 +28,7 @@ dependencies {
 	// PSA: Some older mods, compiled on Loom 0.2.1, might have outdated Maven POMs.
 	// You may need to force-disable transitiveness on them.
 
-	compile "org.jline:jline:3.15.0"
+	provided "org.jline:jline:3.15.0"
 }
 
 processResources {
@@ -52,6 +61,7 @@ task sourcesJar(type: Jar, dependsOn: classes) {
 
 jar {
 	from "LICENSE"
+	from configurations.provided.asFileTree.files.collect { zipTree(it) }
 }
 
 // configure the maven publication

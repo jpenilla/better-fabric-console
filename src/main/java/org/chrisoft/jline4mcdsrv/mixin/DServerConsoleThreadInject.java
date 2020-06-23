@@ -6,7 +6,7 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.apache.logging.log4j.LogManager;
 
-@Mixin(targets = {"net.minecraft.server.dedicated.MinecraftDedicatedServer$2"})
+@Mixin(targets = {"net.minecraft.server.dedicated.MinecraftDedicatedServer$1"})
 public class DServerConsoleThreadInject {
     @Inject(
             at = @At("HEAD"),
