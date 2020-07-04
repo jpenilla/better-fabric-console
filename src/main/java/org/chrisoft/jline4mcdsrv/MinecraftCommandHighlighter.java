@@ -36,11 +36,11 @@ public class MinecraftCommandHighlighter implements Highlighter
         for (Object _node : nodes) {
             ParsedCommandNode<ServerCommandSource> pcn = (ParsedCommandNode)_node;
             if (++component >= colors.length)
-                component = 0 ;
+                component = 0;
             if (pcn.getRange().getStart() >= buffer.length())
                 break;
             int start = pcn.getRange().getStart();
-            int end = pcn.getRange().getEnd();
+            int end = Math.min(pcn.getRange().getEnd(), buffer.length());
             sb.append(buffer.substring(pos, start), AttributedStyle.DEFAULT);
             sb.append(buffer.substring(start, end), AttributedStyle.DEFAULT.foreground(colors[component]));
             pos = end;
