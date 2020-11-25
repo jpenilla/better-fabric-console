@@ -8,20 +8,19 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import org.chrisoft.jline4mcdsrv.Console;
 
 @Mixin(MinecraftDedicatedServer.class)
-public abstract class DServerInject {
-
-    private Console con;
-    private MinecraftDedicatedServer dsrv;
+public abstract class DServerInject
+{
+    private MinecraftDedicatedServer dSrv;
 
     @Inject(at = @At("HEAD"), method = "setupServer()Z")
-    private void preSetupServer(CallbackInfoReturnable<Boolean> info) {
-        dsrv = (MinecraftDedicatedServer) (Object) this;
+    private void preSetupServer(CallbackInfoReturnable<Boolean> info)
+    {
+        dSrv = (MinecraftDedicatedServer) (Object) this;
     }
 
     @Inject(at = @At("TAIL"), method = "setupServer()Z")
-    private void setupServer(CallbackInfoReturnable<Boolean> info) {
-        con = new Console(dsrv);
-        con.setup();
+    private void setupServer(CallbackInfoReturnable<Boolean> info)
+    {
+        Console.setup(dSrv);
     }
-
 }

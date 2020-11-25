@@ -10,31 +10,29 @@ import org.jline.utils.AttributedString;
 import org.jline.utils.AttributedStringBuilder;
 import org.jline.utils.AttributedStyle;
 
-import java.util.List;
 import java.util.regex.Pattern;
 
 public class MinecraftCommandHighlighter implements Highlighter
 {
-    private CommandDispatcher<ServerCommandSource> cmddispatcher;
-    private ServerCommandSource cmdsrc;
+    private final CommandDispatcher<ServerCommandSource> cmdDispatcher;
+    private final ServerCommandSource cmdSrc;
+    private final int[] colors;
 
-    public MinecraftCommandHighlighter(CommandDispatcher<ServerCommandSource> _cmddispatcher, ServerCommandSource _cmdsrc)
+    public MinecraftCommandHighlighter(CommandDispatcher<ServerCommandSource> cmdDispatcher, ServerCommandSource cmdSrc)
     {
-        cmddispatcher = _cmddispatcher;
-        cmdsrc = _cmdsrc;
+        this.cmdDispatcher = cmdDispatcher;
+        this.cmdSrc = cmdSrc;
+        colors = JLineForMcDSrvMain.config.getHighlightColors();
     }
 
     @Override
     public AttributedString highlight(LineReader reader, String buffer)
     {
-        final int[] colors = new int[]{AttributedStyle.CYAN, AttributedStyle.YELLOW, AttributedStyle.GREEN, AttributedStyle.MAGENTA, AttributedStyle.WHITE};
         AttributedStringBuilder sb = new AttributedStringBuilder();
-        ParseResults<ServerCommandSource> parse = cmddispatcher.parse(buffer, cmdsrc);
-        List nodes = parse.getContext().getNodes();
+        ParseResults<ServerCommandSource> parse = cmdDispatcher.parse(buffer, cmdSrc);
         int pos = 0;
         int component = -1;
-        for (Object _node : nodes) {
-            ParsedCommandNode<ServerCommandSource> pcn = (ParsedCommandNode)_node;
+        for (ParsedCommandNode<ServerCommandSource> pcn : parse.getContext().getNodes()) {
             if (++component >= colors.length)
                 component = 0;
             if (pcn.getRange().getStart() >= buffer.length())
@@ -45,9 +43,8 @@ public class MinecraftCommandHighlighter implements Highlighter
             sb.append(buffer.substring(start, end), AttributedStyle.DEFAULT.foreground(colors[component]));
             pos = end;
         }
-        if (pos < buffer.length()) {
+        if (pos < buffer.length())
             sb.append((buffer.substring(pos)), AttributedStyle.DEFAULT);
-        }
         return sb.toAttributedString();
     }
 

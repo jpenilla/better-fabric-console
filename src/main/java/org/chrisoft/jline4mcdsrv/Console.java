@@ -1,9 +1,8 @@
 package org.chrisoft.jline4mcdsrv;
 
 import net.minecraft.server.dedicated.MinecraftDedicatedServer;
-import org.apache.logging.log4j.Level;
-import org.apache.logging.log4j.core.LoggerContext;
-import org.apache.logging.log4j.core.LogEvent;
+import net.minecraft.util.logging.UncaughtExceptionLogger;
+import org.apache.logging.log4j.core.*;
 import org.apache.logging.log4j.core.appender.AbstractAppender;
 import org.apache.logging.log4j.core.config.LoggerConfig;
 import org.apache.logging.log4j.core.layout.PatternLayout;
@@ -12,29 +11,41 @@ import org.jline.reader.EndOfFileException;
 import org.jline.reader.LineReader;
 import org.jline.reader.LineReaderBuilder;
 import org.jline.reader.UserInterruptException;
+import java.io.Serializable;
 
 public class Console
 {
-    private LineReader lr;
-    private MinecraftDedicatedServer srv;
-    private MinecraftCommandCompleter mcc;
-    private MinecraftCommandHighlighter mch;
-    public Console(MinecraftDedicatedServer _srv)
+    public static void setup(MinecraftDedicatedServer srv)
     {
-        srv=_srv;
-    }
-    public void setup()
-    {
-        Thread conthrd = new Thread("Server Console Thread") {
-            public void run() {
-                mcc = new MinecraftCommandCompleter(srv.getCommandManager().getDispatcher(), srv.getCommandSource());
-                mch = new MinecraftCommandHighlighter(srv.getCommandManager().getDispatcher(), srv.getCommandSource());
-                lr = LineReaderBuilder.builder()
-                        .completer(mcc)
-                        .highlighter(mch)
-                        .option(LineReader.Option.DISABLE_EVENT_EXPANSION, true)
-                        .build();
-                org.apache.logging.log4j.core.Appender conappender = new AbstractAppender("Console", null, PatternLayout.newBuilder().withPattern("%style{[%d{HH:mm:ss}]}{blue} %highlight{[%t/%level]}{FATAL=red, ERROR=red, WARN=yellow, INFO=green, DEBUG=green, TRACE=blue} %style{(%logger{1})}{cyan} %highlight{%msg%n}{FATAL=red, ERROR=red, WARN=normal, INFO=normal, DEBUG=normal, TRACE=normal}").build(), false) {
+        Thread conThrd = new Thread("jline4mcdsrv Console Thread")
+        {
+            public void run()
+            {
+                Logger logger = (Logger) LogManager.getLogger();
+                String pattern = null;
+
+                //try to get appender pattern in Log4j2 configuration
+                //e.g. <Queue name="JLine"><PatternLayout pattern="..." /></Queue>
+                Appender jLineAppender = logger.getAppenders().get("JLine");
+                if (jLineAppender != null) {
+                    Layout<? extends Serializable> layout = jLineAppender.getLayout();
+                    if (layout != null)
+                        pattern = layout.getContentFormat().get("format");
+                }
+
+                //else use mod configuration
+                if (pattern == null)
+                    pattern = JLineForMcDSrvMain.config.logPattern;
+
+                LineReader lr = LineReaderBuilder.builder()
+                    .completer(new MinecraftCommandCompleter(srv.getCommandManager().getDispatcher(), srv.getCommandSource()))
+                    .highlighter(new MinecraftCommandHighlighter(srv.getCommandManager().getDispatcher(), srv.getCommandSource()))
+                    .option(LineReader.Option.DISABLE_EVENT_EXPANSION, true)
+                    .build();
+
+                Appender conAppender = new AbstractAppender("Console", null,
+                    PatternLayout.newBuilder().withPattern(pattern).build(), false)
+                {
                     @Override
                     public void append(LogEvent event) {
                         if (lr.isReading())
@@ -49,33 +60,31 @@ public class Console
                         lr.getTerminal().writer().flush();
                     }
                 };
-                conappender.start();
+                conAppender.start();
 
-                org.apache.logging.log4j.core.Logger l = (org.apache.logging.log4j.core.Logger) LogManager.getLogger();
-                l.removeAppender(l.getAppenders().get("SysOut"));
+                //replace SysOut appender with conAppender
                 LoggerContext ctx = (LoggerContext) LogManager.getContext(false);
-                LoggerConfig conf = ctx.getConfiguration().getLoggerConfig(LogManager.getLogger().getName());
-                Level level = conf.getLevel();
-                conf.addAppender(conappender, level, null);
+                LoggerConfig conf = ctx.getConfiguration().getLoggerConfig(logger.getName());
+                conf.removeAppender("JLine"); //only used to set log pattern
+                conf.removeAppender("SysOut");
+                conf.addAppender(conAppender, conf.getLevel(), null);
                 ctx.updateLoggers();
 
-                String s;
-                while (true) {
+                while (!srv.isStopped() && srv.isRunning()) {
                     try {
-                        s = lr.readLine("/");
+                        String s = lr.readLine("/");
                         srv.enqueueCommand(s, srv.getCommandSource());
                         if (s.equals("stop"))
                             break;
-                    }
-                    catch (UserInterruptException e) {}
-                    catch (EndOfFileException e) {
+                    } catch (EndOfFileException|UserInterruptException e) {
                         srv.enqueueCommand("stop", srv.getCommandSource());
-                        return;
+                        break;
                     }
                 }
             }
         };
-        conthrd.setDaemon(true);
-        conthrd.start();
+        conThrd.setDaemon(true);
+        conThrd.setUncaughtExceptionHandler(new UncaughtExceptionLogger(JLineForMcDSrvMain.LOGGER));
+        conThrd.start();
     }
 }

@@ -31,6 +31,9 @@ dependencies {
 	provided "org.jline:jline:3.15.0"
 	provided "org.jline:jline-terminal-jansi:3.15.0"
 	provided "org.fusesource.jansi:jansi:1.18"
+
+	modImplementation("me.sargunvohra.mcmods:autoconfig1u:${project.auto_config_version}")
+	include "me.sargunvohra.mcmods:autoconfig1u:${project.auto_config_version}"
 }
 
 processResources {

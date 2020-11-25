@@ -15,28 +15,26 @@ import java.util.concurrent.CompletableFuture;
 
 public class MinecraftCommandCompleter implements Completer
 {
+    private final CommandDispatcher<ServerCommandSource> cmdDispatcher;
+    private final ServerCommandSource cmdSrc;
 
-    private CommandDispatcher<ServerCommandSource> cmddispatcher;
-    private ServerCommandSource cmdsrc;
-    private ParseResults<ServerCommandSource> parseres;
-
-    public MinecraftCommandCompleter(CommandDispatcher<ServerCommandSource> _cmddispatcher, ServerCommandSource _cmdsrc)
+    public MinecraftCommandCompleter(CommandDispatcher<ServerCommandSource> cmdDispatcher, ServerCommandSource cmdSrc)
     {
-        cmddispatcher = _cmddispatcher;
-        cmdsrc = _cmdsrc;
+        this.cmdDispatcher = cmdDispatcher;
+        this.cmdSrc = cmdSrc;
     }
 
     @Override
     public void complete(LineReader reader, ParsedLine line, List<Candidate> candidates)
     {
-        parseres = cmddispatcher.parse(line.line(), cmdsrc);
-        CompletableFuture<Suggestions> cs = cmddispatcher.getCompletionSuggestions(parseres, line.cursor());
+        ParseResults<ServerCommandSource> parseRes = cmdDispatcher.parse(line.line(), cmdSrc);
+        CompletableFuture<Suggestions> cs = cmdDispatcher.getCompletionSuggestions(parseRes, line.cursor());
         Suggestions sl = cs.join();
         for (Suggestion s : sl.getList()) {
             String applied = s.apply(line.line());
             ParsedLine apl = reader.getParser().parse(applied, line.cursor());
-            String candstr = apl.word();
-            candidates.add(new Candidate(candstr));
+            String candStr = apl.word();
+            candidates.add(new Candidate(candStr));
         }
     }
 }
