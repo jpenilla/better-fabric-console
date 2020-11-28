@@ -22,20 +22,6 @@ public class Console
             public void run()
             {
                 Logger logger = (Logger) LogManager.getLogger();
-                String pattern = null;
-
-                //try to get appender pattern in Log4j2 configuration
-                //e.g. <Queue name="JLine"><PatternLayout pattern="..." /></Queue>
-                Appender jLineAppender = logger.getAppenders().get("JLine");
-                if (jLineAppender != null) {
-                    Layout<? extends Serializable> layout = jLineAppender.getLayout();
-                    if (layout != null)
-                        pattern = layout.getContentFormat().get("format");
-                }
-
-                //else use mod configuration
-                if (pattern == null)
-                    pattern = JLineForMcDSrvMain.config.logPattern;
 
                 LineReader lr = LineReaderBuilder.builder()
                     .completer(new MinecraftCommandCompleter(srv.getCommandManager().getDispatcher(), srv.getCommandSource()))
@@ -44,7 +30,7 @@ public class Console
                     .build();
 
                 Appender conAppender = new AbstractAppender("Console", null,
-                    PatternLayout.newBuilder().withPattern(pattern).build(), false)
+                    PatternLayout.newBuilder().withPattern(JLineForMcDSrvMain.config.logPattern).build(), false)
                 {
                     @Override
                     public void append(LogEvent event) {
@@ -65,7 +51,6 @@ public class Console
                 //replace SysOut appender with conAppender
                 LoggerContext ctx = (LoggerContext) LogManager.getContext(false);
                 LoggerConfig conf = ctx.getConfiguration().getLoggerConfig(logger.getName());
-                conf.removeAppender("JLine"); //only used to set log pattern
                 conf.removeAppender("SysOut");
                 conf.addAppender(conAppender, conf.getLevel(), null);
                 ctx.updateLoggers();
