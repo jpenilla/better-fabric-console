@@ -1,5 +1,5 @@
 plugins {
-	id 'fabric-loom' version '0.4-SNAPSHOT'
+	id 'fabric-loom' version '0.6-SNAPSHOT'
 	id 'maven-publish'
 }
 
@@ -12,6 +12,8 @@ group = project.maven_group
 
 repositories {
 	maven { url "https://repo1.maven.org/maven2/" }
+	maven { url "https://maven.fabricmc.net/" }
+	jcenter()
 }
 
 configurations {
@@ -32,7 +34,9 @@ dependencies {
 	provided "org.jline:jline-terminal-jansi:3.15.0"
 	provided "org.fusesource.jansi:jansi:1.18"
 
-	modImplementation("me.sargunvohra.mcmods:autoconfig1u:${project.auto_config_version}")
+	modApi("me.sargunvohra.mcmods:autoconfig1u:${project.auto_config_version}") {
+		exclude module: 'fabric-api'
+	}
 	include "me.sargunvohra.mcmods:autoconfig1u:${project.auto_config_version}"
 }
 
