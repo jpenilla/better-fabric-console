@@ -8,35 +8,29 @@ import java.util.*;
 @Config(name = "jline4mcdsrv")
 public class JLineForMcDSrvConfig implements ConfigData
 {
-	//Represent AttributedStyle.BLACK = 0, AttributedStyle.RED = 1 etc
-	public static final List<String> colorList = Collections.unmodifiableList(new ArrayList<>(Arrays.asList(
-		"BLACK", "RED", "GREEN", "YELLOW", "BLUE", "MAGENTA", "CYAN", "WHITE")));
+	// Represent AttributedStyle.BLACK = 0, AttributedStyle.RED = 1, ... AttributedStyle.WHITE = 7
+	private enum StyleColor {
+		BLACK, RED, GREEN, YELLOW, BLUE, MAGENTA, CYAN, WHITE
+	}
 
 	public String logPattern = "%style{[%d{HH:mm:ss}]}{blue} "
 		+ "%highlight{[%t/%level]}{FATAL=red, ERROR=red, WARN=yellow, INFO=green, DEBUG=green, TRACE=blue} "
 		+ "%style{(%logger{1})}{cyan} "
 		+ "%highlight{%msg%n}{FATAL=red, ERROR=red, WARN=normal, INFO=normal, DEBUG=normal, TRACE=normal}";
 
-	public String[] highlightColors = {"CYAN", "YELLOW", "GREEN", "MAGENTA", "WHITE"};
+	private StyleColor[] highlightColors = {StyleColor.CYAN, StyleColor.YELLOW, StyleColor.GREEN, StyleColor.MAGENTA, StyleColor.WHITE};
+
+	public transient int[] highlightColorIndices;
 
 	@Override
 	public void validatePostLoad() throws ConfigData.ValidationException {
+		// transform the color names into their AttributedStyle index
+		highlightColorIndices = new int[highlightColors.length];
 		for (int i = 0; i < highlightColors.length; i++) {
-			highlightColors[i] = highlightColors[i].toUpperCase();
+			if (highlightColors[i] == null)
+				throw new ConfigData.ValidationException("highlightColors[" + i + "] needs to be one of " + Arrays.toString(StyleColor.values()));
 
-			int styleColor = colorList.indexOf(highlightColors[i]);
-			if (styleColor == -1)
-				throw new ConfigData.ValidationException("highlightColors[" + i + "] needs to be one of " + colorList);
+			highlightColorIndices[i] = highlightColors[i].ordinal();
 		}
-	}
-
-	//for use in Highlighter
-	public int[] getHighlightColors() {
-		int[] styleColors = new int[highlightColors.length];
-		for (int i = 0; i < highlightColors.length; i++) {
-			int styleColor = colorList.indexOf(highlightColors[i]);
-			styleColors[i] = styleColor;
-		}
-		return styleColors;
 	}
 }

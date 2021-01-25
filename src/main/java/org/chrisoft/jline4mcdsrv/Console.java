@@ -11,7 +11,6 @@ import org.jline.reader.EndOfFileException;
 import org.jline.reader.LineReader;
 import org.jline.reader.LineReaderBuilder;
 import org.jline.reader.UserInterruptException;
-import java.io.Serializable;
 
 public class Console
 {
@@ -48,7 +47,7 @@ public class Console
                 };
                 conAppender.start();
 
-                //replace SysOut appender with conAppender
+                // replace SysOut appender with conAppender
                 LoggerContext ctx = (LoggerContext) LogManager.getContext(false);
                 LoggerConfig conf = ctx.getConfiguration().getLoggerConfig(logger.getName());
                 conf.removeAppender("SysOut");

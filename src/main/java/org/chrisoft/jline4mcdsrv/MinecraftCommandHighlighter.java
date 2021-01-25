@@ -22,7 +22,7 @@ public class MinecraftCommandHighlighter implements Highlighter
     {
         this.cmdDispatcher = cmdDispatcher;
         this.cmdSrc = cmdSrc;
-        colors = JLineForMcDSrvMain.config.getHighlightColors();
+        colors = JLineForMcDSrvMain.config.highlightColorIndices;
     }
 
     @Override
