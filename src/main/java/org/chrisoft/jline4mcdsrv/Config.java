@@ -12,7 +12,7 @@ final class Config {
     }
 
     @Comment("Log4j logger pattern")
-    private String logPattern = "%highlight{[%d{HH:mm:ss} %level] [%t]: [%logger]}{FATAL=red, ERROR=red, WARN=yellow, INFO=default, DEBUG=yellow, TRACE=blue} %paperMinecraftFormatting{%msg}%n";
+    private String logPattern = "%highlight{[%d{HH:mm:ss} %level] [%t]: [%logger{1}]}{FATAL=red, ERROR=red, WARN=yellow, INFO=default, DEBUG=yellow, TRACE=blue} %paperMinecraftFormatting{%msg}%n";
 
     public @NonNull String logPattern() {
         return this.logPattern;
