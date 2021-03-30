@@ -4,7 +4,8 @@ import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.ParseResults;
 import com.mojang.brigadier.suggestion.Suggestion;
 import com.mojang.brigadier.suggestion.Suggestions;
-import net.minecraft.server.command.ServerCommandSource;
+import net.minecraft.commands.CommandSourceStack;
+import org.checkerframework.checker.nullness.qual.NonNull;
 import org.jline.reader.Candidate;
 import org.jline.reader.Completer;
 import org.jline.reader.LineReader;
@@ -13,28 +14,25 @@ import org.jline.reader.ParsedLine;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
-public class MinecraftCommandCompleter implements Completer
-{
-    private final CommandDispatcher<ServerCommandSource> cmdDispatcher;
-    private final ServerCommandSource cmdSrc;
+public final class MinecraftCommandCompleter implements Completer {
+    private final CommandDispatcher<CommandSourceStack> dispatcher;
+    private final CommandSourceStack commandSourceStack;
 
-    public MinecraftCommandCompleter(CommandDispatcher<ServerCommandSource> cmdDispatcher, ServerCommandSource cmdSrc)
-    {
-        this.cmdDispatcher = cmdDispatcher;
-        this.cmdSrc = cmdSrc;
+    public MinecraftCommandCompleter(final @NonNull CommandDispatcher<CommandSourceStack> dispatcher, final @NonNull CommandSourceStack commandSourceStack) {
+        this.dispatcher = dispatcher;
+        this.commandSourceStack = commandSourceStack;
     }
 
     @Override
-    public void complete(LineReader reader, ParsedLine line, List<Candidate> candidates)
-    {
-        ParseResults<ServerCommandSource> parseRes = cmdDispatcher.parse(line.line(), cmdSrc);
-        CompletableFuture<Suggestions> cs = cmdDispatcher.getCompletionSuggestions(parseRes, line.cursor());
-        Suggestions sl = cs.join();
-        for (Suggestion s : sl.getList()) {
-            String applied = s.apply(line.line());
-            ParsedLine apl = reader.getParser().parse(applied, line.cursor());
-            String candStr = apl.word();
-            candidates.add(new Candidate(candStr));
+    public void complete(final @NonNull LineReader reader, final @NonNull ParsedLine line, final @NonNull List<@NonNull Candidate> candidates) {
+        final ParseResults<CommandSourceStack> results = dispatcher.parse(line.line(), commandSourceStack);
+        final CompletableFuture<Suggestions> suggestionsFuture = dispatcher.getCompletionSuggestions(results, line.cursor());
+        final Suggestions suggestions = suggestionsFuture.join();
+        for (final Suggestion suggestion : suggestions.getList()) {
+            final String applied = suggestion.apply(line.line());
+            final ParsedLine apl = reader.getParser().parse(applied, line.cursor());
+            final String value = apl.word();
+            candidates.add(new Candidate(value, value, null, null, null, null, false));
         }
     }
 }

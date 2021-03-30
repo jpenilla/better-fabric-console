@@ -8,8 +8,9 @@
   "client": [
   ],
   "server": [
-    "DServerInject",
-    "DServerConsoleThreadInject"
+    "FabricServerAudiencesImplMixin",
+    "DedicatedServerConsoleThreadMixin",
+    "DedicatedServerMixin"
   ],
   "injectors": {
     "defaultRequire": 1

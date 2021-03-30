@@ -1,40 +1,68 @@
 package org.chrisoft.jline4mcdsrv;
 
-import net.minecraft.server.dedicated.MinecraftDedicatedServer;
 import org.apache.logging.log4j.core.LogEvent;
 import org.apache.logging.log4j.core.appender.AbstractAppender;
 import org.apache.logging.log4j.core.appender.rewrite.RewritePolicy;
+import org.apache.logging.log4j.core.impl.Log4jLogEvent;
 import org.apache.logging.log4j.core.layout.PatternLayout;
+import org.checkerframework.checker.nullness.qual.NonNull;
 import org.jline.reader.LineReader;
 
-public class ConsoleAppender extends AbstractAppender {
+import java.lang.reflect.Field;
+import java.util.Map;
 
-    protected LineReader lr;
-    protected RewritePolicy policy;
+final class ConsoleAppender extends AbstractAppender {
 
-    public ConsoleAppender(LineReader lr) {
-        super("Console", null, PatternLayout.newBuilder().withPattern(JLineForMcDSrvMain.config.logPattern).build(), false);
-        this.lr = lr;
+    private final LineReader lineReader;
+    private RewritePolicy rewritePolicy;
+    private Map<String, String> mappings;
+
+    public ConsoleAppender(final @NonNull LineReader lineReader) {
+        super("Console", null, PatternLayout.newBuilder().withPattern(JLineForMcDSrvMain.get().config().logPattern()).build(), false);
+        this.lineReader = lineReader;
     }
 
-    public void setRewritePolicy(RewritePolicy policy) {
-        this.policy = policy;
+    @SuppressWarnings("unchecked")
+    public void installNotEnoughCrashesRewritePolicy(final @NonNull RewritePolicy policy) {
+        this.rewritePolicy = policy;
+        try {
+            final Class<?> clazz = Class.forName("fudge.notenoughcrashes.fabric.StacktraceDeobfuscator");
+            final Field mappingsField = clazz.getDeclaredField("mappings");
+            mappingsField.setAccessible(true);
+            this.mappings = (Map<String, String>) mappingsField.get(null);
+        } catch (final ClassNotFoundException | NoSuchFieldException | IllegalAccessException ex) {
+            throw new RuntimeException(ex);
+        }
     }
 
     @Override
-    public void append(LogEvent event) {
-        if (policy != null)
-            event = policy.rewrite(event);
-
-        if (lr.isReading())
-            lr.callWidget(lr.CLEAR);
-
-        lr.getTerminal().writer().print(getLayout().toSerializable(event).toString());
-
-        if (lr.isReading()) {
-            lr.callWidget(lr.REDRAW_LINE);
-            lr.callWidget(lr.REDISPLAY);
+    public void append(@NonNull LogEvent event) {
+        if (this.rewritePolicy != null && this.mappings != null) { // NEC compat
+            event = this.rewritePolicy.rewrite(event);
+            event = Log4jLogEvent.newBuilder()
+                    .setLoggerName(this.mappings.getOrDefault(event.getLoggerName(), event.getLoggerName()))
+                    .setMarker(event.getMarker())
+                    .setLoggerFqcn(this.mappings.getOrDefault(event.getLoggerFqcn(), event.getLoggerFqcn()))
+                    .setLevel(event.getLevel())
+                    .setMessage(event.getMessage())
+                    .setThrown(event.getThrown())
+                    .setContextMap(event.getContextMap())
+                    .setContextStack(event.getContextStack())
+                    .setThreadName(event.getThreadName())
+                    .setSource(event.getSource())
+                    .setTimeMillis(event.getTimeMillis())
+                    .build();
         }
-        lr.getTerminal().writer().flush();
+
+        if (this.lineReader.isReading())
+            this.lineReader.callWidget(this.lineReader.CLEAR);
+
+        this.lineReader.getTerminal().writer().print(getLayout().toSerializable(event).toString());
+
+        if (this.lineReader.isReading()) {
+            this.lineReader.callWidget(this.lineReader.REDRAW_LINE);
+            this.lineReader.callWidget(this.lineReader.REDISPLAY);
+        }
+        this.lineReader.getTerminal().writer().flush();
     }
 }
