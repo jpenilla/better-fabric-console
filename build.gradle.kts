@@ -31,7 +31,7 @@ dependencies {
     implementation(include("net.kyori", "adventure-text-serializer-legacy", "4.7.0"))
     modImplementation(include("net.kyori", "adventure-platform-fabric", "4.0.0-SNAPSHOT"))
     modImplementation(include("ca.stellardrift", "confabricate", "2.0.3"))
-    compileOnly("org.checkerframework:checker-qual:3.11.0")
+    compileOnly("org.checkerframework", "checker-qual", "3.11.0")
 }
 
 tasks {

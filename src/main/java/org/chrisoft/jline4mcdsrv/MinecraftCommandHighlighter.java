@@ -28,7 +28,7 @@ final class MinecraftCommandHighlighter implements Highlighter {
 
     @Override
     public AttributedString highlight(final @NonNull LineReader reader, final @NonNull String buffer) {
-        final AttributedStringBuilder stringBuilder = new AttributedStringBuilder();
+        final AttributedStringBuilder builder = new AttributedStringBuilder();
         final StringReader stringReader = new StringReader(buffer);
         if (stringReader.canRead() && stringReader.peek() == '/') {
             stringReader.skip();
@@ -36,7 +36,7 @@ final class MinecraftCommandHighlighter implements Highlighter {
         final ParseResults<CommandSourceStack> results = this.dispatcher.parse(stringReader, this.commandSourceStack);
         int pos = 0;
         if (buffer.startsWith("/")) {
-            stringBuilder.append("/", AttributedStyle.DEFAULT);
+            builder.append("/", AttributedStyle.DEFAULT);
             pos = 1;
         }
         int component = -1;
@@ -47,21 +47,21 @@ final class MinecraftCommandHighlighter implements Highlighter {
             final int start = node.getRange().getStart();
             final int end = Math.min(node.getRange().getEnd(), buffer.length());
             if (node.getNode() instanceof LiteralCommandNode) {
-                stringBuilder.append(buffer.substring(pos, start), AttributedStyle.DEFAULT);
-                stringBuilder.append(buffer.substring(start, end), AttributedStyle.DEFAULT);
+                builder.append(buffer.substring(pos, start), AttributedStyle.DEFAULT);
+                builder.append(buffer.substring(start, end), AttributedStyle.DEFAULT);
             } else {
                 if (++component >= this.colors.length) {
                     component = 0;
                 }
-                stringBuilder.append(buffer.substring(pos, start), AttributedStyle.DEFAULT);
-                stringBuilder.append(buffer.substring(start, end), AttributedStyle.DEFAULT.foreground(this.colors[component].index()));
+                builder.append(buffer.substring(pos, start), AttributedStyle.DEFAULT);
+                builder.append(buffer.substring(start, end), AttributedStyle.DEFAULT.foreground(this.colors[component].index()));
             }
             pos = end;
         }
         if (pos < buffer.length()) {
-            stringBuilder.append((buffer.substring(pos)), AttributedStyle.DEFAULT.foreground(AttributedStyle.RED));
+            builder.append((buffer.substring(pos)), AttributedStyle.DEFAULT.foreground(AttributedStyle.RED));
         }
-        return stringBuilder.toAttributedString();
+        return builder.toAttributedString();
     }
 
     @Override

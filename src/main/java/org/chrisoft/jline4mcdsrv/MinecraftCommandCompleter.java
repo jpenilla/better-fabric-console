@@ -1,6 +1,7 @@
 package org.chrisoft.jline4mcdsrv;
 
 import com.mojang.brigadier.CommandDispatcher;
+import com.mojang.brigadier.Message;
 import com.mojang.brigadier.ParseResults;
 import com.mojang.brigadier.StringReader;
 import com.mojang.brigadier.suggestion.Suggestion;
@@ -30,14 +31,22 @@ final class MinecraftCommandCompleter implements Completer {
         if (stringReader.canRead() && stringReader.peek() == '/') {
             stringReader.skip();
         }
-        final ParseResults<CommandSourceStack> results = dispatcher.parse(stringReader, commandSourceStack);
-        final CompletableFuture<Suggestions> suggestionsFuture = dispatcher.getCompletionSuggestions(results, line.cursor());
+        final ParseResults<CommandSourceStack> results = this.dispatcher.parse(stringReader, this.commandSourceStack);
+        final CompletableFuture<Suggestions> suggestionsFuture = this.dispatcher.getCompletionSuggestions(results, line.cursor());
         final Suggestions suggestions = suggestionsFuture.join();
         for (final Suggestion suggestion : suggestions.getList()) {
-            final String applied = suggestion.apply(line.line());
-            final ParsedLine apl = reader.getParser().parse(applied, line.cursor());
-            final String value = apl.word();
-            candidates.add(new Candidate(value, value, null, null, null, null, false));
+            final String suggestionText = suggestion.getText();
+            final Message suggestionTooltip = suggestion.getTooltip();
+            final String description = suggestionTooltip == null || suggestionTooltip.getString().isEmpty() ? null : suggestionTooltip.getString();
+            candidates.add(new Candidate(
+                    suggestionText,
+                    suggestionText,
+                    null,
+                    description,
+                    null,
+                    null,
+                    false
+            ));
         }
     }
 }
