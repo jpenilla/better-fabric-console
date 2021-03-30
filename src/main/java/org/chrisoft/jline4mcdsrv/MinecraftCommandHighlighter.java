@@ -17,12 +17,12 @@ import java.util.regex.Pattern;
 public final class MinecraftCommandHighlighter implements Highlighter {
     private final CommandDispatcher<CommandSourceStack> dispatcher;
     private final CommandSourceStack commandSourceStack;
-    private final int[] colors;
+    private final Config.StyleColor[] colors;
 
     public MinecraftCommandHighlighter(final @NonNull CommandDispatcher<CommandSourceStack> dispatcher, final @NonNull CommandSourceStack commandSourceStack) {
         this.dispatcher = dispatcher;
         this.commandSourceStack = commandSourceStack;
-        this.colors = JLineForMcDSrvMain.get().config().highlightColorIndices();
+        this.colors = JLineForMcDSrvMain.get().config().highlightColors();
     }
 
     @Override
@@ -45,7 +45,7 @@ public final class MinecraftCommandHighlighter implements Highlighter {
                     component = 0;
                 }
                 sb.append(buffer.substring(pos, start), AttributedStyle.DEFAULT);
-                sb.append(buffer.substring(start, end), AttributedStyle.DEFAULT.foreground(this.colors[component]));
+                sb.append(buffer.substring(start, end), AttributedStyle.DEFAULT.foreground(this.colors[component].index()));
             }
             pos = end;
         }

@@ -31,7 +31,6 @@ public final class JLineForMcDSrvMain implements ModInitializer {
             final ConfigurationReference<CommentedConfigurationNode> reference = Confabricate.configurationFor(container, false);
             reference.load();
             this.config = reference.node().get(Config.class);
-            this.config.populateIndices();
             reference.save(reference.loader().createNode().set(this.config));
         } catch (final ConfigurateException ex) {
             throw new RuntimeException("Failed to load config", ex);
