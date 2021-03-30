@@ -41,15 +41,16 @@ public final class MinecraftCommandHighlighter implements Highlighter {
                 sb.append(buffer.substring(pos, start), AttributedStyle.DEFAULT);
                 sb.append(buffer.substring(start, end), AttributedStyle.DEFAULT);
             } else {
-                if (++component >= this.colors.length)
+                if (++component >= this.colors.length) {
                     component = 0;
+                }
                 sb.append(buffer.substring(pos, start), AttributedStyle.DEFAULT);
                 sb.append(buffer.substring(start, end), AttributedStyle.DEFAULT.foreground(this.colors[component]));
             }
             pos = end;
         }
         if (pos < buffer.length()) {
-            sb.append((buffer.substring(pos)), AttributedStyle.DEFAULT);
+            sb.append((buffer.substring(pos)), AttributedStyle.DEFAULT.foreground(AttributedStyle.RED));
         }
         return sb.toAttributedString();
     }
