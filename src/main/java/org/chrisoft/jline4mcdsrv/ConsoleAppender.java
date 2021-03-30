@@ -54,8 +54,9 @@ final class ConsoleAppender extends AbstractAppender {
                     .build();
         }
 
-        if (this.lineReader.isReading())
+        if (this.lineReader.isReading()) {
             this.lineReader.callWidget(this.lineReader.CLEAR);
+        }
 
         this.lineReader.getTerminal().writer().print(getLayout().toSerializable(event).toString());
 

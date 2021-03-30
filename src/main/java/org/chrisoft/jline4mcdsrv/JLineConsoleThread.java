@@ -59,12 +59,12 @@ public final class JLineConsoleThread extends Thread {
 
         while (!this.server.isStopped() && this.server.isRunning()) {
             try {
-                final String s = lineReader.readLine("> ");
-                if (s.isEmpty()) {
+                final String input = lineReader.readLine("> ");
+                if (input.isEmpty()) {
                     continue;
                 }
-                this.server.handleConsoleInput(s, this.server.createCommandSourceStack());
-                if (s.equals("stop")) {
+                this.server.handleConsoleInput(input, this.server.createCommandSourceStack());
+                if (input.equals("stop")) {
                     break;
                 }
             } catch (final EndOfFileException | UserInterruptException ex) {

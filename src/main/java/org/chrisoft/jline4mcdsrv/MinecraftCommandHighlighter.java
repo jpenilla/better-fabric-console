@@ -2,6 +2,7 @@ package org.chrisoft.jline4mcdsrv;
 
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.ParseResults;
+import com.mojang.brigadier.StringReader;
 import com.mojang.brigadier.context.ParsedCommandNode;
 import com.mojang.brigadier.tree.LiteralCommandNode;
 import net.minecraft.commands.CommandSourceStack;
@@ -14,7 +15,7 @@ import org.jline.utils.AttributedStyle;
 
 import java.util.regex.Pattern;
 
-public final class MinecraftCommandHighlighter implements Highlighter {
+final class MinecraftCommandHighlighter implements Highlighter {
     private final CommandDispatcher<CommandSourceStack> dispatcher;
     private final CommandSourceStack commandSourceStack;
     private final Config.StyleColor[] colors;
@@ -27,9 +28,17 @@ public final class MinecraftCommandHighlighter implements Highlighter {
 
     @Override
     public AttributedString highlight(final @NonNull LineReader reader, final @NonNull String buffer) {
-        final AttributedStringBuilder sb = new AttributedStringBuilder();
-        final ParseResults<CommandSourceStack> results = this.dispatcher.parse(buffer, this.commandSourceStack);
+        final AttributedStringBuilder stringBuilder = new AttributedStringBuilder();
+        final StringReader stringReader = new StringReader(buffer);
+        if (stringReader.canRead() && stringReader.peek() == '/') {
+            stringReader.skip();
+        }
+        final ParseResults<CommandSourceStack> results = this.dispatcher.parse(stringReader, this.commandSourceStack);
         int pos = 0;
+        if (buffer.startsWith("/")) {
+            stringBuilder.append("/", AttributedStyle.DEFAULT);
+            pos = 1;
+        }
         int component = -1;
         for (final ParsedCommandNode<CommandSourceStack> node : results.getContext().getNodes()) {
             if (node.getRange().getStart() >= buffer.length()) {
@@ -38,21 +47,21 @@ public final class MinecraftCommandHighlighter implements Highlighter {
             final int start = node.getRange().getStart();
             final int end = Math.min(node.getRange().getEnd(), buffer.length());
             if (node.getNode() instanceof LiteralCommandNode) {
-                sb.append(buffer.substring(pos, start), AttributedStyle.DEFAULT);
-                sb.append(buffer.substring(start, end), AttributedStyle.DEFAULT);
+                stringBuilder.append(buffer.substring(pos, start), AttributedStyle.DEFAULT);
+                stringBuilder.append(buffer.substring(start, end), AttributedStyle.DEFAULT);
             } else {
                 if (++component >= this.colors.length) {
                     component = 0;
                 }
-                sb.append(buffer.substring(pos, start), AttributedStyle.DEFAULT);
-                sb.append(buffer.substring(start, end), AttributedStyle.DEFAULT.foreground(this.colors[component].index()));
+                stringBuilder.append(buffer.substring(pos, start), AttributedStyle.DEFAULT);
+                stringBuilder.append(buffer.substring(start, end), AttributedStyle.DEFAULT.foreground(this.colors[component].index()));
             }
             pos = end;
         }
         if (pos < buffer.length()) {
-            sb.append((buffer.substring(pos)), AttributedStyle.DEFAULT.foreground(AttributedStyle.RED));
+            stringBuilder.append((buffer.substring(pos)), AttributedStyle.DEFAULT.foreground(AttributedStyle.RED));
         }
-        return sb.toAttributedString();
+        return stringBuilder.toAttributedString();
     }
 
     @Override

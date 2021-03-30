@@ -2,6 +2,7 @@ package org.chrisoft.jline4mcdsrv;
 
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.ParseResults;
+import com.mojang.brigadier.StringReader;
 import com.mojang.brigadier.suggestion.Suggestion;
 import com.mojang.brigadier.suggestion.Suggestions;
 import net.minecraft.commands.CommandSourceStack;
@@ -14,7 +15,7 @@ import org.jline.reader.ParsedLine;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
-public final class MinecraftCommandCompleter implements Completer {
+final class MinecraftCommandCompleter implements Completer {
     private final CommandDispatcher<CommandSourceStack> dispatcher;
     private final CommandSourceStack commandSourceStack;
 
@@ -25,7 +26,11 @@ public final class MinecraftCommandCompleter implements Completer {
 
     @Override
     public void complete(final @NonNull LineReader reader, final @NonNull ParsedLine line, final @NonNull List<@NonNull Candidate> candidates) {
-        final ParseResults<CommandSourceStack> results = dispatcher.parse(line.line(), commandSourceStack);
+        final StringReader stringReader = new StringReader(line.line());
+        if (stringReader.canRead() && stringReader.peek() == '/') {
+            stringReader.skip();
+        }
+        final ParseResults<CommandSourceStack> results = dispatcher.parse(stringReader, commandSourceStack);
         final CompletableFuture<Suggestions> suggestionsFuture = dispatcher.getCompletionSuggestions(results, line.cursor());
         final Suggestions suggestions = suggestionsFuture.join();
         for (final Suggestion suggestion : suggestions.getList()) {
