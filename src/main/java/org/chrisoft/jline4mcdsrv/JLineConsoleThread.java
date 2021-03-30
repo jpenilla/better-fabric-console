@@ -60,6 +60,9 @@ public final class JLineConsoleThread extends Thread {
         while (!this.server.isStopped() && this.server.isRunning()) {
             try {
                 final String s = lineReader.readLine("> ");
+                if (s.isEmpty()) {
+                    continue;
+                }
                 this.server.handleConsoleInput(s, this.server.createCommandSourceStack());
                 if (s.equals("stop")) {
                     break;
