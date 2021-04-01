@@ -36,6 +36,9 @@ final class MinecraftCommandCompleter implements Completer {
         final Suggestions suggestions = suggestionsFuture.join();
         for (final Suggestion suggestion : suggestions.getList()) {
             final String suggestionText = suggestion.getText();
+            if (suggestionText.isEmpty()) {
+                continue;
+            }
             final Message suggestionTooltip = suggestion.getTooltip();
             final String description = suggestionTooltip == null || suggestionTooltip.getString().isEmpty() ? null : suggestionTooltip.getString();
             candidates.add(new Candidate(

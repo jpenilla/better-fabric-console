@@ -1,5 +1,6 @@
 package io.papermc.paper.console;
 
+import net.kyori.adventure.text.format.NamedTextColor;
 import org.apache.logging.log4j.core.LogEvent;
 import org.apache.logging.log4j.core.config.Configuration;
 import org.apache.logging.log4j.core.config.plugins.Plugin;
@@ -11,6 +12,7 @@ import org.apache.logging.log4j.core.pattern.PatternFormatter;
 import org.apache.logging.log4j.core.pattern.PatternParser;
 import org.apache.logging.log4j.util.PerformanceSensitive;
 import org.apache.logging.log4j.util.PropertiesUtil;
+import org.chrisoft.jline4mcdsrv.JLineForMcDSrvMain;
 
 import java.util.List;
 import java.util.regex.Matcher;
@@ -36,7 +38,31 @@ public final class HexFormattingConverter extends LogEventPatternConverter {
     private static final Pattern NAMED_PATTERN = Pattern.compile(COLOR_CHAR + "[0-9a-fk-orA-FK-OR]");
     private static final Pattern RGB_PATTERN = Pattern.compile(COLOR_CHAR + "#([0-9a-fA-F]){6}");
 
-    private static final String[] ansiCodes = new String[]{
+    private static final String[] RGB_ANSI_CODES = new String[]{
+            "\u001B[0;30m",                                      // Black §0
+            formatHexAnsi(NamedTextColor.DARK_BLUE.value()),     // Dark Blue §1
+            formatHexAnsi(NamedTextColor.DARK_GREEN.value()),    // Dark Green §2
+            formatHexAnsi(NamedTextColor.DARK_AQUA.value()),     // Dark Aqua §3
+            formatHexAnsi(NamedTextColor.DARK_RED.value()),      // Dark Red §4
+            formatHexAnsi(NamedTextColor.DARK_PURPLE.value()),   // Dark Purple §5
+            formatHexAnsi(NamedTextColor.GOLD.value()),          // Gold §6
+            formatHexAnsi(NamedTextColor.GRAY.value()),          // Gray §7
+            formatHexAnsi(NamedTextColor.DARK_GRAY.value()),     // Dark Gray §8
+            formatHexAnsi(NamedTextColor.BLUE.value()),          // Blue §9
+            formatHexAnsi(NamedTextColor.GREEN.value()),         // Green §a
+            formatHexAnsi(NamedTextColor.AQUA.value()),          // Aqua §b
+            formatHexAnsi(NamedTextColor.RED.value()),           // Red §c
+            formatHexAnsi(NamedTextColor.LIGHT_PURPLE.value()),  // Light Purple §d
+            formatHexAnsi(NamedTextColor.YELLOW.value()),        // Yellow §e
+            "\u001B[0;37;1m",                                    // White §f
+            "\u001B[5m",                                         // Obfuscated §k
+            "\u001B[21m",                                        // Bold §l
+            "\u001B[9m",                                         // Strikethrough §m
+            "\u001B[4m",                                         // Underline §n
+            "\u001B[3m",                                         // Italic §o
+            ANSI_RESET,                                          // Reset §r
+    };
+    private static final String[] ANSI_ANSI_CODES = new String[]{
             "\u001B[0;30m",    // Black §0
             "\u001B[0;34m",    // Dark Blue §1
             "\u001B[0;32m",    // Dark Green §2
@@ -99,16 +125,19 @@ public final class HexFormattingConverter extends LogEventPatternConverter {
         Matcher matcher = RGB_PATTERN.matcher(input);
         StringBuffer buffer = new StringBuffer();
         while (matcher.find()) {
-            String s = matcher.group().substring(1);
+            final String s = matcher.group().substring(1);
             int hex = Integer.decode(s);
-            int red = (hex >> 16) & 0xFF;
-            int green = (hex >> 8) & 0xFF;
-            int blue = hex & 0xFF;
-            String replacement = String.format(RGB_ANSI, red, green, blue);
-            matcher.appendReplacement(buffer, replacement);
+            matcher.appendReplacement(buffer, formatHexAnsi(hex));
         }
         matcher.appendTail(buffer);
         return buffer.toString();
+    }
+
+    private static String formatHexAnsi(final int color) {
+        final int red = color >> 16 & 0xFF;
+        final int green = color >> 8 & 0xFF;
+        final int blue = color & 0xFF;
+        return String.format(RGB_ANSI, red, green, blue);
     }
 
     private static String stripRGBColors(String input) {
@@ -135,6 +164,7 @@ public final class HexFormattingConverter extends LogEventPatternConverter {
 
         Matcher matcher = NAMED_PATTERN.matcher(content);
         StringBuffer buffer = new StringBuffer();
+        final String[] ansiCodes = JLineForMcDSrvMain.get().config().useRGBforNamedTextColors() ? RGB_ANSI_CODES : ANSI_ANSI_CODES;
         while (matcher.find()) {
             int format = LOOKUP.indexOf(Character.toLowerCase(matcher.group().charAt(1)));
             if (format != -1) {

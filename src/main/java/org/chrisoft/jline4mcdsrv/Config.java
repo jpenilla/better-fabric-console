@@ -5,7 +5,7 @@ import org.spongepowered.configurate.objectmapping.ConfigSerializable;
 import org.spongepowered.configurate.objectmapping.meta.Comment;
 
 @ConfigSerializable
-final class Config {
+public final class Config {
     /**
      * Mirrors {@link org.jline.utils.AttributedStyle} color constants.
      */
@@ -38,9 +38,16 @@ final class Config {
     }
 
     @Comment("Specify argument highlight colors, in order. Possible values: [BLACK, RED, GREEN, YELLOW, BLUE, MAGENTA, CYAN, WHITE]")
-    private StyleColor[] highlightColors = {StyleColor.CYAN, StyleColor.YELLOW, StyleColor.GREEN, StyleColor.MAGENTA, StyleColor.WHITE};
+    private StyleColor[] highlightColors = {StyleColor.CYAN, StyleColor.YELLOW, StyleColor.GREEN, StyleColor.MAGENTA, /*GOLD on client*/StyleColor.BLUE};
 
     public @NonNull StyleColor @NonNull [] highlightColors() {
         return this.highlightColors;
+    }
+
+    @Comment("If true, the RGB color code for NamedTextColors will be used in console. If false, NamedTextColors will use the ANSI color code counterpart, allowing for the console color scheme to effect them.")
+    private boolean useRGBforNamedTextColors = true;
+
+    public boolean useRGBforNamedTextColors() {
+        return this.useRGBforNamedTextColors;
     }
 }

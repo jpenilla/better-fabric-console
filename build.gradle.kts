@@ -12,7 +12,6 @@ repositories {
     maven("https://maven.fabricmc.net/")
     maven("https://oss.sonatype.org/content/repositories/snapshots/")
     jcenter()
-    mavenLocal()
 }
 
 val minecraftVersion = "1.16.5"
