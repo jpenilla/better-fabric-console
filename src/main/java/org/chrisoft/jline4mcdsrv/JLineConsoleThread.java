@@ -17,6 +17,7 @@ import org.jline.reader.LineReaderBuilder;
 import org.jline.reader.UserInterruptException;
 
 import java.lang.reflect.Field;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -33,6 +34,7 @@ public final class JLineConsoleThread extends Thread {
     @Override
     public void run() {
         LineReader lineReader = LineReaderBuilder.builder()
+                .variable(LineReader.HISTORY_FILE, Paths.get(".console_history"))
                 .completer(new MinecraftCommandCompleter(this.server.getCommands().getDispatcher(), this.server.createCommandSourceStack()))
                 .highlighter(new MinecraftCommandHighlighter(this.server.getCommands().getDispatcher(), this.server.createCommandSourceStack()))
                 .option(LineReader.Option.DISABLE_EVENT_EXPANSION, true)

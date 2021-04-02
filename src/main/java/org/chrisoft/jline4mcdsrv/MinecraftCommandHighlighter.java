@@ -40,7 +40,7 @@ final class MinecraftCommandHighlighter implements Highlighter {
             pos = 1;
         }
         int component = -1;
-        for (final ParsedCommandNode<CommandSourceStack> node : results.getContext().getNodes()) {
+        for (final ParsedCommandNode<CommandSourceStack> node : results.getContext().getLastChild().getNodes()) {
             if (node.getRange().getStart() >= buffer.length()) {
                 break;
             }
