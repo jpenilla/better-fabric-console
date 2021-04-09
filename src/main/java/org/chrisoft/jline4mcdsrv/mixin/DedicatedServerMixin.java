@@ -18,8 +18,8 @@ import net.minecraft.world.level.storage.LevelStorageSource;
 import net.minecraft.world.level.storage.WorldData;
 import org.apache.logging.log4j.Logger;
 import org.checkerframework.checker.nullness.qual.NonNull;
-import org.chrisoft.jline4mcdsrv.JLineConsoleThread;
-import org.chrisoft.jline4mcdsrv.JLineForMcDSrvMain;
+import org.chrisoft.jline4mcdsrv.ConsoleThread;
+import org.chrisoft.jline4mcdsrv.JLineForMcDSrv;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -35,7 +35,7 @@ abstract class DedicatedServerMixin extends MinecraftServer {
     @Final @Shadow private static Logger LOGGER;
 
     private final FabricServerAudiences audiences = FabricServerAudiences.of(this);
-    private final LegacyComponentSerializer serializer = LegacyComponentSerializer.builder()
+    private final LegacyComponentSerializer legacySerializer = LegacyComponentSerializer.builder()
             .flattener(this.audiences.flattener())
             .hexColors()
             .character(LegacyComponentSerializer.SECTION_CHAR)
@@ -46,17 +46,18 @@ abstract class DedicatedServerMixin extends MinecraftServer {
         super(thread, registryHolder, levelStorageAccess, worldData, packRepository, proxy, dataFixer, serverResources, minecraftSessionService, gameProfileRepository, gameProfileCache, chunkProgressListenerFactory);
     }
 
-    @Inject(method = "initServer", at = @At(value = "INVOKE", target = "Lorg/apache/logging/log4j/Logger;info(Ljava/lang/String;)V", shift = At.Shift.BEFORE, ordinal = 0))
+    @Inject(method = "initServer", at = @At(value = "HEAD"))
     private void injectInitServer(final @NonNull CallbackInfoReturnable<Boolean> info) {
-        final JLineConsoleThread consoleThread = new JLineConsoleThread((DedicatedServer) (Object) this);
+        JLineForMcDSrv.LOGGER.info("Initializing jline4mcdsrv console thread...");
+        final ConsoleThread consoleThread = new ConsoleThread((DedicatedServer) (Object) this);
         consoleThread.setDaemon(true);
         consoleThread.setUncaughtExceptionHandler(new DefaultUncaughtExceptionHandler(LOGGER));
+        consoleThread.init();
         consoleThread.start();
-        JLineForMcDSrvMain.LOGGER.info("Finished initializing jline4mcdsrv console thread.");
     }
 
     @Override
     public void sendMessage(final Component component, final UUID identity) {
-        LOGGER.info(this.serializer.serialize(this.audiences.toAdventure(component)));
+        LOGGER.info(this.legacySerializer.serialize(this.audiences.toAdventure(component)));
     }
 }

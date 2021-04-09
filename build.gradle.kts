@@ -6,6 +6,7 @@ plugins {
 
 version = "0.2.0"
 group = "org.chrisoft"
+description = "Enables command history, auto completion, and syntax highlighting on the server console."
 
 repositories {
     mavenCentral()
@@ -23,8 +24,9 @@ dependencies {
     //modImplementation("net.fabricmc.fabric-api", "fabric-api", "0.32.5+1.16")
 
     annotationProcessor("org.apache.logging.log4j", "log4j-core", "2.8.1")
-    implementation(include("org.jline", "jline", "3.15.0"))
-    implementation(include("org.jline", "jline-terminal-jansi", "3.15.0"))
+    val jlineVersion = "3.12.1"
+    implementation(include("org.jline", "jline", jlineVersion))
+    implementation(include("org.jline", "jline-terminal-jansi", jlineVersion))
     implementation(include("org.fusesource.jansi", "jansi", "1.18"))
 
     implementation(include("net.kyori", "adventure-text-serializer-legacy", "4.7.0"))
@@ -36,7 +38,13 @@ dependencies {
 tasks {
     processResources {
         filesMatching("fabric.mod.json") {
-            filter { it.replace("\${VERSION}", project.version as String) }
+            mapOf(
+                    "\${NAME}" to "JLine for Minecraft Dedicated Server",
+                    "\${DESCRIPTION}" to project.description as String,
+                    "\${VERSION}" to project.version as String
+            ).forEach { (token, replacement) ->
+                filter { it.replace(token, replacement) }
+            }
         }
     }
     withType<JavaCompile> {

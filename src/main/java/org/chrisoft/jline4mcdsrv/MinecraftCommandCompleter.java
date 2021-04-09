@@ -20,7 +20,7 @@ final class MinecraftCommandCompleter implements Completer {
     private final CommandDispatcher<CommandSourceStack> dispatcher;
     private final CommandSourceStack commandSourceStack;
 
-    public MinecraftCommandCompleter(final @NonNull CommandDispatcher<CommandSourceStack> dispatcher, final @NonNull CommandSourceStack commandSourceStack) {
+    MinecraftCommandCompleter(final @NonNull CommandDispatcher<CommandSourceStack> dispatcher, final @NonNull CommandSourceStack commandSourceStack) {
         this.dispatcher = dispatcher;
         this.commandSourceStack = commandSourceStack;
     }

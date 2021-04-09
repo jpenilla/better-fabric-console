@@ -12,7 +12,7 @@ import org.apache.logging.log4j.core.pattern.PatternFormatter;
 import org.apache.logging.log4j.core.pattern.PatternParser;
 import org.apache.logging.log4j.util.PerformanceSensitive;
 import org.apache.logging.log4j.util.PropertiesUtil;
-import org.chrisoft.jline4mcdsrv.JLineForMcDSrvMain;
+import org.chrisoft.jline4mcdsrv.JLineForMcDSrv;
 
 import java.util.List;
 import java.util.regex.Matcher;
@@ -164,7 +164,7 @@ public final class HexFormattingConverter extends LogEventPatternConverter {
 
         Matcher matcher = NAMED_PATTERN.matcher(content);
         StringBuffer buffer = new StringBuffer();
-        final String[] ansiCodes = JLineForMcDSrvMain.get().config().useRGBforNamedTextColors() ? RGB_ANSI_CODES : ANSI_ANSI_CODES;
+        final String[] ansiCodes = JLineForMcDSrv.get().config().useRGBforNamedTextColors() ? RGB_ANSI_CODES : ANSI_ANSI_CODES;
         while (matcher.find()) {
             int format = LOOKUP.indexOf(Character.toLowerCase(matcher.group().charAt(1)));
             if (format != -1) {

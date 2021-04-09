@@ -13,17 +13,14 @@ import org.jline.utils.AttributedString;
 import org.jline.utils.AttributedStringBuilder;
 import org.jline.utils.AttributedStyle;
 
-import java.util.regex.Pattern;
-
 final class MinecraftCommandHighlighter implements Highlighter {
     private final CommandDispatcher<CommandSourceStack> dispatcher;
     private final CommandSourceStack commandSourceStack;
-    private final Config.StyleColor[] colors;
+    private final Config.StyleColor[] colors = JLineForMcDSrv.get().config().highlightColors();
 
-    public MinecraftCommandHighlighter(final @NonNull CommandDispatcher<CommandSourceStack> dispatcher, final @NonNull CommandSourceStack commandSourceStack) {
+    MinecraftCommandHighlighter(final @NonNull CommandDispatcher<CommandSourceStack> dispatcher, final @NonNull CommandSourceStack commandSourceStack) {
         this.dispatcher = dispatcher;
         this.commandSourceStack = commandSourceStack;
-        this.colors = JLineForMcDSrvMain.get().config().highlightColors();
     }
 
     @Override
@@ -62,13 +59,5 @@ final class MinecraftCommandHighlighter implements Highlighter {
             builder.append((buffer.substring(pos)), AttributedStyle.DEFAULT.foreground(AttributedStyle.RED));
         }
         return builder.toAttributedString();
-    }
-
-    @Override
-    public void setErrorPattern(final @NonNull Pattern errorPattern) {
-    }
-
-    @Override
-    public void setErrorIndex(final int errorIndex) {
     }
 }

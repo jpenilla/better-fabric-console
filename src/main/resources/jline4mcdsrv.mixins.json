@@ -8,9 +8,9 @@
   "client": [
   ],
   "server": [
-    "FabricServerAudiencesImplMixin",
     "DedicatedServerConsoleThreadMixin",
-    "DedicatedServerMixin"
+    "DedicatedServerMixin",
+    "FabricServerAudiencesImplMixin"
   ],
   "injectors": {
     "defaultRequire": 1
