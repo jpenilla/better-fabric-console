@@ -39,7 +39,7 @@ public final class HexFormattingConverter extends LogEventPatternConverter {
     private static final Pattern RGB_PATTERN = Pattern.compile(COLOR_CHAR + "#([0-9a-fA-F]){6}");
 
     private static final String[] RGB_ANSI_CODES = new String[]{
-            "\u001B[0;30m",                                      // Black §0
+            formatHexAnsi(NamedTextColor.BLACK.value()),         // Black §0
             formatHexAnsi(NamedTextColor.DARK_BLUE.value()),     // Dark Blue §1
             formatHexAnsi(NamedTextColor.DARK_GREEN.value()),    // Dark Green §2
             formatHexAnsi(NamedTextColor.DARK_AQUA.value()),     // Dark Aqua §3
@@ -54,7 +54,7 @@ public final class HexFormattingConverter extends LogEventPatternConverter {
             formatHexAnsi(NamedTextColor.RED.value()),           // Red §c
             formatHexAnsi(NamedTextColor.LIGHT_PURPLE.value()),  // Light Purple §d
             formatHexAnsi(NamedTextColor.YELLOW.value()),        // Yellow §e
-            "\u001B[0;37;1m",                                    // White §f
+            formatHexAnsi(NamedTextColor.WHITE.value()),         // White §f
             "\u001B[5m",                                         // Obfuscated §k
             "\u001B[21m",                                        // Bold §l
             "\u001B[9m",                                         // Strikethrough §m

@@ -26,10 +26,7 @@ final class MinecraftCommandHighlighter implements Highlighter {
     @Override
     public AttributedString highlight(final @NonNull LineReader reader, final @NonNull String buffer) {
         final AttributedStringBuilder builder = new AttributedStringBuilder();
-        final StringReader stringReader = new StringReader(buffer);
-        if (stringReader.canRead() && stringReader.peek() == '/') {
-            stringReader.skip();
-        }
+        final StringReader stringReader = Util.prepareStringReader(buffer);
         final ParseResults<CommandSourceStack> results = this.dispatcher.parse(stringReader, this.commandSourceStack);
         int pos = 0;
         if (buffer.startsWith("/")) {
@@ -60,4 +57,5 @@ final class MinecraftCommandHighlighter implements Highlighter {
         }
         return builder.toAttributedString();
     }
+
 }
