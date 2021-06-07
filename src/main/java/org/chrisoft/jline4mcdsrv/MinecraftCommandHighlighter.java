@@ -5,6 +5,7 @@ import com.mojang.brigadier.ParseResults;
 import com.mojang.brigadier.StringReader;
 import com.mojang.brigadier.context.ParsedCommandNode;
 import com.mojang.brigadier.tree.LiteralCommandNode;
+import java.util.regex.Pattern;
 import net.minecraft.commands.CommandSourceStack;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.jline.reader.Highlighter;
@@ -58,4 +59,11 @@ final class MinecraftCommandHighlighter implements Highlighter {
         return builder.toAttributedString();
     }
 
+    @Override
+    public void setErrorPattern(final Pattern errorPattern) {
+    }
+
+    @Override
+    public void setErrorIndex(final int errorIndex) {
+    }
 }

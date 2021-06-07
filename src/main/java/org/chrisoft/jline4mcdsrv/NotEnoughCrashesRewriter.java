@@ -1,5 +1,9 @@
 package org.chrisoft.jline4mcdsrv;
 
+import java.lang.reflect.Field;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 import org.apache.logging.log4j.core.Appender;
 import org.apache.logging.log4j.core.LogEvent;
 import org.apache.logging.log4j.core.LoggerContext;
@@ -10,11 +14,6 @@ import org.apache.logging.log4j.core.config.LoggerConfig;
 import org.apache.logging.log4j.core.impl.Log4jLogEvent;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
-
-import java.lang.reflect.Field;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
 
 final class NotEnoughCrashesRewriter {
     private static final Class<?> STACKTRACE_DEOBFUSCATOR_CLASS = findClass("fudge.notenoughcrashes.fabric.StacktraceDeobfuscator");

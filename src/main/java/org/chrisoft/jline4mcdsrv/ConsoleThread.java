@@ -1,5 +1,6 @@
 package org.chrisoft.jline4mcdsrv;
 
+import java.nio.file.Paths;
 import net.minecraft.server.dedicated.DedicatedServer;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.core.Logger;
@@ -10,8 +11,6 @@ import org.jline.reader.EndOfFileException;
 import org.jline.reader.LineReader;
 import org.jline.reader.LineReaderBuilder;
 import org.jline.reader.UserInterruptException;
-
-import java.nio.file.Paths;
 
 public final class ConsoleThread extends Thread {
     private static final String TERMINAL_PROMPT = "> ";

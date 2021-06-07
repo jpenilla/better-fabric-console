@@ -1,5 +1,8 @@
 package io.papermc.paper.console;
 
+import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import net.kyori.adventure.text.format.NamedTextColor;
 import org.apache.logging.log4j.core.LogEvent;
 import org.apache.logging.log4j.core.config.Configuration;
@@ -13,10 +16,6 @@ import org.apache.logging.log4j.core.pattern.PatternParser;
 import org.apache.logging.log4j.util.PerformanceSensitive;
 import org.apache.logging.log4j.util.PropertiesUtil;
 import org.chrisoft.jline4mcdsrv.JLineForMcDSrv;
-
-import java.util.List;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 /**
  * Modified version of Paper's HexFormattingConverter to work with Kyori '§#rrggbb' format

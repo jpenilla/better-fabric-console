@@ -3,6 +3,8 @@ package org.chrisoft.jline4mcdsrv.mixin;
 import com.mojang.authlib.GameProfileRepository;
 import com.mojang.authlib.minecraft.MinecraftSessionService;
 import com.mojang.datafixers.DataFixer;
+import java.net.Proxy;
+import java.util.UUID;
 import net.kyori.adventure.platform.fabric.FabricServerAudiences;
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import net.minecraft.DefaultUncaughtExceptionHandler;
@@ -26,9 +28,6 @@ import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
-
-import java.net.Proxy;
-import java.util.UUID;
 
 @Mixin(DedicatedServer.class)
 abstract class DedicatedServerMixin extends MinecraftServer {

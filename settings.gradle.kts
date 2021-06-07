@@ -1,9 +1,8 @@
 pluginManagement {
-    repositories {
-        jcenter()
-        maven("https://maven.fabricmc.net/")
-        gradlePluginPortal()
-    }
+  repositories {
+    gradlePluginPortal()
+    maven("https://maven.fabricmc.net/")
+  }
 }
 
 rootProject.name = "jline4mcdsrv"
