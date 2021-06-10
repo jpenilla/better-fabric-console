@@ -14,7 +14,7 @@ repositories {
   maven("https://oss.sonatype.org/content/repositories/snapshots/")
 }
 
-val minecraftVersion = "1.17-rc1"
+val minecraftVersion = "1.17"
 
 dependencies {
   minecraft("com.mojang", "minecraft", minecraftVersion)
@@ -28,7 +28,7 @@ dependencies {
   implementation(include("org.jline", "jline-terminal-jansi", jlineVersion))
   implementation(include("org.fusesource.jansi", "jansi", "2.3.2"))
 
-  implementation(include("net.kyori", "adventure-text-serializer-legacy", "4.7.0"))
+  implementation(include("net.kyori", "adventure-text-serializer-legacy", "4.8.0"))
   modImplementation(include("net.kyori", "adventure-platform-fabric", "4.1.0-SNAPSHOT"))
   modImplementation(include("ca.stellardrift", "confabricate", "2.1.0"))
   compileOnly("org.checkerframework", "checker-qual", "3.14.0")

@@ -2,6 +2,7 @@ package org.chrisoft.jline4mcdsrv;
 
 import org.apache.logging.log4j.core.LogEvent;
 import org.apache.logging.log4j.core.appender.AbstractAppender;
+import org.apache.logging.log4j.core.config.Property;
 import org.apache.logging.log4j.core.layout.PatternLayout;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
@@ -12,7 +13,13 @@ final class ConsoleAppender extends AbstractAppender {
     private NotEnoughCrashesRewriter rewriter = null;
 
     public ConsoleAppender(final @NonNull LineReader lineReader) {
-        super("Console", null, PatternLayout.newBuilder().withPattern(JLineForMcDSrv.get().config().logPattern()).build(), false);
+        super(
+                "Console",
+                null,
+                PatternLayout.newBuilder().withPattern(JLineForMcDSrv.get().config().logPattern()).build(),
+                false,
+                new Property[0]
+        );
         this.lineReader = lineReader;
     }
 
