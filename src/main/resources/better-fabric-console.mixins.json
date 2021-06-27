@@ -1,9 +1,10 @@
 {
   "required": true,
   "minVersion": "0.8",
-  "package": "org.chrisoft.jline4mcdsrv.mixin",
+  "package": "xyz.jpenilla.betterfabricconsole.mixin",
   "compatibilityLevel": "JAVA_8",
   "mixins": [
+    "ServerGamePacketListenerImplMixin"
   ],
   "client": [
   ],

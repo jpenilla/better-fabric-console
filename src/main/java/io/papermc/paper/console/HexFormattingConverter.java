@@ -15,7 +15,7 @@ import org.apache.logging.log4j.core.pattern.PatternFormatter;
 import org.apache.logging.log4j.core.pattern.PatternParser;
 import org.apache.logging.log4j.util.PerformanceSensitive;
 import org.apache.logging.log4j.util.PropertiesUtil;
-import org.chrisoft.jline4mcdsrv.JLineForMcDSrv;
+import xyz.jpenilla.betterfabricconsole.BetterFabricConsole;
 
 /**
  * Modified version of Paper's HexFormattingConverter to work with Kyori '§#rrggbb' format
@@ -163,7 +163,7 @@ public final class HexFormattingConverter extends LogEventPatternConverter {
 
         Matcher matcher = NAMED_PATTERN.matcher(content);
         StringBuffer buffer = new StringBuffer();
-        final String[] ansiCodes = JLineForMcDSrv.get().config().useRGBforNamedTextColors() ? RGB_ANSI_CODES : ANSI_ANSI_CODES;
+        final String[] ansiCodes = BetterFabricConsole.get().config().useRGBforNamedTextColors() ? RGB_ANSI_CODES : ANSI_ANSI_CODES;
         while (matcher.find()) {
             int format = LOOKUP.indexOf(Character.toLowerCase(matcher.group().charAt(1)));
             if (format != -1) {

@@ -1,31 +1,30 @@
 {
   "schemaVersion": 1,
-  "id": "jline4mcdsrv",
-  "version": "${VERSION}",
-  "name": "${NAME}",
-  "description": "${DESCRIPTION}",
+  "id": "better-fabric-console",
+  "version": "${version}",
+  "name": "${name}",
+  "description": "${description}",
   "authors": [
-    "Chris Xiong",
     "jmp"
   ],
   "contact": {
-    "homepage": "https://github.com/jpenilla/jline4mcdsrv",
-    "sources": "https://github.com/jpenilla/jline4mcdsrv",
-    "issues": "https://github.com/jpenilla/jline4mcdsrv/issues"
+    "homepage": "${githubUrl}",
+    "sources": "${githubUrl}",
+    "issues": "${githubUrl}/issues"
   },
   "license": "MIT",
-  "icon": "assets/jline4mcdsrv/icon.png",
+  "icon": "assets/better-fabric-console/icon.png",
   "environment": "server",
   "entrypoints": {
     "main": [
-      "org.chrisoft.jline4mcdsrv.JLineForMcDSrv"
+      "xyz.jpenilla.betterfabricconsole.BetterFabricConsole"
     ]
   },
   "mixins": [
-    "jline4mcdsrv.mixins.json"
+    "better-fabric-console.mixins.json"
   ],
   "depends": {
-    "fabricloader": ">=0.7.4",
-    "minecraft": ">=1.16"
+    "fabricloader": ">=0.11",
+    "minecraft": ">=1.17"
   }
 }

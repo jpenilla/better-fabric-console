@@ -1,6 +1,6 @@
 root = true
 
-[{*.kts,*.kt}]
+[*]
 charset = utf-8
 indent_size = 2
 indent_style = space

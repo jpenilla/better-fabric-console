@@ -1,3 +1,12 @@
+dependencyResolutionManagement {
+  repositories {
+    mavenCentral()
+    maven("https://maven.fabricmc.net/")
+    maven("https://oss.sonatype.org/content/repositories/snapshots/")
+  }
+  repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
+}
+
 pluginManagement {
   repositories {
     gradlePluginPortal()
@@ -5,4 +14,8 @@ pluginManagement {
   }
 }
 
-rootProject.name = "jline4mcdsrv"
+plugins {
+  id("fabric-loom") version "0.8-SNAPSHOT"
+}
+
+rootProject.name = "better-fabric-console"
