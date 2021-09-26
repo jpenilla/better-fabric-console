@@ -1,10 +1,9 @@
 plugins {
-  id("org.cadixdev.licenser") version "0.6.1"
-  val indraVersion = "2.0.5"
+  val indraVersion = "2.0.6"
   id("net.kyori.indra") version indraVersion
   id("net.kyori.indra.checkstyle") version indraVersion
   id("net.kyori.indra.license-header") version indraVersion
-  id("fabric-loom")
+  id("quiet-fabric-loom")
   `maven-publish`
   `java-library`
 }
@@ -13,12 +12,12 @@ version = "1.0.0-SNAPSHOT"
 group = "xyz.jpenilla"
 description = "Server-side Fabric mod enhancing the console with tab completions, colored log output, command syntax highlighting, command history, and more."
 
-val minecraftVersion = "1.17"
+val minecraftVersion = "1.17.1"
 
 dependencies {
   minecraft("com.mojang", "minecraft", minecraftVersion)
   mappings(minecraft.officialMojangMappings())
-  modImplementation("net.fabricmc", "fabric-loader", "0.11.3")
+  modImplementation("net.fabricmc", "fabric-loader", "0.11.7")
 
   annotationProcessor("org.apache.logging.log4j", "log4j-core", "2.14.1")
   val jlineVersion = "3.20.0"
@@ -26,10 +25,10 @@ dependencies {
   implementation(include("org.jline", "jline-terminal-jansi", jlineVersion))
   implementation(include("org.fusesource.jansi", "jansi", "2.3.2"))
 
-  implementation(include("net.kyori", "adventure-text-serializer-legacy", "4.8.1"))
+  implementation(include("net.kyori", "adventure-text-serializer-legacy", "4.9.1"))
   modImplementation(include("net.kyori", "adventure-platform-fabric", "4.1.0-SNAPSHOT"))
   modImplementation(include("ca.stellardrift", "confabricate", "2.1.0"))
-  compileOnly("org.checkerframework", "checker-qual", "3.14.0")
+  compileOnly("org.checkerframework", "checker-qual", "3.18.0")
 }
 
 indra {

@@ -11,11 +11,12 @@ pluginManagement {
   repositories {
     gradlePluginPortal()
     maven("https://maven.fabricmc.net/")
+    maven("https://repo.jpenilla.xyz/snapshots/")
   }
 }
 
 plugins {
-  id("fabric-loom") version "0.8-SNAPSHOT"
+  id("quiet-fabric-loom") version "0.8-SNAPSHOT"
 }
 
 rootProject.name = "better-fabric-console"
