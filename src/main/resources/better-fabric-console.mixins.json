@@ -2,16 +2,16 @@
   "required": true,
   "minVersion": "0.8",
   "package": "xyz.jpenilla.betterfabricconsole.mixin",
-  "compatibilityLevel": "JAVA_8",
+  "compatibilityLevel": "JAVA_16",
   "mixins": [
-    "ServerGamePacketListenerImplMixin"
   ],
   "client": [
   ],
   "server": [
     "DedicatedServerConsoleThreadMixin",
     "DedicatedServerMixin",
-    "FabricServerAudiencesImplMixin"
+    "FabricServerAudiencesImplMixin",
+    "ServerGamePacketListenerImplMixin"
   ],
   "injectors": {
     "defaultRequire": 1

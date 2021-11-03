@@ -21,20 +21,18 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package xyz.jpenilla.betterfabricconsole;
+package xyz.jpenilla.betterfabricconsole.remap;
 
-import com.mojang.brigadier.StringReader;
 import org.checkerframework.checker.nullness.qual.NonNull;
+import org.checkerframework.framework.qual.DefaultQualifier;
 
-final class Util {
-  private Util() {
+@DefaultQualifier(NonNull.class)
+public final class Namespace {
+  private Namespace() {
   }
 
-  static @NonNull StringReader prepareStringReader(final @NonNull String buffer) {
-    final StringReader stringReader = new StringReader(buffer);
-    if (stringReader.canRead() && stringReader.peek() == '/') {
-      stringReader.skip();
-    }
-    return stringReader;
-  }
+  public static final String MOJANG = "mojang";
+  public static final String YARN = "named";
+  public static final String INTERMEDIARY = "intermediary";
+  public static final String OFFICIAL = "official";
 }

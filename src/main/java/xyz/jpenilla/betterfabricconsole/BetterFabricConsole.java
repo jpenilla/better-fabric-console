@@ -45,9 +45,13 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.core.config.plugins.util.PluginRegistry;
 import org.apache.logging.log4j.core.config.plugins.util.PluginType;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.spongepowered.configurate.CommentedConfigurationNode;
 import org.spongepowered.configurate.ConfigurateException;
 import org.spongepowered.configurate.reference.ValueReference;
+import xyz.jpenilla.betterfabricconsole.remap.MappingsDownloaderFactory;
+import xyz.jpenilla.betterfabricconsole.remap.RemapMode;
+import xyz.jpenilla.betterfabricconsole.remap.Remapper;
 
 import static net.kyori.adventure.text.Component.text;
 import static net.kyori.adventure.text.format.NamedTextColor.GRAY;
@@ -61,6 +65,7 @@ public final class BetterFabricConsole implements ModInitializer {
   private static BetterFabricConsole instance;
   private Config config;
   private ModContainer modContainer;
+  private @Nullable Remapper remapper;
 
   public BetterFabricConsole() {
     try {
@@ -110,6 +115,21 @@ public final class BetterFabricConsole implements ModInitializer {
       .orElseThrow(() -> new IllegalStateException("Could not find mod container for better-fabric-console"));
     this.loadModConfig();
     CommandRegistrationCallback.EVENT.register(this::registerCommands);
+
+    if (this.config.remapMode() != RemapMode.NONE) {
+      this.initRemapper();
+    }
+  }
+
+  private void initRemapper() {
+    if (FabricLoader.getInstance().isDevelopmentEnvironment()) {
+      LOGGER.info("Skipping Better Fabric Console mappings initialization, we are in a development environment (already mapped).");
+      return;
+    }
+
+    LOGGER.info("Initializing Better Fabric Console mappings...");
+    final MappingsDownloaderFactory downloaderFactory = new MappingsDownloaderFactory(FabricLoader.getInstance().getGameDir().resolve("better-fabric-console/mappings-cache"));
+    this.remapper = this.config().remapMode().createRemapper(downloaderFactory);
   }
 
   private void registerCommands(final CommandDispatcher<CommandSourceStack> dispatcher, final boolean dedicated) {
@@ -142,5 +162,9 @@ public final class BetterFabricConsole implements ModInitializer {
 
   public Config config() {
     return this.config;
+  }
+
+  public @Nullable Remapper remapper() {
+    return this.remapper;
   }
 }

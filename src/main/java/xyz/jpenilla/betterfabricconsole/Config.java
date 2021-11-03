@@ -24,10 +24,13 @@
 package xyz.jpenilla.betterfabricconsole;
 
 import org.checkerframework.checker.nullness.qual.NonNull;
+import org.checkerframework.framework.qual.DefaultQualifier;
 import org.spongepowered.configurate.objectmapping.ConfigSerializable;
 import org.spongepowered.configurate.objectmapping.meta.Comment;
+import xyz.jpenilla.betterfabricconsole.remap.RemapMode;
 
 @ConfigSerializable
+@DefaultQualifier(NonNull.class)
 public final class Config {
   /**
    * Mirrors {@link org.jline.utils.AttributedStyle} color constants.
@@ -56,28 +59,35 @@ public final class Config {
   @Comment("Log4j logger pattern. See https://logging.apache.org/log4j/2.x/manual/layouts.html#Patterns for documentation.")
   private String logPattern = "%highlight{[%d{HH:mm:ss} %level] [%t]: [%logger{1}]}{FATAL=red, ERROR=red, WARN=yellow, INFO=default, DEBUG=yellow, TRACE=blue} %paperMinecraftFormatting{%msg}%n";
 
-  public @NonNull String logPattern() {
+  public String logPattern() {
     return this.logPattern;
   }
 
   @Comment("Specify argument highlight colors, in order. Possible values: [BLACK, RED, GREEN, YELLOW, BLUE, MAGENTA, CYAN, WHITE]")
   private StyleColor[] highlightColors = {StyleColor.CYAN, StyleColor.YELLOW, StyleColor.GREEN, StyleColor.MAGENTA, /*GOLD on client*/StyleColor.BLUE};
 
-  public @NonNull StyleColor @NonNull [] highlightColors() {
+  public StyleColor[] highlightColors() {
     return this.highlightColors;
   }
 
   @Comment("If true, the RGB color code for NamedTextColors will be used in console. If false, NamedTextColors will use the ANSI color code counterpart, allowing for the console color scheme to effect them.")
-  private boolean useRGBforNamedTextColors = true;
+  private boolean useRgbForNamedTextColors = true;
 
   @Comment("Whether to log commands executed by players to console.")
   private boolean logPlayerExecutedCommands = true;
+
+  @Comment("Controls whether logger names and stacktraces should be left in intermediary mappings (NONE), remapped to Mojang mappings (MOJANG), or to Yarn mappings (YARN).")
+  private RemapMode remapMode = RemapMode.MOJANG;
+
+  public boolean useRgbForNamedTextColors() {
+    return this.useRgbForNamedTextColors;
+  }
 
   public boolean logPlayerExecutedCommands() {
     return this.logPlayerExecutedCommands;
   }
 
-  public boolean useRGBforNamedTextColors() {
-    return this.useRGBforNamedTextColors;
+  public RemapMode remapMode() {
+    return this.remapMode;
   }
 }

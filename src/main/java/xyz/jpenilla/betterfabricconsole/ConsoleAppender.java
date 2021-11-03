@@ -25,6 +25,7 @@ package xyz.jpenilla.betterfabricconsole;
 
 import org.apache.logging.log4j.core.LogEvent;
 import org.apache.logging.log4j.core.appender.AbstractAppender;
+import org.apache.logging.log4j.core.appender.rewrite.RewritePolicy;
 import org.apache.logging.log4j.core.config.Property;
 import org.apache.logging.log4j.core.layout.PatternLayout;
 import org.checkerframework.checker.nullness.qual.NonNull;
@@ -33,7 +34,7 @@ import org.jline.reader.LineReader;
 
 final class ConsoleAppender extends AbstractAppender {
   private final LineReader lineReader;
-  private NotEnoughCrashesRewriter rewriter = null;
+  private RewritePolicy rewriter = null;
 
   ConsoleAppender(final @NonNull LineReader lineReader) {
     super(
@@ -46,7 +47,7 @@ final class ConsoleAppender extends AbstractAppender {
     this.lineReader = lineReader;
   }
 
-  public void installRewriter(final @Nullable NotEnoughCrashesRewriter rewriter) {
+  public void installRewriter(final @Nullable RewritePolicy rewriter) {
     this.rewriter = rewriter;
   }
 

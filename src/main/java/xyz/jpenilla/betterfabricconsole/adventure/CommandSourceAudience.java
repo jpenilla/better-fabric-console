@@ -21,26 +21,35 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package xyz.jpenilla.betterfabricconsole.mixin;
+package xyz.jpenilla.betterfabricconsole.adventure;
 
 import net.kyori.adventure.audience.Audience;
+import net.kyori.adventure.audience.MessageType;
+import net.kyori.adventure.identity.Identity;
 import net.kyori.adventure.platform.fabric.FabricAudiences;
-import net.kyori.adventure.platform.fabric.impl.server.FabricServerAudiencesImpl;
+import net.kyori.adventure.text.Component;
 import net.minecraft.commands.CommandSource;
-import net.minecraft.server.dedicated.DedicatedServer;
-import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.injection.At;
-import org.spongepowered.asm.mixin.injection.Inject;
-import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
-import xyz.jpenilla.betterfabricconsole.adventure.CommandSourceAudience;
+import org.checkerframework.checker.nullness.qual.NonNull;
 
-@Mixin(value = FabricServerAudiencesImpl.class, remap = false)
-abstract class FabricServerAudiencesImplMixin {
-  // ew
-  @Inject(method = "audience(Lnet/minecraft/class_2165;)Lnet/kyori/adventure/audience/Audience;", at = @At("HEAD"), cancellable = true)
-  private void injectAudience(final CommandSource source, final CallbackInfoReturnable<Audience> cir) {
-    if (source instanceof DedicatedServer) {
-      cir.setReturnValue(new CommandSourceAudience(source, (FabricAudiences) this));
-    }
+/**
+ * copy pasta of a class from adventure-platform-fabric, because it's not visible and this is easy.
+ */
+public final class CommandSourceAudience implements Audience {
+  private final CommandSource output;
+  private final FabricAudiences serializer;
+
+  public CommandSourceAudience(final @NonNull CommandSource output, final @NonNull FabricAudiences serializer) {
+    this.output = output;
+    this.serializer = serializer;
+  }
+
+  @Override
+  public void sendMessage(final @NonNull Identity source, final @NonNull Component text, final @NonNull MessageType type) {
+    this.output.sendMessage(this.serializer.toNative(text), source.uuid());
+  }
+
+  @Override
+  public void sendActionBar(final @NonNull Component message) {
+    this.sendMessage(Identity.nil(), message);
   }
 }

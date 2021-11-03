@@ -36,6 +36,7 @@ import org.jline.reader.LineReader;
 import org.jline.utils.AttributedString;
 import org.jline.utils.AttributedStringBuilder;
 import org.jline.utils.AttributedStyle;
+import xyz.jpenilla.betterfabricconsole.util.Util;
 
 final class MinecraftCommandHighlighter implements Highlighter {
   private final CommandDispatcher<CommandSourceStack> dispatcher;

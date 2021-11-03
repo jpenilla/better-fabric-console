@@ -4,7 +4,6 @@ plugins {
   id("net.kyori.indra.checkstyle") version indraVersion
   id("net.kyori.indra.license-header") version indraVersion
   id("quiet-fabric-loom")
-  `maven-publish`
   `java-library`
 }
 
@@ -16,19 +15,24 @@ val minecraftVersion = "1.17.1"
 
 dependencies {
   minecraft("com.mojang", "minecraft", minecraftVersion)
-  mappings(minecraft.officialMojangMappings())
+  mappings(loom.officialMojangMappings())
   modImplementation("net.fabricmc", "fabric-loader", "0.11.7")
 
   annotationProcessor("org.apache.logging.log4j", "log4j-core", "2.14.1")
-  val jlineVersion = "3.20.0"
+
+  val jlineVersion = "3.21.0"
   implementation(include("org.jline", "jline", jlineVersion))
   implementation(include("org.jline", "jline-terminal-jansi", jlineVersion))
-  implementation(include("org.fusesource.jansi", "jansi", "2.3.2"))
 
-  implementation(include("net.kyori", "adventure-text-serializer-legacy", "4.9.1"))
+  implementation(include("org.fusesource.jansi", "jansi", "2.4.0"))
+
   modImplementation(include("net.kyori", "adventure-platform-fabric", "4.1.0-SNAPSHOT"))
+  implementation(include("net.kyori", "adventure-text-serializer-legacy", "4.9.3"))
+
   modImplementation(include("ca.stellardrift", "confabricate", "2.1.0"))
-  compileOnly("org.checkerframework", "checker-qual", "3.18.0")
+  compileOnly("org.checkerframework", "checker-qual", "3.19.0")
+
+  implementation(include("net.fabricmc", "mapping-io", "0.3.0"))
 }
 
 indra {

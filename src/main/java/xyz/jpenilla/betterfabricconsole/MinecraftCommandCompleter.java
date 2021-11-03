@@ -37,6 +37,7 @@ import org.jline.reader.Candidate;
 import org.jline.reader.Completer;
 import org.jline.reader.LineReader;
 import org.jline.reader.ParsedLine;
+import xyz.jpenilla.betterfabricconsole.util.Util;
 
 final class MinecraftCommandCompleter implements Completer {
   private final CommandDispatcher<CommandSourceStack> dispatcher;

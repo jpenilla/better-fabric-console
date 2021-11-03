@@ -34,6 +34,8 @@ import org.jline.reader.EndOfFileException;
 import org.jline.reader.LineReader;
 import org.jline.reader.LineReaderBuilder;
 import org.jline.reader.UserInterruptException;
+import xyz.jpenilla.betterfabricconsole.remap.Remapper;
+import xyz.jpenilla.betterfabricconsole.remap.RemappingRewriter;
 
 public final class ConsoleThread extends Thread {
   private static final String TERMINAL_PROMPT = "> ";
@@ -68,8 +70,10 @@ public final class ConsoleThread extends Thread {
     final LoggerContext loggerContext = (LoggerContext) LogManager.getContext(false);
     final LoggerConfig loggerConfig = loggerContext.getConfiguration().getLoggerConfig(logger.getName());
 
-    final NotEnoughCrashesRewriter rewriter = NotEnoughCrashesRewriter.createIfSupported(loggerContext, loggerConfig);
-    consoleAppender.installRewriter(rewriter);
+    final Remapper remapper = BetterFabricConsole.get().remapper();
+    if (remapper != null) {
+      consoleAppender.installRewriter(new RemappingRewriter(remapper));
+    }
 
     // replace SysOut appender with ConsoleAppender
     loggerConfig.removeAppender("SysOut");
