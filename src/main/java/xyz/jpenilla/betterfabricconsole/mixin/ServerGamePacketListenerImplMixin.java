@@ -25,8 +25,6 @@ package xyz.jpenilla.betterfabricconsole.mixin;
 
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.network.ServerGamePacketListenerImpl;
-import org.apache.logging.log4j.Logger;
-import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
@@ -36,14 +34,12 @@ import xyz.jpenilla.betterfabricconsole.BetterFabricConsole;
 
 @Mixin(ServerGamePacketListenerImpl.class)
 abstract class ServerGamePacketListenerImplMixin {
-  @Shadow @Final static Logger LOGGER;
-
   @Shadow public ServerPlayer player;
 
   @Inject(method = "handleCommand", at = @At("HEAD"))
   private void logExecutedCommand(final String string, final CallbackInfo ci) {
     if (BetterFabricConsole.get().config().logPlayerExecutedCommands()) {
-      LOGGER.info("{} issued server command: {}", this.player.getGameProfile().getName(), string);
+      BetterFabricConsole.LOGGER.info("{} issued server command: {}", this.player.getGameProfile().getName(), string);
     }
   }
 }

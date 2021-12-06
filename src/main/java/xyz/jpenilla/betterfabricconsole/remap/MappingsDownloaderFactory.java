@@ -50,7 +50,7 @@ import org.checkerframework.framework.qual.DefaultQualifier;
 @DefaultQualifier(NonNull.class)
 public final class MappingsDownloaderFactory {
   private static final Logger LOGGER = LogManager.getLogger();
-  private static final String MINECRAFT_VERSION = SharedConstants.getCurrentVersion().getName();
+  private static final String MINECRAFT_VERSION = SharedConstants.getCurrentVersion().getId();
   private static final String DATA_PATH = "data";
   private static final String MAPPINGS_PATH = "mappings";
   private static final DecimalFormat DECIMAL_FORMAT = new DecimalFormat("0.0000");
