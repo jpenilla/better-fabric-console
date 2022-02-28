@@ -36,6 +36,7 @@ import java.nio.channels.FileChannel;
 import java.nio.channels.ReadableByteChannel;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
 import java.text.DecimalFormat;
 import java.time.Duration;
 import java.util.Comparator;
@@ -218,7 +219,12 @@ public final class MappingsDownloaderFactory {
         final long lastModified = Files.getLastModifiedTime(yarnVersionsPath).toMillis();
         final Duration sinceModified = Duration.ofMillis(System.currentTimeMillis() - lastModified);
         if (sinceModified.compareTo(Duration.ofDays(7)) > 0) {
-          downloadFile(YARN_VERSIONS_URL, yarnVersionsPath);
+          try {
+            downloadFile(YARN_VERSIONS_URL, yarnVersionsPath);
+          } catch (final IOException ex) {
+            LOGGER.warn("Failed to update yarn version index", ex);
+            return false;
+          }
           return true;
         }
       }
@@ -241,19 +247,22 @@ public final class MappingsDownloaderFactory {
 
   private static void downloadFile(final String url, final Path dest) throws IOException {
     Files.createDirectories(dest.getParent());
-    Files.deleteIfExists(dest);
+
+    final Path tempDest = dest.resolveSibling(dest.getFileName().toString() + ".download.tmp");
+    Files.deleteIfExists(tempDest);
 
     LOGGER.info("Downloading " + url + "...");
     final long start = System.currentTimeMillis();
     try (
       final ReadableByteChannel downloadChannel = Channels.newChannel(new URL(url).openStream());
-      final FileChannel outChannel = new FileOutputStream(dest.toFile()).getChannel()
+      final FileChannel outChannel = new FileOutputStream(tempDest.toFile()).getChannel()
     ) {
       outChannel.transferFrom(downloadChannel, 0, Long.MAX_VALUE);
-      LOGGER.info("Done in {} seconds.", DECIMAL_FORMAT.format((System.currentTimeMillis() - start) / 1000.00D));
     } catch (final IOException ex) {
-      Files.deleteIfExists(dest);
+      Files.deleteIfExists(tempDest);
       throw ex;
     }
+    Files.move(tempDest, dest, StandardCopyOption.REPLACE_EXISTING);
+    LOGGER.info("Done in {} seconds.", DECIMAL_FORMAT.format((System.currentTimeMillis() - start) / 1000.00D));
   }
 }
