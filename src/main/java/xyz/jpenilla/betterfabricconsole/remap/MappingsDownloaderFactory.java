@@ -86,20 +86,35 @@ public final class MappingsDownloaderFactory {
       this.cache = cache;
     }
 
-    @Override
-    public void downloadMappings() throws IOException {
+    private record McManifestResult(boolean didDownload, JsonObject result) {
+    }
+
+    private McManifestResult mcManifest(final boolean forceDownload) throws IOException {
       final Path mcManifestPath = this.cache.resolve(MC_MANIFEST_PATH);
-      if (!Files.exists(mcManifestPath)) {
+      final boolean download = forceDownload || !Files.exists(mcManifestPath);
+      if (download) {
         downloadFile(MC_MANIFEST_URL, mcManifestPath);
       }
       final JsonObject mcManifest;
       try (final BufferedReader reader = Files.newBufferedReader(mcManifestPath)) {
         mcManifest = GSON.fromJson(reader, JsonObject.class);
       }
+      return new McManifestResult(download, mcManifest);
+    }
 
+    @Override
+    public void downloadMappings() throws IOException {
       final Path mcVersionManifestPath = this.cache.resolve(MC_VERSION_MANIFEST_PATH);
       if (!Files.exists(mcVersionManifestPath)) {
-        final String versionManifestUrl = findVersionManifestUrl(MINECRAFT_VERSION, mcManifest);
+        McManifestResult mcManifest = this.mcManifest(false);
+        @Nullable String versionManifestUrl = findVersionManifestUrl(MINECRAFT_VERSION, mcManifest.result());
+        if (versionManifestUrl == null && !mcManifest.didDownload()) {
+          mcManifest = this.mcManifest(true);
+          versionManifestUrl = findVersionManifestUrl(MINECRAFT_VERSION, mcManifest.result());
+        }
+        if (versionManifestUrl == null) {
+          throw new IllegalArgumentException("Could not find version manifest for Minecraft version '" + MINECRAFT_VERSION + "' in Minecraft manifest.");
+        }
         downloadFile(versionManifestUrl, mcVersionManifestPath);
       }
       final JsonObject mcVersionManifest;
@@ -138,14 +153,12 @@ public final class MappingsDownloaderFactory {
       return this.cache.resolve(INTERMEDIARY_MAPPINGS_PATH);
     }
 
-    private static String findVersionManifestUrl(final String minecraftVersion, final JsonObject mcManifest) {
+    private static @Nullable String findVersionManifestUrl(final String minecraftVersion, final JsonObject mcManifest) {
       return StreamSupport.stream(mcManifest.get("versions").getAsJsonArray().spliterator(), false)
         .filter(version -> version.getAsJsonObject().get("id").getAsString().equals(minecraftVersion))
         .findFirst()
-        .orElseThrow(() -> new IllegalArgumentException("Could not find version manifest for Minecraft version '" + minecraftVersion + "' in Minecraft manifest."))
-        .getAsJsonObject()
-        .get("url")
-        .getAsString();
+        .map(v -> v.getAsJsonObject().get("url").getAsString())
+        .orElse(null);
     }
   }
 
