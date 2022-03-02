@@ -31,18 +31,16 @@ import java.util.UUID;
 import net.kyori.adventure.platform.fabric.FabricServerAudiences;
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import net.minecraft.DefaultUncaughtExceptionHandler;
-import net.minecraft.core.RegistryAccess;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.ServerResources;
+import net.minecraft.server.WorldStem;
 import net.minecraft.server.dedicated.DedicatedServer;
 import net.minecraft.server.level.progress.ChunkProgressListenerFactory;
 import net.minecraft.server.packs.repository.PackRepository;
 import net.minecraft.server.players.GameProfileCache;
 import net.minecraft.world.level.storage.LevelStorageSource;
-import net.minecraft.world.level.storage.WorldData;
-import org.apache.logging.log4j.Logger;
 import org.checkerframework.checker.nullness.qual.NonNull;
+import org.slf4j.Logger;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -64,8 +62,8 @@ abstract class DedicatedServerMixin extends MinecraftServer {
     .hexCharacter(LegacyComponentSerializer.HEX_CHAR)
     .build();
 
-  DedicatedServerMixin(final Thread thread, final RegistryAccess.RegistryHolder registryHolder, final LevelStorageSource.LevelStorageAccess levelStorageAccess, final WorldData worldData, final PackRepository packRepository, final Proxy proxy, final DataFixer dataFixer, final ServerResources serverResources, final MinecraftSessionService minecraftSessionService, final GameProfileRepository gameProfileRepository, final GameProfileCache gameProfileCache, final ChunkProgressListenerFactory chunkProgressListenerFactory) {
-    super(thread, registryHolder, levelStorageAccess, worldData, packRepository, proxy, dataFixer, serverResources, minecraftSessionService, gameProfileRepository, gameProfileCache, chunkProgressListenerFactory);
+  DedicatedServerMixin(final Thread thread, final LevelStorageSource.LevelStorageAccess levelStorageAccess, final PackRepository packRepository, final WorldStem worldStem, final Proxy proxy, final DataFixer dataFixer, final MinecraftSessionService minecraftSessionService, final GameProfileRepository gameProfileRepository, final GameProfileCache gameProfileCache, final ChunkProgressListenerFactory chunkProgressListenerFactory) {
+    super(thread, levelStorageAccess, packRepository, worldStem, proxy, dataFixer, minecraftSessionService, gameProfileRepository, gameProfileCache, chunkProgressListenerFactory);
   }
 
   @Inject(method = "initServer", at = @At(value = "HEAD"))

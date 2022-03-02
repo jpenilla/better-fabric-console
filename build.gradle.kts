@@ -10,7 +10,7 @@ version = "1.0.1-SNAPSHOT"
 group = "xyz.jpenilla"
 description = "Server-side Fabric mod enhancing the console with tab completions, colored log output, command syntax highlighting, command history, and more."
 
-val minecraftVersion = "1.18.1"
+val minecraftVersion = "1.18.2"
 
 dependencies {
   minecraft("com.mojang", "minecraft", minecraftVersion)
@@ -25,11 +25,11 @@ dependencies {
 
   implementation(include("org.fusesource.jansi", "jansi", "2.4.0"))
 
-  modImplementation(include("net.kyori", "adventure-platform-fabric", "5.0.0"))
-  implementation(include("net.kyori", "adventure-text-serializer-legacy", "4.9.3"))
+  modImplementation(include("net.kyori", "adventure-platform-fabric", "5.2.0"))
+  implementation(include("net.kyori", "adventure-text-serializer-legacy", "4.10.0"))
 
-  modImplementation(include("ca.stellardrift", "confabricate", "2.1.0"))
-  compileOnly("org.checkerframework", "checker-qual", "3.21.2")
+  modImplementation(include("ca.stellardrift", "confabricate", "3.0.0-SNAPSHOT"))
+  compileOnly("org.checkerframework", "checker-qual", "3.21.3")
 
   implementation(include("net.fabricmc", "mapping-io", "0.3.0"))
 }
