@@ -205,7 +205,11 @@ public final class MappingsDownloaderFactory {
       try (final BufferedReader reader = Files.newBufferedReader(yarnVersionsPath)) {
         yarnVersions = GSON.fromJson(reader, JsonObject.class);
       }
-      return StreamSupport.stream(yarnVersions.get(MINECRAFT_VERSION).getAsJsonArray().spliterator(), false)
+      final JsonElement element = yarnVersions.get(MINECRAFT_VERSION);
+      if (element == null) {
+        return null;
+      }
+      return StreamSupport.stream(element.getAsJsonArray().spliterator(), false)
         .map(JsonElement::getAsInt)
         .max(Comparator.naturalOrder())
         .orElse(null);
