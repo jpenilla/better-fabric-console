@@ -6,7 +6,7 @@ plugins {
   id("quiet-fabric-loom")
 }
 
-version = "1.0.2"
+version = "1.0.3-SNAPSHOT"
 group = "xyz.jpenilla"
 description = "Server-side Fabric mod enhancing the console with tab completions, colored log output, command syntax highlighting, command history, and more."
 
