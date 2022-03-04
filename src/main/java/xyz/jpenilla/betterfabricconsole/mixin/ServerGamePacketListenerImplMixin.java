@@ -23,23 +23,20 @@
  */
 package xyz.jpenilla.betterfabricconsole.mixin;
 
-import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.network.ServerGamePacketListenerImpl;
+import net.minecraft.server.network.ServerPlayerConnection;
 import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import xyz.jpenilla.betterfabricconsole.BetterFabricConsole;
 
 @Mixin(ServerGamePacketListenerImpl.class)
-abstract class ServerGamePacketListenerImplMixin {
-  @Shadow public ServerPlayer player;
-
+abstract class ServerGamePacketListenerImplMixin implements ServerPlayerConnection {
   @Inject(method = "handleCommand", at = @At("HEAD"))
   private void logExecutedCommand(final String string, final CallbackInfo ci) {
     if (BetterFabricConsole.get().config().logPlayerExecutedCommands()) {
-      BetterFabricConsole.LOGGER.info("{} issued server command: {}", this.player.getGameProfile().getName(), string);
+      BetterFabricConsole.LOGGER.info("{} issued server command: {}", this.getPlayer().getGameProfile().getName(), string);
     }
   }
 }
