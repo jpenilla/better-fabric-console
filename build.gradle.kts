@@ -26,7 +26,7 @@ dependencies {
   implementation(include("org.fusesource.jansi", "jansi", "2.4.0"))
 
   modImplementation(include("net.kyori", "adventure-platform-fabric", "5.2.0"))
-  implementation(include("net.kyori", "adventure-text-serializer-legacy", "4.10.0"))
+  implementation(include("net.kyori", "adventure-text-serializer-legacy", "4.10.1"))
 
   modImplementation(include("ca.stellardrift", "confabricate", "3.0.0-SNAPSHOT"))
   compileOnly("org.checkerframework", "checker-qual", "3.21.3")
