@@ -29,7 +29,7 @@ dependencies {
   implementation(include("net.kyori", "adventure-text-serializer-legacy", "4.10.1"))
 
   modImplementation(include("ca.stellardrift", "confabricate", "3.0.0-SNAPSHOT"))
-  compileOnly("org.checkerframework", "checker-qual", "3.21.3")
+  compileOnly("org.checkerframework", "checker-qual", "3.21.4")
 
   implementation(include("net.fabricmc", "mapping-io", "0.3.0"))
 }
