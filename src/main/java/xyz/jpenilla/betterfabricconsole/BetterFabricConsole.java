@@ -36,12 +36,15 @@ import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.command.v1.CommandRegistrationCallback;
+import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import net.fabricmc.loader.api.FabricLoader;
 import net.fabricmc.loader.api.ModContainer;
 import net.kyori.adventure.audience.Audience;
 import net.kyori.adventure.platform.fabric.FabricServerAudiences;
 import net.kyori.adventure.text.format.TextColor;
+import net.minecraft.DefaultUncaughtExceptionHandler;
 import net.minecraft.commands.CommandSourceStack;
+import net.minecraft.server.dedicated.DedicatedServer;
 import org.apache.logging.log4j.core.config.plugins.util.PluginRegistry;
 import org.apache.logging.log4j.core.config.plugins.util.PluginType;
 import org.checkerframework.checker.nullness.qual.Nullable;
@@ -65,7 +68,7 @@ public final class BetterFabricConsole implements ModInitializer {
   private static BetterFabricConsole instance;
   private Config config;
   private ModContainer modContainer;
-  private @Nullable Remapper remapper;
+  private volatile @Nullable DedicatedServer server;
 
   public BetterFabricConsole() {
     try {
@@ -113,23 +116,38 @@ public final class BetterFabricConsole implements ModInitializer {
     instance = this;
     this.modContainer = FabricLoader.getInstance().getModContainer("better-fabric-console")
       .orElseThrow(() -> new IllegalStateException("Could not find mod container for better-fabric-console"));
-    this.loadModConfig();
-    CommandRegistrationCallback.EVENT.register(this::registerCommands);
 
-    if (this.config.remapMode() != RemapMode.NONE) {
-      this.initRemapper();
-    }
+    this.loadModConfig();
+
+    CommandRegistrationCallback.EVENT.register(this::registerCommands);
+    ServerLifecycleEvents.SERVER_STARTING.register(server -> this.server = (DedicatedServer) server);
+    ServerLifecycleEvents.SERVER_STOPPED.register(server -> this.server = null);
+
+    final @Nullable Remapper remapper = this.createRemapper();
+    this.initConsoleThread(remapper);
   }
 
-  private void initRemapper() {
+  private void initConsoleThread(final @Nullable Remapper remapper) {
+    BetterFabricConsole.LOGGER.info("Initializing Better Fabric Console console thread...");
+    final ConsoleThread consoleThread = new ConsoleThread(() -> this.server);
+    consoleThread.setDaemon(true);
+    consoleThread.setUncaughtExceptionHandler(new DefaultUncaughtExceptionHandler(LOGGER));
+    consoleThread.init(remapper);
+    consoleThread.start();
+  }
+
+  private @Nullable Remapper createRemapper() {
     if (FabricLoader.getInstance().isDevelopmentEnvironment()) {
       LOGGER.info("Skipping Better Fabric Console mappings initialization, we are in a development environment (already mapped).");
-      return;
+      return null;
+    }
+    if (this.config.remapMode() == RemapMode.NONE) {
+      return null;
     }
 
     LOGGER.info("Initializing Better Fabric Console mappings...");
     final MappingsDownloaderFactory downloaderFactory = new MappingsDownloaderFactory(FabricLoader.getInstance().getGameDir().resolve("better-fabric-console/mappings-cache"));
-    this.remapper = this.config().remapMode().createRemapper(downloaderFactory);
+    return this.config.remapMode().createRemapper(downloaderFactory);
   }
 
   private void registerCommands(final CommandDispatcher<CommandSourceStack> dispatcher, final boolean dedicated) {
@@ -162,9 +180,5 @@ public final class BetterFabricConsole implements ModInitializer {
 
   public Config config() {
     return this.config;
-  }
-
-  public @Nullable Remapper remapper() {
-    return this.remapper;
   }
 }

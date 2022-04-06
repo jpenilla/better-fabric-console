@@ -24,12 +24,15 @@
 package xyz.jpenilla.betterfabricconsole;
 
 import java.nio.file.Paths;
+import java.util.function.Supplier;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.dedicated.DedicatedServer;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.core.Logger;
 import org.apache.logging.log4j.core.LoggerContext;
 import org.apache.logging.log4j.core.config.LoggerConfig;
 import org.checkerframework.checker.nullness.qual.NonNull;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.jline.reader.EndOfFileException;
 import org.jline.reader.LineReader;
 import org.jline.reader.LineReaderBuilder;
@@ -41,10 +44,10 @@ public final class ConsoleThread extends Thread {
   private static final String TERMINAL_PROMPT = "> ";
   private static final String STOP_COMMAND = "stop";
 
-  private final DedicatedServer server;
+  private final Supplier<@Nullable DedicatedServer> server;
   private final LineReader lineReader;
 
-  public ConsoleThread(final @NonNull DedicatedServer server) {
+  public ConsoleThread(final Supplier<@Nullable DedicatedServer> server) {
     super("Console thread");
     this.server = server;
     this.lineReader = this.buildLineReader();
@@ -54,15 +57,15 @@ public final class ConsoleThread extends Thread {
     return LineReaderBuilder.builder()
       .appName("Fabric Dedicated Server")
       .variable(LineReader.HISTORY_FILE, Paths.get(".console_history"))
-      .completer(new MinecraftCommandCompleter(this.server.getCommands().getDispatcher(), this.server.createCommandSourceStack()))
-      .highlighter(new MinecraftCommandHighlighter(this.server.getCommands().getDispatcher(), this.server.createCommandSourceStack()))
+      .completer(new MinecraftCommandCompleter(this.server))
+      .highlighter(new MinecraftCommandHighlighter(this.server))
       .option(LineReader.Option.INSERT_TAB, false)
       .option(LineReader.Option.DISABLE_EVENT_EXPANSION, true)
       .option(LineReader.Option.COMPLETE_IN_WORD, true)
       .build();
   }
 
-  public void init() {
+  public void init(final @Nullable Remapper remapper) {
     final ConsoleAppender consoleAppender = new ConsoleAppender(this.lineReader);
     consoleAppender.start();
 
@@ -70,7 +73,6 @@ public final class ConsoleThread extends Thread {
     final LoggerContext loggerContext = (LoggerContext) LogManager.getContext(false);
     final LoggerConfig loggerConfig = loggerContext.getConfiguration().getLoggerConfig(logger.getName());
 
-    final Remapper remapper = BetterFabricConsole.get().remapper();
     if (remapper != null) {
       consoleAppender.installRewriter(new RemappingRewriter(remapper));
     }
@@ -87,23 +89,27 @@ public final class ConsoleThread extends Thread {
     this.acceptInput();
   }
 
-  private boolean isRunning() {
-    return !this.server.isStopped() && this.server.isRunning();
+  private static boolean isRunning(final MinecraftServer server) {
+    return !server.isStopped() && server.isRunning();
   }
 
   private void acceptInput() {
-    while (this.isRunning()) {
+    @Nullable DedicatedServer server = null;
+    while (server == null) {
+      server = this.server.get();
+    }
+    while (isRunning(server)) {
       try {
         final String input = this.lineReader.readLine(TERMINAL_PROMPT).trim();
         if (input.isEmpty()) {
           continue;
         }
-        this.server.handleConsoleInput(input, this.server.createCommandSourceStack());
+        server.handleConsoleInput(input, server.createCommandSourceStack());
         if (input.equals(STOP_COMMAND)) {
           break;
         }
       } catch (final EndOfFileException | UserInterruptException ex) {
-        this.server.handleConsoleInput(STOP_COMMAND, this.server.createCommandSourceStack());
+        server.handleConsoleInput(STOP_COMMAND, server.createCommandSourceStack());
         break;
       }
     }

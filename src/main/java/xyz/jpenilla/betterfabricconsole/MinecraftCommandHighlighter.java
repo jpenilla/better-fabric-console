@@ -23,14 +23,16 @@
  */
 package xyz.jpenilla.betterfabricconsole;
 
-import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.ParseResults;
 import com.mojang.brigadier.StringReader;
 import com.mojang.brigadier.context.ParsedCommandNode;
 import com.mojang.brigadier.tree.LiteralCommandNode;
+import java.util.function.Supplier;
 import java.util.regex.Pattern;
 import net.minecraft.commands.CommandSourceStack;
+import net.minecraft.server.MinecraftServer;
 import org.checkerframework.checker.nullness.qual.NonNull;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.jline.reader.Highlighter;
 import org.jline.reader.LineReader;
 import org.jline.utils.AttributedString;
@@ -39,20 +41,24 @@ import org.jline.utils.AttributedStyle;
 import xyz.jpenilla.betterfabricconsole.util.Util;
 
 final class MinecraftCommandHighlighter implements Highlighter {
-  private final CommandDispatcher<CommandSourceStack> dispatcher;
-  private final CommandSourceStack commandSourceStack;
   private final Config.StyleColor[] colors = BetterFabricConsole.get().config().highlightColors();
+  private final Supplier<@Nullable ? extends MinecraftServer> server;
 
-  MinecraftCommandHighlighter(final @NonNull CommandDispatcher<CommandSourceStack> dispatcher, final @NonNull CommandSourceStack commandSourceStack) {
-    this.dispatcher = dispatcher;
-    this.commandSourceStack = commandSourceStack;
+  MinecraftCommandHighlighter(final Supplier<@Nullable ? extends MinecraftServer> server) {
+    this.server = server;
   }
 
   @Override
   public AttributedString highlight(final @NonNull LineReader reader, final @NonNull String buffer) {
+    final @Nullable MinecraftServer server = this.server.get();
+    if (server == null) {
+      final AttributedStringBuilder builder = new AttributedStringBuilder();
+      builder.append(buffer, AttributedStyle.DEFAULT.foreground(AttributedStyle.RED));
+      return builder.toAttributedString();
+    }
     final AttributedStringBuilder builder = new AttributedStringBuilder();
     final StringReader stringReader = Util.prepareStringReader(buffer);
-    final ParseResults<CommandSourceStack> results = this.dispatcher.parse(stringReader, this.commandSourceStack);
+    final ParseResults<CommandSourceStack> results = server.getCommands().getDispatcher().parse(stringReader, server.createCommandSourceStack());
     int pos = 0;
     if (buffer.startsWith("/")) {
       builder.append("/", AttributedStyle.DEFAULT);

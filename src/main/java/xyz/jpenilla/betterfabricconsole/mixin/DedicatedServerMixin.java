@@ -30,7 +30,6 @@ import java.net.Proxy;
 import java.util.UUID;
 import net.kyori.adventure.platform.fabric.FabricServerAudiences;
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
-import net.minecraft.DefaultUncaughtExceptionHandler;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.WorldStem;
@@ -44,11 +43,6 @@ import org.slf4j.Logger;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
-import org.spongepowered.asm.mixin.injection.At;
-import org.spongepowered.asm.mixin.injection.Inject;
-import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
-import xyz.jpenilla.betterfabricconsole.BetterFabricConsole;
-import xyz.jpenilla.betterfabricconsole.ConsoleThread;
 
 @Mixin(DedicatedServer.class)
 abstract class DedicatedServerMixin extends MinecraftServer {
@@ -64,16 +58,6 @@ abstract class DedicatedServerMixin extends MinecraftServer {
 
   DedicatedServerMixin(final Thread thread, final LevelStorageSource.LevelStorageAccess levelStorageAccess, final PackRepository packRepository, final WorldStem worldStem, final Proxy proxy, final DataFixer dataFixer, final MinecraftSessionService minecraftSessionService, final GameProfileRepository gameProfileRepository, final GameProfileCache gameProfileCache, final ChunkProgressListenerFactory chunkProgressListenerFactory) {
     super(thread, levelStorageAccess, packRepository, worldStem, proxy, dataFixer, minecraftSessionService, gameProfileRepository, gameProfileCache, chunkProgressListenerFactory);
-  }
-
-  @Inject(method = "initServer", at = @At(value = "HEAD"))
-  private void injectInitServer(final @NonNull CallbackInfoReturnable<Boolean> info) {
-    BetterFabricConsole.LOGGER.info("Initializing Better Fabric Console console thread...");
-    final ConsoleThread consoleThread = new ConsoleThread((DedicatedServer) (Object) this);
-    consoleThread.setDaemon(true);
-    consoleThread.setUncaughtExceptionHandler(new DefaultUncaughtExceptionHandler(LOGGER));
-    consoleThread.init();
-    consoleThread.start();
   }
 
   @Override

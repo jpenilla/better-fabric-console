@@ -23,7 +23,6 @@
  */
 package xyz.jpenilla.betterfabricconsole;
 
-import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.Message;
 import com.mojang.brigadier.ParseResults;
 import com.mojang.brigadier.StringReader;
@@ -31,8 +30,11 @@ import com.mojang.brigadier.suggestion.Suggestion;
 import com.mojang.brigadier.suggestion.Suggestions;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
+import java.util.function.Supplier;
 import net.minecraft.commands.CommandSourceStack;
+import net.minecraft.server.MinecraftServer;
 import org.checkerframework.checker.nullness.qual.NonNull;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.jline.reader.Candidate;
 import org.jline.reader.Completer;
 import org.jline.reader.LineReader;
@@ -40,19 +42,21 @@ import org.jline.reader.ParsedLine;
 import xyz.jpenilla.betterfabricconsole.util.Util;
 
 final class MinecraftCommandCompleter implements Completer {
-  private final CommandDispatcher<CommandSourceStack> dispatcher;
-  private final CommandSourceStack commandSourceStack;
+  private final Supplier<@Nullable ? extends MinecraftServer> server;
 
-  MinecraftCommandCompleter(final @NonNull CommandDispatcher<CommandSourceStack> dispatcher, final @NonNull CommandSourceStack commandSourceStack) {
-    this.dispatcher = dispatcher;
-    this.commandSourceStack = commandSourceStack;
+  MinecraftCommandCompleter(final Supplier<@Nullable ? extends MinecraftServer> server) {
+    this.server = server;
   }
 
   @Override
   public void complete(final @NonNull LineReader reader, final @NonNull ParsedLine line, final @NonNull List<@NonNull Candidate> candidates) {
+    final @Nullable MinecraftServer server = this.server.get();
+    if (server == null) {
+      return;
+    }
     final StringReader stringReader = Util.prepareStringReader(line.line());
-    final ParseResults<CommandSourceStack> results = this.dispatcher.parse(stringReader, this.commandSourceStack);
-    final CompletableFuture<Suggestions> suggestionsFuture = this.dispatcher.getCompletionSuggestions(results, line.cursor());
+    final ParseResults<CommandSourceStack> results = server.getCommands().getDispatcher().parse(stringReader, server.createCommandSourceStack());
+    final CompletableFuture<Suggestions> suggestionsFuture = server.getCommands().getDispatcher().getCompletionSuggestions(results, line.cursor());
     final Suggestions suggestions = suggestionsFuture.join();
 
     for (final Suggestion suggestion : suggestions.getList()) {
