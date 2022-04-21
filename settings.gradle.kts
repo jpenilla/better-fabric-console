@@ -2,7 +2,9 @@ dependencyResolutionManagement {
   repositories {
     mavenCentral()
     maven("https://maven.fabricmc.net/")
-    maven("https://oss.sonatype.org/content/repositories/snapshots/")
+    maven("https://oss.sonatype.org/content/repositories/snapshots/") {
+      mavenContent { snapshotsOnly() }
+    }
   }
   repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
 }
