@@ -19,7 +19,7 @@ pluginManagement {
 }
 
 plugins {
-  id("quiet-fabric-loom") version "0.11-SNAPSHOT"
+  id("quiet-fabric-loom") version "0.12-SNAPSHOT"
 }
 
 rootProject.name = "better-fabric-console"
