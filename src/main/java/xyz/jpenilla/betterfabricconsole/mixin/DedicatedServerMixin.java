@@ -23,29 +23,29 @@
  */
 package xyz.jpenilla.betterfabricconsole.mixin;
 
-import com.mojang.authlib.GameProfileRepository;
-import com.mojang.authlib.minecraft.MinecraftSessionService;
 import com.mojang.datafixers.DataFixer;
 import java.net.Proxy;
-import java.util.UUID;
 import net.kyori.adventure.platform.fabric.FabricServerAudiences;
+import net.kyori.adventure.text.TextComponent;
+import net.kyori.adventure.text.serializer.ComponentSerializer;
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.Services;
 import net.minecraft.server.WorldStem;
 import net.minecraft.server.dedicated.DedicatedServer;
 import net.minecraft.server.level.progress.ChunkProgressListenerFactory;
 import net.minecraft.server.packs.repository.PackRepository;
-import net.minecraft.server.players.GameProfileCache;
 import net.minecraft.world.level.storage.LevelStorageSource;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.slf4j.Logger;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
+import xyz.jpenilla.betterfabricconsole.adventure.LoggingComponentSerializerHolder;
 
 @Mixin(DedicatedServer.class)
-abstract class DedicatedServerMixin extends MinecraftServer {
+abstract class DedicatedServerMixin extends MinecraftServer implements LoggingComponentSerializerHolder {
   @Final @Shadow static Logger LOGGER;
 
   private final FabricServerAudiences audiences = FabricServerAudiences.of(this);
@@ -56,12 +56,17 @@ abstract class DedicatedServerMixin extends MinecraftServer {
     .hexCharacter(LegacyComponentSerializer.HEX_CHAR)
     .build();
 
-  DedicatedServerMixin(final Thread thread, final LevelStorageSource.LevelStorageAccess levelStorageAccess, final PackRepository packRepository, final WorldStem worldStem, final Proxy proxy, final DataFixer dataFixer, final MinecraftSessionService minecraftSessionService, final GameProfileRepository gameProfileRepository, final GameProfileCache gameProfileCache, final ChunkProgressListenerFactory chunkProgressListenerFactory) {
-    super(thread, levelStorageAccess, packRepository, worldStem, proxy, dataFixer, minecraftSessionService, gameProfileRepository, gameProfileCache, chunkProgressListenerFactory);
+  DedicatedServerMixin(final Thread thread, final LevelStorageSource.LevelStorageAccess levelStorageAccess, final PackRepository packRepository, final WorldStem worldStem, final Proxy proxy, final DataFixer dataFixer, final Services services, final ChunkProgressListenerFactory chunkProgressListenerFactory) {
+    super(thread, levelStorageAccess, packRepository, worldStem, proxy, dataFixer, services, chunkProgressListenerFactory);
   }
 
   @Override
-  public void sendMessage(final @NonNull Component component, final @NonNull UUID identity) {
-    LOGGER.info(this.legacySerializer.serialize(this.audiences.toAdventure(component)));
+  public ComponentSerializer<net.kyori.adventure.text.Component, TextComponent, String> loggingComponentSerializer() {
+    return this.legacySerializer;
+  }
+
+  @Override
+  public void sendSystemMessage(final @NonNull Component component) {
+    LOGGER.info(this.legacySerializer.serialize(component.asComponent()));
   }
 }

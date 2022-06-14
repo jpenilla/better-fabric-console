@@ -23,34 +23,28 @@
  */
 package xyz.jpenilla.betterfabricconsole.mixin;
 
-import net.minecraft.network.protocol.game.ServerboundChatCommandPacket;
-import net.minecraft.server.network.ServerGamePacketListenerImpl;
-import net.minecraft.server.network.ServerPlayerConnection;
+import java.util.Locale;
+import net.kyori.adventure.platform.fabric.impl.service.FabricComponentLoggerProvider;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.TextComponent;
+import net.kyori.adventure.text.serializer.ComponentSerializer;
+import net.kyori.adventure.translation.GlobalTranslator;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
-import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import xyz.jpenilla.betterfabricconsole.BetterFabricConsole;
 
-@Mixin(ServerGamePacketListenerImpl.class)
-abstract class ServerGamePacketListenerImplMixin implements ServerPlayerConnection {
-  @Inject(
-    method = "handleChatCommand",
-    at = {
-      @At(
-        value = "INVOKE",
-        target = "Lnet/minecraft/server/network/ServerGamePacketListenerImpl;disconnect(Lnet/minecraft/network/chat/Component;)V"
-      ),
-      @At(
-        value = "INVOKE",
-        target = "Lnet/minecraft/network/protocol/PacketUtils;ensureRunningOnSameThread(Lnet/minecraft/network/protocol/Packet;Lnet/minecraft/network/PacketListener;Lnet/minecraft/server/level/ServerLevel;)V",
-        shift = At.Shift.AFTER
-      )
+@Mixin(value = FabricComponentLoggerProvider.class, remap = false)
+abstract class FabricComponentLoggerProviderMixin {
+  @Inject(method = "serialize", at = @At(value = "HEAD"), cancellable = true)
+  private void formattedLogString(final Component message, final CallbackInfoReturnable<String> cir) {
+    final @Nullable ComponentSerializer<Component, TextComponent, String> serializer = BetterFabricConsole.get().loggingComponentSerializer();
+    if (serializer == null) {
+      return;
     }
-  )
-  private void logExecutedCommand(final ServerboundChatCommandPacket packet, final CallbackInfo ci) {
-    if (BetterFabricConsole.get().config().logPlayerExecutedCommands()) {
-      BetterFabricConsole.LOGGER.info("{} issued server command: /{}", this.getPlayer().getGameProfile().getName(), packet.command());
-    }
+    final Component rendered = GlobalTranslator.render(message, Locale.getDefault());
+    cir.setReturnValue(serializer.serialize(rendered));
   }
 }

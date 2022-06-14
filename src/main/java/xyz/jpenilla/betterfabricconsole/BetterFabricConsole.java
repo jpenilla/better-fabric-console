@@ -41,7 +41,10 @@ import net.fabricmc.loader.api.FabricLoader;
 import net.fabricmc.loader.api.ModContainer;
 import net.kyori.adventure.audience.Audience;
 import net.kyori.adventure.platform.fabric.FabricServerAudiences;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.TextComponent;
 import net.kyori.adventure.text.format.TextColor;
+import net.kyori.adventure.text.serializer.ComponentSerializer;
 import net.minecraft.DefaultUncaughtExceptionHandler;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.server.dedicated.DedicatedServer;
@@ -52,6 +55,7 @@ import org.slf4j.Logger;
 import org.spongepowered.configurate.CommentedConfigurationNode;
 import org.spongepowered.configurate.ConfigurateException;
 import org.spongepowered.configurate.reference.ValueReference;
+import xyz.jpenilla.betterfabricconsole.adventure.LoggingComponentSerializerHolder;
 import xyz.jpenilla.betterfabricconsole.remap.MappingsDownloaderFactory;
 import xyz.jpenilla.betterfabricconsole.remap.RemapMode;
 import xyz.jpenilla.betterfabricconsole.remap.Remapper;
@@ -180,5 +184,12 @@ public final class BetterFabricConsole implements ModInitializer {
 
   public Config config() {
     return this.config;
+  }
+
+  public @Nullable ComponentSerializer<Component, TextComponent, String> loggingComponentSerializer() {
+    if (this.server == null) {
+      return null;
+    }
+    return ((LoggingComponentSerializerHolder) this.server).loggingComponentSerializer();
   }
 }
