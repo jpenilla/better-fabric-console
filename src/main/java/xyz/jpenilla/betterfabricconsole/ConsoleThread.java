@@ -33,6 +33,7 @@ import org.apache.logging.log4j.core.LoggerContext;
 import org.apache.logging.log4j.core.config.LoggerConfig;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
+import org.checkerframework.framework.qual.DefaultQualifier;
 import org.jline.reader.EndOfFileException;
 import org.jline.reader.LineReader;
 import org.jline.reader.LineReaderBuilder;
@@ -40,6 +41,7 @@ import org.jline.reader.UserInterruptException;
 import xyz.jpenilla.betterfabricconsole.remap.Remapper;
 import xyz.jpenilla.betterfabricconsole.remap.RemappingRewriter;
 
+@DefaultQualifier(NonNull.class)
 public final class ConsoleThread extends Thread {
   private static final String TERMINAL_PROMPT = "> ";
   private static final String STOP_COMMAND = "stop";

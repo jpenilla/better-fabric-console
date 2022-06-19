@@ -36,8 +36,12 @@ import xyz.jpenilla.betterfabricconsole.adventure.CommandSourceAudience;
 
 @Mixin(value = FabricServerAudiencesImpl.class, remap = false)
 abstract class FabricServerAudiencesImplMixin {
-  // ew
-  @Inject(method = "audience(Lnet/minecraft/class_2165;)Lnet/kyori/adventure/audience/Audience;", at = @At("HEAD"), cancellable = true)
+  @Inject(
+    method = "audience(Lnet/minecraft/commands/CommandSource;)Lnet/kyori/adventure/audience/Audience;",
+    at = @At("HEAD"),
+    cancellable = true,
+    remap = true
+  )
   private void injectAudience(final CommandSource source, final CallbackInfoReturnable<Audience> cir) {
     if (source instanceof DedicatedServer) {
       cir.setReturnValue(new CommandSourceAudience(source, (FabricAudiences) this));
