@@ -111,7 +111,7 @@ public final class BetterFabricConsole implements ModInitializer {
     });
   }
 
-  public static BetterFabricConsole instanceOrNull() {
+  public static @Nullable BetterFabricConsole instanceOrNull() {
     return instance;
   }
 
