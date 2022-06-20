@@ -40,7 +40,7 @@ final class ConsoleAppender extends AbstractAppender {
     super(
       "Console",
       null,
-      PatternLayout.newBuilder().withPattern(BetterFabricConsole.get().config().logPattern()).build(),
+      PatternLayout.newBuilder().withPattern(BetterFabricConsole.instance().config().logPattern()).build(),
       false,
       new Property[0]
     );

@@ -49,7 +49,7 @@ abstract class ServerGamePacketListenerImplMixin implements ServerPlayerConnecti
     }
   )
   private void logExecutedCommand(final ServerboundChatCommandPacket packet, final CallbackInfo ci) {
-    if (BetterFabricConsole.get().config().logPlayerExecutedCommands()) {
+    if (BetterFabricConsole.instance().config().logPlayerExecutedCommands()) {
       BetterFabricConsole.LOGGER.info("{} issued server command: /{}", this.getPlayer().getGameProfile().getName(), packet.command());
     }
   }

@@ -41,7 +41,7 @@ import org.jline.utils.AttributedStyle;
 import xyz.jpenilla.betterfabricconsole.util.Util;
 
 final class MinecraftCommandHighlighter implements Highlighter {
-  private final Config.StyleColor[] colors = BetterFabricConsole.get().config().highlightColors();
+  private final Config.StyleColor[] colors = BetterFabricConsole.instance().config().highlightColors();
   private final Supplier<@Nullable ? extends MinecraftServer> server;
 
   MinecraftCommandHighlighter(final Supplier<@Nullable ? extends MinecraftServer> server) {

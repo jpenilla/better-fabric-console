@@ -40,7 +40,11 @@ import xyz.jpenilla.betterfabricconsole.BetterFabricConsole;
 abstract class FabricComponentLoggerProviderMixin {
   @Inject(method = "serialize", at = @At(value = "HEAD"), cancellable = true)
   private void formattedLogString(final Component message, final CallbackInfoReturnable<String> cir) {
-    final @Nullable ComponentSerializer<Component, TextComponent, String> serializer = BetterFabricConsole.get().loggingComponentSerializer();
+    final @Nullable BetterFabricConsole betterFabricConsole = BetterFabricConsole.instanceOrNull();
+    if (betterFabricConsole == null) {
+      return;
+    }
+    final @Nullable ComponentSerializer<Component, TextComponent, String> serializer = betterFabricConsole.loggingComponentSerializer();
     if (serializer == null) {
       return;
     }

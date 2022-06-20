@@ -108,7 +108,11 @@ public final class BetterFabricConsole implements ModInitializer {
     });
   }
 
-  public static BetterFabricConsole get() {
+  public static BetterFabricConsole instanceOrNull() {
+    return instance;
+  }
+
+  public static BetterFabricConsole instance() {
     if (instance == null) {
       throw new IllegalStateException("Better Fabric Console has not yet been initialized!");
     }
