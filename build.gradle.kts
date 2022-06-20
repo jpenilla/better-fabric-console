@@ -15,7 +15,8 @@ val minecraftVersion = "1.19"
 dependencies {
   minecraft("com.mojang", "minecraft", minecraftVersion)
   mappings(loom.officialMojangMappings())
-  modImplementation("net.fabricmc", "fabric-loader", "0.14.7")
+  modImplementation("net.fabricmc", "fabric-loader", "0.14.8")
+  modImplementation("net.fabricmc.fabric-api", "fabric-api", "0.56.1+1.19")
 
   annotationProcessor("org.apache.logging.log4j", "log4j-core", "2.17.1")
 
@@ -29,7 +30,7 @@ dependencies {
   implementation(include("net.kyori", "adventure-text-serializer-legacy", "4.11.0"))
 
   modImplementation(include("ca.stellardrift", "confabricate", "3.0.0-SNAPSHOT"))
-  compileOnly("org.checkerframework", "checker-qual", "3.22.1")
+  compileOnly("org.checkerframework", "checker-qual", "3.22.2")
 
   implementation(include("net.fabricmc", "mapping-io", "0.3.0"))
 }

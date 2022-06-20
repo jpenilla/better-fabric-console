@@ -35,7 +35,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
 import net.fabricmc.api.ModInitializer;
-import net.fabricmc.fabric.api.command.v1.CommandRegistrationCallback;
+import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import net.fabricmc.loader.api.FabricLoader;
 import net.fabricmc.loader.api.ModContainer;
@@ -46,7 +46,9 @@ import net.kyori.adventure.text.TextComponent;
 import net.kyori.adventure.text.format.TextColor;
 import net.kyori.adventure.text.serializer.ComponentSerializer;
 import net.minecraft.DefaultUncaughtExceptionHandler;
+import net.minecraft.commands.CommandBuildContext;
 import net.minecraft.commands.CommandSourceStack;
+import net.minecraft.commands.Commands;
 import net.minecraft.server.dedicated.DedicatedServer;
 import org.apache.logging.log4j.core.config.plugins.util.PluginRegistry;
 import org.apache.logging.log4j.core.config.plugins.util.PluginType;
@@ -54,6 +56,7 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 import org.slf4j.Logger;
 import org.spongepowered.configurate.CommentedConfigurationNode;
 import org.spongepowered.configurate.ConfigurateException;
+import org.spongepowered.configurate.reference.ConfigurationReference;
 import org.spongepowered.configurate.reference.ValueReference;
 import xyz.jpenilla.betterfabricconsole.adventure.LoggingComponentSerializerHolder;
 import xyz.jpenilla.betterfabricconsole.remap.MappingsDownloaderFactory;
@@ -158,7 +161,11 @@ public final class BetterFabricConsole implements ModInitializer {
     return this.config.remapMode().createRemapper(downloaderFactory);
   }
 
-  private void registerCommands(final CommandDispatcher<CommandSourceStack> dispatcher, final boolean dedicated) {
+  private void registerCommands(
+    final CommandDispatcher<CommandSourceStack> dispatcher,
+    final CommandBuildContext commandBuildContext,
+    final Commands.CommandSelection commandSelection
+  ) {
     dispatcher.register(literal("better-fabric-console")
       .requires(stack -> stack.hasPermission(stack.getServer().getOperatorUserPermissionLevel()))
       .executes(this::executeCommand));
@@ -177,10 +184,10 @@ public final class BetterFabricConsole implements ModInitializer {
   }
 
   private void loadModConfig() {
-    try {
-      final ValueReference<Config, CommentedConfigurationNode> reference = Confabricate.configurationFor(this.modContainer, false).referenceTo(Config.class);
-      this.config = reference.get();
-      reference.setAndSave(this.config);
+    try (final ConfigurationReference<CommentedConfigurationNode> nodeRef = Confabricate.configurationFor(this.modContainer, false)) {
+      final ValueReference<Config, CommentedConfigurationNode> configRef = nodeRef.referenceTo(Config.class);
+      this.config = configRef.get();
+      configRef.setAndSave(this.config);
     } catch (final ConfigurateException ex) {
       throw new RuntimeException("Failed to load config", ex);
     }
