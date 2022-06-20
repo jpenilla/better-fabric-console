@@ -55,7 +55,7 @@ public final class HexFormattingConverter extends LogEventPatternConverter {
             formatHexAnsi(NamedTextColor.YELLOW.value()),        // Yellow §e
             formatHexAnsi(NamedTextColor.WHITE.value()),         // White §f
             "\u001B[5m",                                         // Obfuscated §k
-            "\u001B[21m",                                        // Bold §l
+            "\u001B[1m",                                         // Bold §l
             "\u001B[9m",                                         // Strikethrough §m
             "\u001B[4m",                                         // Underline §n
             "\u001B[3m",                                         // Italic §o
@@ -79,7 +79,7 @@ public final class HexFormattingConverter extends LogEventPatternConverter {
             "\u001B[0;33;1m",  // Yellow §e
             "\u001B[0;37;1m",  // White §f
             "\u001B[5m",       // Obfuscated §k
-            "\u001B[21m",      // Bold §l
+            "\u001B[1m",       // Bold §l
             "\u001B[9m",       // Strikethrough §m
             "\u001B[4m",       // Underline §n
             "\u001B[3m",       // Italic §o
