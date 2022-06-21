@@ -24,7 +24,10 @@
 package xyz.jpenilla.betterfabricconsole.remap;
 
 import java.io.IOException;
+import org.checkerframework.checker.nullness.qual.NonNull;
+import org.checkerframework.framework.qual.DefaultQualifier;
 
-public interface MappingsDownloader {
-  void downloadMappings() throws IOException;
+@DefaultQualifier(NonNull.class)
+public interface MappingsDownloader<O> {
+  O downloadMappings() throws IOException;
 }

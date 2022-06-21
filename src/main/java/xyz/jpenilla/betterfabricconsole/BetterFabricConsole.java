@@ -59,7 +59,7 @@ import org.spongepowered.configurate.ConfigurateException;
 import org.spongepowered.configurate.reference.ConfigurationReference;
 import org.spongepowered.configurate.reference.ValueReference;
 import xyz.jpenilla.betterfabricconsole.adventure.LoggingComponentSerializerHolder;
-import xyz.jpenilla.betterfabricconsole.remap.MappingsDownloaderFactory;
+import xyz.jpenilla.betterfabricconsole.remap.MappingsCache;
 import xyz.jpenilla.betterfabricconsole.remap.RemapMode;
 import xyz.jpenilla.betterfabricconsole.remap.Remapper;
 
@@ -157,8 +157,10 @@ public final class BetterFabricConsole implements ModInitializer {
     }
 
     LOGGER.info("Initializing Better Fabric Console mappings...");
-    final MappingsDownloaderFactory downloaderFactory = new MappingsDownloaderFactory(FabricLoader.getInstance().getGameDir().resolve("better-fabric-console/mappings-cache"));
-    return this.config.remapMode().createRemapper(downloaderFactory);
+    final MappingsCache mappingsCache = new MappingsCache(
+      FabricLoader.getInstance().getGameDir().resolve("better-fabric-console/mappings-cache")
+    );
+    return this.config.remapMode().createRemapper(mappingsCache);
   }
 
   private void registerCommands(

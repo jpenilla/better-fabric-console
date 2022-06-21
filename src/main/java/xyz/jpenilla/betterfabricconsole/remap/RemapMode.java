@@ -33,27 +33,17 @@ import xyz.jpenilla.betterfabricconsole.util.ThrowingFunction;
 
 @DefaultQualifier(NonNull.class)
 public enum RemapMode {
-  MOJANG(
-    MappingsDownloaderFactory::mojangMappings,
-    downloader -> Remapper.mojangMappings(
-      downloader.serverMappings(),
-      downloader.clientMappings(),
-      downloader.intermediaryMappingsJar()
-    )
-  ),
-  YARN(
-    MappingsDownloaderFactory::yarnMappings,
-    downloader -> Remapper.yarn(downloader.yarnMappingsJar())
-  ),
+  MOJANG(MappingsCache::createMojangMappingsDownloader, Remapper::mojangMappings),
+  YARN(MappingsCache::createYarnMappingsDownloader, Remapper::yarn),
   NONE;
 
-  private final @Nullable Function<MappingsDownloaderFactory, MappingsDownloader> downloaderFactory;
-  private final @Nullable ThrowingFunction<MappingsDownloader, Remapper, IOException> remapperFactory;
+  private final @Nullable Function<MappingsCache, MappingsDownloader<?>> downloaderFactory;
+  private final @Nullable ThrowingFunction<Object, Remapper, IOException> remapperFactory;
 
   @SuppressWarnings({"rawtypes", "unchecked"})
-  <D extends MappingsDownloader> RemapMode(
-    final Function<MappingsDownloaderFactory, D> downloaderFactory,
-    final ThrowingFunction<D, Remapper, IOException> remapperFactory
+  <O, D extends MappingsDownloader<O>> RemapMode(
+    final Function<MappingsCache, D> downloaderFactory,
+    final ThrowingFunction<O, Remapper, IOException> remapperFactory
   ) {
     this.downloaderFactory = (Function) downloaderFactory;
     this.remapperFactory = (ThrowingFunction) remapperFactory;
@@ -64,20 +54,21 @@ public enum RemapMode {
     this.remapperFactory = null;
   }
 
-  public @Nullable Remapper createRemapper(final MappingsDownloaderFactory factory) {
+  public @Nullable Remapper createRemapper(final MappingsCache mappingsCache) {
     if (this.downloaderFactory == null || this.remapperFactory == null) {
       return null;
     }
 
-    final MappingsDownloader downloader = this.downloaderFactory.apply(factory);
+    final MappingsDownloader<?> downloader = this.downloaderFactory.apply(mappingsCache);
+    final Object mappingsData;
     try {
-      downloader.downloadMappings();
+      mappingsData = downloader.downloadMappings();
     } catch (final IOException ex) {
       BetterFabricConsole.LOGGER.warn("Failed to download mappings.", ex);
       return null;
     }
     try {
-      return this.remapperFactory.apply(downloader);
+      return this.remapperFactory.apply(mappingsData);
     } catch (final IOException ex) {
       BetterFabricConsole.LOGGER.warn("Failed to read mappings.", ex);
       return null;

@@ -29,7 +29,6 @@ import java.net.URI;
 import java.nio.file.FileSystem;
 import java.nio.file.FileSystems;
 import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.Map;
 import net.fabricmc.mappingio.MappingReader;
@@ -58,12 +57,10 @@ public final class Remapper {
     this.methods = methods;
   }
 
-  public static Remapper yarn(
-    final Path yarnMappingsJar
-  ) throws IOException {
+  public static Remapper yarn(final YarnMappingsDownloader.YarnData data) throws IOException {
     return fromMappingTree(Namespace.YARN, tree -> {
       try (
-        final FileSystem intermediaryJarFs = FileSystems.newFileSystem(URI.create("jar:" + yarnMappingsJar.toUri()), new HashMap<>());
+        final FileSystem intermediaryJarFs = FileSystems.newFileSystem(URI.create("jar:" + data.mappingsJar().toUri()), new HashMap<>());
         final BufferedReader intermediaryReader = Files.newBufferedReader(intermediaryJarFs.getPath("mappings/mappings.tiny"))
       ) {
         MappingReader.read(intermediaryReader, tree);
@@ -71,16 +68,12 @@ public final class Remapper {
     });
   }
 
-  public static Remapper mojangMappings(
-    final Path mojangServerMappings,
-    final Path mojangClientMappings,
-    final Path intermediaryMappingsJar
-  ) throws IOException {
+  public static Remapper mojangMappings(final MojangMappingsDownloader.MojangMappingsData data) throws IOException {
     return fromMappingTree(Namespace.MOJANG, tree -> {
       try (
-        final BufferedReader serverReader = Files.newBufferedReader(mojangServerMappings);
-        final BufferedReader clientReader = Files.newBufferedReader(mojangClientMappings);
-        final FileSystem intermediaryJarFs = FileSystems.newFileSystem(URI.create("jar:" + intermediaryMappingsJar.toUri()), new HashMap<>());
+        final BufferedReader serverReader = Files.newBufferedReader(data.serverMappings());
+        final BufferedReader clientReader = Files.newBufferedReader(data.clientMappings());
+        final FileSystem intermediaryJarFs = FileSystems.newFileSystem(URI.create("jar:" + data.intermediaryMappingsJar().toUri()), new HashMap<>());
         final BufferedReader intermediaryReader = Files.newBufferedReader(intermediaryJarFs.getPath("mappings/mappings.tiny"))
       ) {
         ProGuardReader.read(serverReader, Namespace.MOJANG, Namespace.OFFICIAL, tree);
@@ -95,6 +88,7 @@ public final class Remapper {
     final ThrowingConsumer<MemoryMappingTree, IOException> populator
   ) throws IOException {
     LOGGER.info("Reading mappings...");
+    final long start = System.currentTimeMillis();
 
     final MemoryMappingTree tree = new MemoryMappingTree();
     populator.accept(tree);
@@ -120,7 +114,7 @@ public final class Remapper {
       Map.copyOf(classMapBuilder),
       Map.copyOf(methodMapBuilder)
     );
-    LOGGER.info("Done.");
+    LOGGER.info("Done in {} seconds.", MappingsCache.DECIMAL_FORMAT.format((System.currentTimeMillis() - start) / 1000.00D));
     return remapper;
   }
 
