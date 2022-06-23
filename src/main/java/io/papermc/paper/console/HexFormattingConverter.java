@@ -120,16 +120,11 @@ public final class HexFormattingConverter extends LogEventPatternConverter {
         format(content, toAppendTo, start, useAnsi);
     }
 
-    private static String convertRGBColors(String input) {
-        Matcher matcher = RGB_PATTERN.matcher(input);
-        StringBuffer buffer = new StringBuffer();
-        while (matcher.find()) {
-            final String s = matcher.group().substring(1);
-            int hex = Integer.decode(s);
-            matcher.appendReplacement(buffer, formatHexAnsi(hex));
-        }
-        matcher.appendTail(buffer);
-        return buffer.toString();
+    private static String convertRGBColors(final String input) {
+        return RGB_PATTERN.matcher(input).replaceAll(result -> {
+            final int hex = Integer.decode(result.group().substring(1));
+            return formatHexAnsi(hex);
+        });
     }
 
     private static String formatHexAnsi(final int color) {
@@ -139,14 +134,8 @@ public final class HexFormattingConverter extends LogEventPatternConverter {
         return String.format(RGB_ANSI, red, green, blue);
     }
 
-    private static String stripRGBColors(String input) {
-        Matcher matcher = RGB_PATTERN.matcher(input);
-        StringBuffer buffer = new StringBuffer();
-        while (matcher.find()) {
-            matcher.appendReplacement(buffer, "");
-        }
-        matcher.appendTail(buffer);
-        return buffer.toString();
+    private static String stripRGBColors(final String input) {
+        return RGB_PATTERN.matcher(input).replaceAll("");
     }
 
     static void format(String content, StringBuilder result, int start, boolean ansi) {
@@ -162,7 +151,7 @@ public final class HexFormattingConverter extends LogEventPatternConverter {
         }
 
         Matcher matcher = NAMED_PATTERN.matcher(content);
-        StringBuffer buffer = new StringBuffer();
+        StringBuilder buffer = new StringBuilder();
         final String[] ansiCodes = BetterFabricConsole.instance().config().useRgbForNamedTextColors() ? RGB_ANSI_CODES : ANSI_ANSI_CODES;
         while (matcher.find()) {
             int format = LOOKUP.indexOf(Character.toLowerCase(matcher.group().charAt(1)));
@@ -173,7 +162,7 @@ public final class HexFormattingConverter extends LogEventPatternConverter {
         matcher.appendTail(buffer);
 
         result.setLength(start);
-        result.append(buffer.toString());
+        result.append(buffer);
         if (ansi) {
             result.append(ANSI_RESET);
         }
