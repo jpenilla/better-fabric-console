@@ -24,10 +24,9 @@
 package xyz.jpenilla.betterfabricconsole.mixin;
 
 import java.util.Locale;
+import java.util.function.Function;
 import net.kyori.adventure.platform.fabric.impl.service.FabricComponentLoggerProvider;
 import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.TextComponent;
-import net.kyori.adventure.text.serializer.ComponentSerializer;
 import net.kyori.adventure.translation.GlobalTranslator;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.spongepowered.asm.mixin.Mixin;
@@ -44,11 +43,11 @@ abstract class FabricComponentLoggerProviderMixin {
     if (betterFabricConsole == null) {
       return;
     }
-    final @Nullable ComponentSerializer<Component, TextComponent, String> serializer = betterFabricConsole.loggingComponentSerializer();
+    final @Nullable Function<Component, String> serializer = betterFabricConsole.loggingComponentSerializer();
     if (serializer == null) {
       return;
     }
     final Component rendered = GlobalTranslator.render(message, Locale.getDefault());
-    cir.setReturnValue(serializer.serialize(rendered));
+    cir.setReturnValue(serializer.apply(rendered));
   }
 }

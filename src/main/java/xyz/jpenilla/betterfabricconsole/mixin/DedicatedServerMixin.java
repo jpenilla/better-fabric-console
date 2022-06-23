@@ -25,9 +25,8 @@ package xyz.jpenilla.betterfabricconsole.mixin;
 
 import com.mojang.datafixers.DataFixer;
 import java.net.Proxy;
+import java.util.function.Function;
 import net.kyori.adventure.platform.fabric.FabricServerAudiences;
-import net.kyori.adventure.text.TextComponent;
-import net.kyori.adventure.text.serializer.ComponentSerializer;
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.MinecraftServer;
@@ -61,8 +60,8 @@ abstract class DedicatedServerMixin extends MinecraftServer implements LoggingCo
   }
 
   @Override
-  public ComponentSerializer<net.kyori.adventure.text.Component, TextComponent, String> loggingComponentSerializer() {
-    return this.legacySerializer;
+  public Function<net.kyori.adventure.text.Component, String> loggingComponentSerializer() {
+    return this.legacySerializer::serialize;
   }
 
   @Override

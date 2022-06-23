@@ -23,10 +23,9 @@
  */
 package xyz.jpenilla.betterfabricconsole.adventure;
 
+import java.util.function.Function;
 import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.TextComponent;
-import net.kyori.adventure.text.serializer.ComponentSerializer;
 
 public interface LoggingComponentSerializerHolder {
-  ComponentSerializer<Component, TextComponent, String> loggingComponentSerializer();
+  Function<Component, String> loggingComponentSerializer();
 }

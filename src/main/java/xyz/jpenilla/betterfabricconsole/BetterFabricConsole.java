@@ -34,6 +34,7 @@ import java.lang.reflect.Method;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Function;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
@@ -42,9 +43,7 @@ import net.fabricmc.loader.api.ModContainer;
 import net.kyori.adventure.audience.Audience;
 import net.kyori.adventure.platform.fabric.FabricServerAudiences;
 import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.TextComponent;
 import net.kyori.adventure.text.format.TextColor;
-import net.kyori.adventure.text.serializer.ComponentSerializer;
 import net.minecraft.DefaultUncaughtExceptionHandler;
 import net.minecraft.commands.CommandBuildContext;
 import net.minecraft.commands.CommandSourceStack;
@@ -199,7 +198,7 @@ public final class BetterFabricConsole implements ModInitializer {
     return this.config;
   }
 
-  public @Nullable ComponentSerializer<Component, TextComponent, String> loggingComponentSerializer() {
+  public @Nullable Function<Component, String> loggingComponentSerializer() {
     if (this.server == null) {
       return null;
     }
