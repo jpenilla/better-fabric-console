@@ -25,6 +25,7 @@ package xyz.jpenilla.betterfabricconsole.remap;
 
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import com.mojang.logging.LogUtils;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -32,15 +33,14 @@ import java.nio.file.Path;
 import java.time.Duration;
 import java.util.Comparator;
 import java.util.stream.StreamSupport;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.framework.qual.DefaultQualifier;
+import org.slf4j.Logger;
 
 @DefaultQualifier(NonNull.class)
 final class YarnMappingsDownloader implements MappingsDownloader<YarnMappingsDownloader.YarnData> {
-  private static final Logger LOGGER = LogManager.getLogger();
+  private static final Logger LOGGER = LogUtils.getLogger();
   private static final String YARN_VERSIONS_PATH = MappingsCache.DATA_PATH + "/yarn-versions.json";
   private static final String YARN_MAPPINGS_PATH = MappingsCache.MAPPINGS_PATH + "/yarn/" + MappingsCache.MINECRAFT_VERSION + ".jar";
   private static final String YARN_MAPPINGS_VERSION_PATH = MappingsCache.MAPPINGS_PATH + "/yarn/" + MappingsCache.MINECRAFT_VERSION + "-current-yarn.txt";

@@ -25,6 +25,7 @@ package xyz.jpenilla.betterfabricconsole.remap;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.mojang.logging.LogUtils;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.URL;
@@ -35,14 +36,13 @@ import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 import java.text.DecimalFormat;
 import net.minecraft.SharedConstants;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.framework.qual.DefaultQualifier;
+import org.slf4j.Logger;
 
 @DefaultQualifier(NonNull.class)
 public final class MappingsCache {
-  private static final Logger LOGGER = LogManager.getLogger();
+  private static final Logger LOGGER = LogUtils.getLogger();
   static final String MINECRAFT_VERSION = SharedConstants.getCurrentVersion().getId();
   static final String DATA_PATH = "data";
   static final String MAPPINGS_PATH = "mappings";
