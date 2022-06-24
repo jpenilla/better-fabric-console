@@ -42,7 +42,7 @@ final class MojangMappingsDownloader implements MappingsDownloader<MojangMapping
   private static final String MOJANG_CLIENT_MAPPINGS_PATH = MOJANG_MAPPINGS_PATH + "/" + MappingsCache.MINECRAFT_VERSION + "-client.txt";
   private static final String INTERMEDIARY_MAPPINGS_PATH = MappingsCache.MAPPINGS_PATH + "/" + Namespace.INTERMEDIARY + "/" + MappingsCache.MINECRAFT_VERSION + ".jar";
   private static final String INTERMEDIARY_URL = "https://maven.fabricmc.net/net/fabricmc/intermediary/{}/intermediary-{}-v2.jar";
-  private static final String MC_MANIFEST_URL = "https://launchermeta.mojang.com/mc/game/version_manifest.json";
+  private static final String MC_MANIFEST_URL = "https://piston-meta.mojang.com/mc/game/version_manifest_v2.json";
 
   private final Path cache;
 

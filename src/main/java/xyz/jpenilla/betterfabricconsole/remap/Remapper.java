@@ -47,7 +47,7 @@ public interface Remapper {
 
   String remapClassName(String name);
 
-  static Remapper yarn(YarnMappingsDownloader.YarnData data) throws IOException {
+  static Remapper yarn(final YarnMappingsDownloader.YarnData data) throws IOException {
     return RemapperImpl.fromMappingTree(Namespace.YARN, tree -> {
       try (
         final FileSystem yarnJarFs = FileSystems.newFileSystem(URI.create("jar:" + data.mappingsJar().toUri()), new HashMap<>());
@@ -58,7 +58,7 @@ public interface Remapper {
     });
   }
 
-  static Remapper mojangMappings(MojangMappingsDownloader.MojangMappingsData data) throws IOException {
+  static Remapper mojangMappings(final MojangMappingsDownloader.MojangMappingsData data) throws IOException {
     return RemapperImpl.fromMappingTree(Namespace.MOJANG, tree -> {
       try (
         final BufferedReader serverReader = Files.newBufferedReader(data.serverMappings());
