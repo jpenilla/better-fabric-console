@@ -6,7 +6,7 @@ plugins {
   id("quiet-fabric-loom")
 }
 
-version = "1.0.7-SNAPSHOT"
+version = "1.0.7"
 group = "xyz.jpenilla"
 description = "Server-side Fabric mod enhancing the console with tab completions, colored log output, command syntax highlighting, command history, and more."
 
@@ -16,7 +16,7 @@ dependencies {
   minecraft("com.mojang", "minecraft", minecraftVersion)
   mappings(loom.officialMojangMappings())
   modImplementation("net.fabricmc", "fabric-loader", "0.14.8")
-  modImplementation("net.fabricmc.fabric-api", "fabric-api", "0.56.1+1.19")
+  modImplementation("net.fabricmc.fabric-api", "fabric-api", "0.57.0+1.19")
 
   annotationProcessor("org.apache.logging.log4j", "log4j-core", "2.17.1")
 
