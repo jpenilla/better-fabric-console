@@ -29,7 +29,11 @@ dependencies {
   modImplementation(include("net.kyori", "adventure-platform-fabric", "5.4.0-SNAPSHOT"))
   implementation(include("net.kyori", "adventure-text-serializer-legacy", "4.11.0"))
 
-  modImplementation(include("ca.stellardrift", "confabricate", "3.0.0-SNAPSHOT"))
+  implementation(include("com.typesafe:config:1.4.2")!!)
+  implementation(include("io.leangen.geantyref:geantyref:1.3.13")!!)
+  implementation(include("org.spongepowered:configurate-core:4.1.2")!!)
+  implementation(include("org.spongepowered:configurate-hocon:4.1.2")!!)
+
   compileOnly("org.checkerframework", "checker-qual", "3.22.2")
 
   implementation(include("net.fabricmc", "mapping-io", "0.3.0"))

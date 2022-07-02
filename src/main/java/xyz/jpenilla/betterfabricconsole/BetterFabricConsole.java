@@ -23,14 +23,16 @@
  */
 package xyz.jpenilla.betterfabricconsole;
 
-import ca.stellardrift.confabricate.Confabricate;
 import com.mojang.brigadier.Command;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.logging.LogUtils;
 import io.papermc.paper.console.HexFormattingConverter;
+import java.io.IOException;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
@@ -54,9 +56,7 @@ import org.apache.logging.log4j.core.config.plugins.util.PluginType;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.slf4j.Logger;
 import org.spongepowered.configurate.CommentedConfigurationNode;
-import org.spongepowered.configurate.ConfigurateException;
-import org.spongepowered.configurate.reference.ConfigurationReference;
-import org.spongepowered.configurate.reference.ValueReference;
+import org.spongepowered.configurate.hocon.HoconConfigurationLoader;
 import xyz.jpenilla.betterfabricconsole.adventure.LoggingComponentSerializerHolder;
 import xyz.jpenilla.betterfabricconsole.remap.MappingsCache;
 import xyz.jpenilla.betterfabricconsole.remap.RemapMode;
@@ -185,11 +185,19 @@ public final class BetterFabricConsole implements ModInitializer {
   }
 
   private void loadModConfig() {
-    try (final ConfigurationReference<CommentedConfigurationNode> nodeRef = Confabricate.configurationFor(this.modContainer, false)) {
-      final ValueReference<Config, CommentedConfigurationNode> configRef = nodeRef.referenceTo(Config.class);
-      this.config = configRef.get();
-      configRef.setAndSave(this.config);
-    } catch (final ConfigurateException ex) {
+    final Path configFile = FabricLoader.getInstance().getConfigDir()
+      .resolve(this.modContainer.getMetadata().getId() + ".conf");
+    final HoconConfigurationLoader loader = HoconConfigurationLoader.builder()
+      .path(configFile)
+      .build();
+    try {
+      if (!Files.exists(configFile.getParent())) {
+        Files.createDirectories(configFile.getParent());
+      }
+      final CommentedConfigurationNode load = loader.load();
+      this.config = load.get(Config.class);
+      loader.save(loader.createNode(node -> node.set(this.config)));
+    } catch (final IOException ex) {
       throw new RuntimeException("Failed to load config", ex);
     }
   }
