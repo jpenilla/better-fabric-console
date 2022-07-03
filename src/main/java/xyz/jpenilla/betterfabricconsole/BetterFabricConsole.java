@@ -27,21 +27,10 @@ import com.mojang.brigadier.Command;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.logging.LogUtils;
-import io.papermc.paper.console.HexFormattingConverter;
-import java.io.IOException;
-import java.lang.reflect.Field;
-import java.lang.reflect.Method;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Function;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
-import net.fabricmc.loader.api.FabricLoader;
-import net.fabricmc.loader.api.ModContainer;
 import net.kyori.adventure.audience.Audience;
 import net.kyori.adventure.platform.fabric.FabricServerAudiences;
 import net.kyori.adventure.text.Component;
@@ -51,16 +40,17 @@ import net.minecraft.commands.CommandBuildContext;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.server.dedicated.DedicatedServer;
-import org.apache.logging.log4j.core.config.plugins.util.PluginRegistry;
-import org.apache.logging.log4j.core.config.plugins.util.PluginType;
+import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
+import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
+import org.checkerframework.framework.qual.DefaultQualifier;
 import org.slf4j.Logger;
-import org.spongepowered.configurate.CommentedConfigurationNode;
-import org.spongepowered.configurate.hocon.HoconConfigurationLoader;
 import xyz.jpenilla.betterfabricconsole.adventure.LoggingComponentSerializerHolder;
-import xyz.jpenilla.betterfabricconsole.remap.MappingsCache;
-import xyz.jpenilla.betterfabricconsole.remap.RemapMode;
-import xyz.jpenilla.betterfabricconsole.remap.Remapper;
+import xyz.jpenilla.betterfabricconsole.configuration.Config;
+import xyz.jpenilla.betterfabricconsole.console.ConsoleState;
+import xyz.jpenilla.betterfabricconsole.console.ConsoleThread;
+import xyz.jpenilla.betterfabricconsole.console.MinecraftCommandCompleter;
+import xyz.jpenilla.betterfabricconsole.console.MinecraftCommandHighlighter;
 
 import static net.kyori.adventure.text.Component.text;
 import static net.kyori.adventure.text.format.NamedTextColor.GRAY;
@@ -69,97 +59,33 @@ import static net.kyori.adventure.text.format.TextDecoration.BOLD;
 import static net.kyori.adventure.text.format.TextDecoration.ITALIC;
 import static net.minecraft.commands.Commands.literal;
 
+@DefaultQualifier(NonNull.class)
 public final class BetterFabricConsole implements ModInitializer {
   public static final Logger LOGGER = LogUtils.getLogger();
-  private static BetterFabricConsole instance;
-  private Config config;
-  private ModContainer modContainer;
+  private static final TextColor PINK = color(0xFF79C6);
+  private static @MonotonicNonNull BetterFabricConsole INSTANCE;
+
   private volatile @Nullable DedicatedServer server;
-
-  public BetterFabricConsole() {
-    try {
-      loadPluginsFromClassLoader(HexFormattingConverter.class.getClassLoader());
-    } catch (final ReflectiveOperationException e) {
-      LOGGER.error("Failed to load extra Log4j2 plugins", e);
-    }
-  }
-
-  @SuppressWarnings("unchecked")
-  private static void loadPluginsFromClassLoader(final ClassLoader loader) throws ReflectiveOperationException {
-    final PluginRegistry registry = PluginRegistry.getInstance();
-    final Method decodeCacheFiles = PluginRegistry.class.getDeclaredMethod("decodeCacheFiles", ClassLoader.class);
-    decodeCacheFiles.setAccessible(true);
-    final Map<String, List<PluginType<?>>> newPlugins =
-      (Map<String, List<PluginType<?>>>) decodeCacheFiles.invoke(registry, loader);
-    final Field pluginsByCategoryRefField = PluginRegistry.class.getDeclaredField("pluginsByCategoryRef");
-    pluginsByCategoryRefField.setAccessible(true);
-    final AtomicReference<Map<String, List<PluginType<?>>>> pluginsByCategoryRef =
-      (AtomicReference<Map<String, List<PluginType<?>>>>) pluginsByCategoryRefField.get(registry);
-    newPlugins.forEach((category, discoveredPlugins) -> {
-      final Map<String, List<PluginType<?>>> plugins = pluginsByCategoryRef.get();
-
-      final List<PluginType<?>> forCategory = plugins.computeIfAbsent(category, c -> discoveredPlugins);
-
-      if (forCategory != discoveredPlugins) {
-        for (final PluginType<?> pluginType : discoveredPlugins) {
-          if (!forCategory.contains(pluginType)) {
-            forCategory.add(pluginType);
-          }
-        }
-      }
-    });
-  }
-
-  public static @Nullable BetterFabricConsole instanceOrNull() {
-    return instance;
-  }
-
-  public static BetterFabricConsole instance() {
-    if (instance == null) {
-      throw new IllegalStateException("Better Fabric Console has not yet been initialized!");
-    }
-    return instance;
-  }
 
   @Override
   public void onInitialize() {
-    instance = this;
-    this.modContainer = FabricLoader.getInstance().getModContainer("better-fabric-console")
-      .orElseThrow(() -> new IllegalStateException("Could not find mod container for better-fabric-console"));
-
-    this.loadModConfig();
-
+    INSTANCE = this;
     CommandRegistrationCallback.EVENT.register(this::registerCommands);
-    ServerLifecycleEvents.SERVER_STARTING.register(server -> this.server = (DedicatedServer) server);
+    ServerLifecycleEvents.SERVER_STARTING.register(server -> {
+      this.server = (DedicatedServer) server;
+      this.initConsoleThread((DedicatedServer) server);
+    });
     ServerLifecycleEvents.SERVER_STOPPED.register(server -> this.server = null);
-
-    final @Nullable Remapper remapper = this.createRemapper();
-    this.initConsoleThread(remapper);
   }
 
-  private void initConsoleThread(final @Nullable Remapper remapper) {
-    BetterFabricConsole.LOGGER.info("Initializing Better Fabric Console console thread...");
-    final ConsoleThread consoleThread = new ConsoleThread(() -> this.server);
+  private void initConsoleThread(final DedicatedServer server) {
+    final ConsoleState consoleState = BetterFabricConsolePreLaunch.INSTANCE.consoleState;
+    consoleState.completer().delegateTo(new MinecraftCommandCompleter(server));
+    consoleState.highlighter().delegateTo(new MinecraftCommandHighlighter(server, this.config().highlightColors()));
+    final ConsoleThread consoleThread = new ConsoleThread(server, consoleState.lineReader());
     consoleThread.setDaemon(true);
     consoleThread.setUncaughtExceptionHandler(new DefaultUncaughtExceptionHandler(LOGGER));
-    consoleThread.init(remapper);
     consoleThread.start();
-  }
-
-  private @Nullable Remapper createRemapper() {
-    if (FabricLoader.getInstance().isDevelopmentEnvironment()) {
-      LOGGER.info("Skipping Better Fabric Console mappings initialization, we are in a development environment (already mapped).");
-      return null;
-    }
-    if (this.config.remapMode() == RemapMode.NONE) {
-      return null;
-    }
-
-    LOGGER.info("Initializing Better Fabric Console mappings...");
-    final MappingsCache mappingsCache = new MappingsCache(
-      FabricLoader.getInstance().getGameDir().resolve("better-fabric-console/mappings-cache")
-    );
-    return this.config.remapMode().createRemapper(mappingsCache);
   }
 
   private void registerCommands(
@@ -172,38 +98,18 @@ public final class BetterFabricConsole implements ModInitializer {
       .executes(this::executeCommand));
   }
 
-  private static final TextColor PINK = color(0xFF79C6);
-
   private int executeCommand(final CommandContext<CommandSourceStack> ctx) {
     final Audience audience = FabricServerAudiences.of(ctx.getSource().getServer()).audience(ctx.getSource());
     audience.sendMessage(text()
       .color(GRAY)
       .append(text("Better Fabric Console", PINK, BOLD))
       .append(text().content(" v").decorate(ITALIC))
-      .append(text(this.modContainer.getMetadata().getVersion().getFriendlyString())));
+      .append(text(BetterFabricConsolePreLaunch.INSTANCE.modContainer.getMetadata().getVersion().getFriendlyString())));
     return Command.SINGLE_SUCCESS;
   }
 
-  private void loadModConfig() {
-    final Path configFile = FabricLoader.getInstance().getConfigDir()
-      .resolve(this.modContainer.getMetadata().getId() + ".conf");
-    final HoconConfigurationLoader loader = HoconConfigurationLoader.builder()
-      .path(configFile)
-      .build();
-    try {
-      if (!Files.exists(configFile.getParent())) {
-        Files.createDirectories(configFile.getParent());
-      }
-      final CommentedConfigurationNode load = loader.load();
-      this.config = load.get(Config.class);
-      loader.save(loader.createNode(node -> node.set(this.config)));
-    } catch (final IOException ex) {
-      throw new RuntimeException("Failed to load config", ex);
-    }
-  }
-
   public Config config() {
-    return this.config;
+    return BetterFabricConsolePreLaunch.INSTANCE.config;
   }
 
   public @Nullable Function<Component, String> loggingComponentSerializer() {
@@ -211,5 +117,16 @@ public final class BetterFabricConsole implements ModInitializer {
       return null;
     }
     return ((LoggingComponentSerializerHolder) this.server).loggingComponentSerializer();
+  }
+
+  public static @Nullable BetterFabricConsole instanceOrNull() {
+    return INSTANCE;
+  }
+
+  public static BetterFabricConsole instance() {
+    if (INSTANCE == null) {
+      throw new IllegalStateException("Better Fabric Console has not yet been initialized!");
+    }
+    return INSTANCE;
   }
 }

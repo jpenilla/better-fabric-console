@@ -21,7 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package xyz.jpenilla.betterfabricconsole;
+package xyz.jpenilla.betterfabricconsole.configuration;
 
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.framework.qual.DefaultQualifier;
@@ -35,7 +35,7 @@ public final class Config {
   /**
    * Mirrors {@link org.jline.utils.AttributedStyle} color constants.
    */
-  enum StyleColor {
+  public enum StyleColor {
     BLACK(0),
     RED(1),
     GREEN(2),

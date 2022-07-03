@@ -21,7 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package xyz.jpenilla.betterfabricconsole;
+package xyz.jpenilla.betterfabricconsole.console;
 
 import org.apache.logging.log4j.core.LogEvent;
 import org.apache.logging.log4j.core.appender.AbstractAppender;
@@ -30,17 +30,19 @@ import org.apache.logging.log4j.core.config.Property;
 import org.apache.logging.log4j.core.layout.PatternLayout;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
+import org.checkerframework.framework.qual.DefaultQualifier;
 import org.jline.reader.LineReader;
 
+@DefaultQualifier(NonNull.class)
 final class ConsoleAppender extends AbstractAppender {
   private final LineReader lineReader;
-  private RewritePolicy rewriter = null;
+  private @Nullable RewritePolicy rewriter = null;
 
-  ConsoleAppender(final @NonNull LineReader lineReader) {
+  ConsoleAppender(final LineReader lineReader, final String logPattern) {
     super(
       "Console",
       null,
-      PatternLayout.newBuilder().withPattern(BetterFabricConsole.instance().config().logPattern()).build(),
+      PatternLayout.newBuilder().withPattern(logPattern).build(),
       false,
       new Property[0]
     );
@@ -51,7 +53,7 @@ final class ConsoleAppender extends AbstractAppender {
     this.rewriter = rewriter;
   }
 
-  private @NonNull LogEvent rewrite(final @NonNull LogEvent event) {
+  private LogEvent rewrite(final LogEvent event) {
     if (this.rewriter == null) {
       return event;
     }
@@ -59,7 +61,7 @@ final class ConsoleAppender extends AbstractAppender {
   }
 
   @Override
-  public void append(final @NonNull LogEvent event) {
+  public void append(final LogEvent event) {
     if (this.lineReader.isReading()) {
       this.lineReader.callWidget(LineReader.CLEAR);
     }

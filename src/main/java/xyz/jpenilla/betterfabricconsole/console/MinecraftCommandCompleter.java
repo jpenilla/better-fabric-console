@@ -21,7 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package xyz.jpenilla.betterfabricconsole;
+package xyz.jpenilla.betterfabricconsole.console;
 
 import com.mojang.brigadier.Message;
 import com.mojang.brigadier.ParseResults;
@@ -30,33 +30,24 @@ import com.mojang.brigadier.suggestion.Suggestion;
 import com.mojang.brigadier.suggestion.Suggestions;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
-import java.util.function.Supplier;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.server.MinecraftServer;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
+import org.checkerframework.framework.qual.DefaultQualifier;
 import org.jline.reader.Candidate;
 import org.jline.reader.Completer;
 import org.jline.reader.LineReader;
 import org.jline.reader.ParsedLine;
 import xyz.jpenilla.betterfabricconsole.util.Util;
 
-final class MinecraftCommandCompleter implements Completer {
-  private final Supplier<@Nullable ? extends MinecraftServer> server;
-
-  MinecraftCommandCompleter(final Supplier<@Nullable ? extends MinecraftServer> server) {
-    this.server = server;
-  }
-
+@DefaultQualifier(NonNull.class)
+public record MinecraftCommandCompleter(MinecraftServer server) implements Completer {
   @Override
-  public void complete(final @NonNull LineReader reader, final @NonNull ParsedLine line, final @NonNull List<@NonNull Candidate> candidates) {
-    final @Nullable MinecraftServer server = this.server.get();
-    if (server == null) {
-      return;
-    }
+  public void complete(final LineReader reader, final ParsedLine line, final List<Candidate> candidates) {
     final StringReader stringReader = Util.prepareStringReader(line.line());
-    final ParseResults<CommandSourceStack> results = server.getCommands().getDispatcher().parse(stringReader, server.createCommandSourceStack());
-    final CompletableFuture<Suggestions> suggestionsFuture = server.getCommands().getDispatcher().getCompletionSuggestions(results, line.cursor());
+    final ParseResults<CommandSourceStack> results = this.server.getCommands().getDispatcher().parse(stringReader, this.server.createCommandSourceStack());
+    final CompletableFuture<Suggestions> suggestionsFuture = this.server.getCommands().getDispatcher().getCompletionSuggestions(results, line.cursor());
     final Suggestions suggestions = suggestionsFuture.join();
 
     for (final Suggestion suggestion : suggestions.getList()) {
@@ -66,7 +57,7 @@ final class MinecraftCommandCompleter implements Completer {
       }
 
       final Message suggestionTooltip = suggestion.getTooltip();
-      final String description;
+      final @Nullable String description;
       if (suggestionTooltip == null) {
         description = null;
       } else {

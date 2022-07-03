@@ -21,44 +21,35 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package xyz.jpenilla.betterfabricconsole;
+package xyz.jpenilla.betterfabricconsole.console;
 
 import com.mojang.brigadier.ParseResults;
 import com.mojang.brigadier.StringReader;
 import com.mojang.brigadier.context.ParsedCommandNode;
 import com.mojang.brigadier.tree.LiteralCommandNode;
-import java.util.function.Supplier;
 import java.util.regex.Pattern;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.server.MinecraftServer;
 import org.checkerframework.checker.nullness.qual.NonNull;
-import org.checkerframework.checker.nullness.qual.Nullable;
+import org.checkerframework.framework.qual.DefaultQualifier;
 import org.jline.reader.Highlighter;
 import org.jline.reader.LineReader;
 import org.jline.utils.AttributedString;
 import org.jline.utils.AttributedStringBuilder;
 import org.jline.utils.AttributedStyle;
+import xyz.jpenilla.betterfabricconsole.configuration.Config;
 import xyz.jpenilla.betterfabricconsole.util.Util;
 
-final class MinecraftCommandHighlighter implements Highlighter {
-  private final Config.StyleColor[] colors = BetterFabricConsole.instance().config().highlightColors();
-  private final Supplier<@Nullable ? extends MinecraftServer> server;
-
-  MinecraftCommandHighlighter(final Supplier<@Nullable ? extends MinecraftServer> server) {
-    this.server = server;
-  }
-
+@DefaultQualifier(NonNull.class)
+public record MinecraftCommandHighlighter(
+  MinecraftServer server,
+  Config.StyleColor[] colors
+) implements Highlighter {
   @Override
-  public AttributedString highlight(final @NonNull LineReader reader, final @NonNull String buffer) {
-    final @Nullable MinecraftServer server = this.server.get();
-    if (server == null) {
-      final AttributedStringBuilder builder = new AttributedStringBuilder();
-      builder.append(buffer, AttributedStyle.DEFAULT.foreground(AttributedStyle.RED));
-      return builder.toAttributedString();
-    }
+  public AttributedString highlight(final LineReader reader, final String buffer) {
     final AttributedStringBuilder builder = new AttributedStringBuilder();
     final StringReader stringReader = Util.prepareStringReader(buffer);
-    final ParseResults<CommandSourceStack> results = server.getCommands().getDispatcher().parse(stringReader, server.createCommandSourceStack());
+    final ParseResults<CommandSourceStack> results = this.server.getCommands().getDispatcher().parse(stringReader, this.server.createCommandSourceStack());
     int pos = 0;
     if (buffer.startsWith("/")) {
       builder.append("/", AttributedStyle.DEFAULT);

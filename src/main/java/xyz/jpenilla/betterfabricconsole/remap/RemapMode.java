@@ -23,12 +23,13 @@
  */
 package xyz.jpenilla.betterfabricconsole.remap;
 
+import com.mojang.logging.LogUtils;
 import java.io.IOException;
 import java.util.function.Function;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.framework.qual.DefaultQualifier;
-import xyz.jpenilla.betterfabricconsole.BetterFabricConsole;
+import org.slf4j.Logger;
 import xyz.jpenilla.betterfabricconsole.util.ThrowingFunction;
 
 @DefaultQualifier(NonNull.class)
@@ -36,6 +37,8 @@ public enum RemapMode {
   MOJANG(MappingsCache::createMojangMappingsDownloader, Remapper::mojangMappings),
   YARN(MappingsCache::createYarnMappingsDownloader, Remapper::yarn),
   NONE;
+
+  private static final Logger LOGGER = LogUtils.getLogger();
 
   private final @Nullable Function<MappingsCache, MappingsDownloader<?>> downloaderFactory;
   private final @Nullable ThrowingFunction<Object, Remapper, IOException> remapperFactory;
@@ -64,13 +67,13 @@ public enum RemapMode {
     try {
       mappingsData = downloader.downloadMappings();
     } catch (final IOException ex) {
-      BetterFabricConsole.LOGGER.warn("Failed to download mappings.", ex);
+      LOGGER.warn("Failed to download mappings.", ex);
       return null;
     }
     try {
       return this.remapperFactory.apply(mappingsData);
     } catch (final IOException ex) {
-      BetterFabricConsole.LOGGER.warn("Failed to read mappings.", ex);
+      LOGGER.warn("Failed to read mappings.", ex);
       return null;
     }
   }

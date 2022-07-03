@@ -18,6 +18,9 @@
   "entrypoints": {
     "main": [
       "xyz.jpenilla.betterfabricconsole.BetterFabricConsole"
+    ],
+    "preLaunch": [
+      "xyz.jpenilla.betterfabricconsole.BetterFabricConsolePreLaunch"
     ]
   },
   "mixins": [
