@@ -31,8 +31,6 @@ import java.util.function.Function;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
-import net.kyori.adventure.audience.Audience;
-import net.kyori.adventure.platform.fabric.FabricServerAudiences;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.TextColor;
 import net.minecraft.DefaultUncaughtExceptionHandler;
@@ -99,8 +97,7 @@ public final class BetterFabricConsole implements ModInitializer {
   }
 
   private int executeCommand(final CommandContext<CommandSourceStack> ctx) {
-    final Audience audience = FabricServerAudiences.of(ctx.getSource().getServer()).audience(ctx.getSource());
-    audience.sendMessage(text()
+    ctx.getSource().sendMessage(text()
       .color(GRAY)
       .append(text("Better Fabric Console", PINK, BOLD))
       .append(text().content(" v").decorate(ITALIC))
