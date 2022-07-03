@@ -36,9 +36,13 @@ import org.jline.reader.LineReader;
 @DefaultQualifier(NonNull.class)
 final class ConsoleAppender extends AbstractAppender {
   private final LineReader lineReader;
-  private @Nullable RewritePolicy rewriter = null;
+  private final @Nullable RewritePolicy rewriter;
 
-  ConsoleAppender(final LineReader lineReader, final String logPattern) {
+  ConsoleAppender(
+    final LineReader lineReader,
+    final String logPattern,
+    final @Nullable RewritePolicy rewritePolicy
+  ) {
     super(
       "Console",
       null,
@@ -47,17 +51,11 @@ final class ConsoleAppender extends AbstractAppender {
       new Property[0]
     );
     this.lineReader = lineReader;
-  }
-
-  public void installRewriter(final @Nullable RewritePolicy rewriter) {
-    this.rewriter = rewriter;
+    this.rewriter = rewritePolicy;
   }
 
   private LogEvent rewrite(final LogEvent event) {
-    if (this.rewriter == null) {
-      return event;
-    }
-    return this.rewriter.rewrite(event);
+    return this.rewriter == null ? event : this.rewriter.rewrite(event);
   }
 
   @Override

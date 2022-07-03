@@ -40,15 +40,12 @@ import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.framework.qual.DefaultQualifier;
-import org.jline.reader.LineReader;
 import org.slf4j.Logger;
 import org.spongepowered.configurate.CommentedConfigurationNode;
 import org.spongepowered.configurate.hocon.HoconConfigurationLoader;
 import xyz.jpenilla.betterfabricconsole.configuration.Config;
 import xyz.jpenilla.betterfabricconsole.console.ConsoleSetup;
 import xyz.jpenilla.betterfabricconsole.console.ConsoleState;
-import xyz.jpenilla.betterfabricconsole.console.DelegatingCompleter;
-import xyz.jpenilla.betterfabricconsole.console.DelegatingHighlighter;
 import xyz.jpenilla.betterfabricconsole.remap.MappingsCache;
 import xyz.jpenilla.betterfabricconsole.remap.RemapMode;
 import xyz.jpenilla.betterfabricconsole.remap.Remapper;
@@ -98,18 +95,7 @@ public final class BetterFabricConsolePreLaunch implements PreLaunchEntrypoint {
   private void initConsole() {
     LOGGER.info("Initializing Better Fabric Console...");
     final @Nullable Remapper remapper = this.createRemapper();
-    final DelegatingCompleter delegatingCompleter = new DelegatingCompleter();
-    final DelegatingHighlighter delegatingHighlighter = new DelegatingHighlighter();
-    final LineReader lineReader = ConsoleSetup.buildLineReader(
-      delegatingCompleter,
-      delegatingHighlighter
-    );
-    this.consoleState = new ConsoleState(
-      lineReader,
-      delegatingCompleter,
-      delegatingHighlighter
-    );
-    ConsoleSetup.init(lineReader, remapper, this.config.logPattern());
+    this.consoleState = ConsoleSetup.init(remapper, this.config);
   }
 
   private @Nullable Remapper createRemapper() {

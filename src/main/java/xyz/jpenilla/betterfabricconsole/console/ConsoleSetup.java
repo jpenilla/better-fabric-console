@@ -35,6 +35,7 @@ import org.jline.reader.Completer;
 import org.jline.reader.Highlighter;
 import org.jline.reader.LineReader;
 import org.jline.reader.LineReaderBuilder;
+import xyz.jpenilla.betterfabricconsole.configuration.Config;
 import xyz.jpenilla.betterfabricconsole.remap.Remapper;
 import xyz.jpenilla.betterfabricconsole.remap.RemappingRewriter;
 
@@ -43,7 +44,7 @@ public final class ConsoleSetup {
   private ConsoleSetup() {
   }
 
-  public static LineReader buildLineReader(
+  private static LineReader buildLineReader(
     final Completer completer,
     final Highlighter highlighter
   ) {
@@ -58,21 +59,33 @@ public final class ConsoleSetup {
       .build();
   }
 
-  public static void init(final LineReader lineReader, final @Nullable Remapper remapper, final String logPattern) {
-    final ConsoleAppender consoleAppender = new ConsoleAppender(lineReader, logPattern);
+  public static ConsoleState init(
+    final @Nullable Remapper remapper,
+    final Config config
+  ) {
+    final DelegatingCompleter delegatingCompleter = new DelegatingCompleter();
+    final DelegatingHighlighter delegatingHighlighter = new DelegatingHighlighter();
+    final LineReader lineReader = buildLineReader(
+      delegatingCompleter,
+      delegatingHighlighter
+    );
+
+    final ConsoleAppender consoleAppender = new ConsoleAppender(
+      lineReader,
+      config.logPattern(),
+      remapper != null ? new RemappingRewriter(remapper) : null
+    );
     consoleAppender.start();
 
     final Logger logger = (Logger) LogManager.getRootLogger();
     final LoggerContext loggerContext = (LoggerContext) LogManager.getContext(false);
     final LoggerConfig loggerConfig = loggerContext.getConfiguration().getLoggerConfig(logger.getName());
 
-    if (remapper != null) {
-      consoleAppender.installRewriter(new RemappingRewriter(remapper));
-    }
-
     // replace SysOut appender with ConsoleAppender
     loggerConfig.removeAppender("SysOut");
     loggerConfig.addAppender(consoleAppender, loggerConfig.getLevel(), null);
     loggerContext.updateLoggers();
+
+    return new ConsoleState(lineReader, delegatingCompleter, delegatingHighlighter);
   }
 }
