@@ -10,13 +10,13 @@ version = "1.1.1-SNAPSHOT"
 group = "xyz.jpenilla"
 description = "Server-side Fabric mod enhancing the console with tab completions, colored log output, command syntax highlighting, command history, and more."
 
-val minecraftVersion = "1.19"
+val minecraftVersion = "1.19.2"
 
 dependencies {
   minecraft("com.mojang", "minecraft", minecraftVersion)
   mappings(loom.officialMojangMappings())
-  modImplementation("net.fabricmc", "fabric-loader", "0.14.8")
-  modImplementation("net.fabricmc.fabric-api", "fabric-api", "0.57.0+1.19")
+  modImplementation("net.fabricmc", "fabric-loader", "0.14.9")
+  modImplementation("net.fabricmc.fabric-api", "fabric-api", "0.60.0+1.19.2")
 
   annotationProcessor("org.apache.logging.log4j", "log4j-core", "2.17.1")
 
@@ -26,7 +26,7 @@ dependencies {
 
   implementation(include("org.fusesource.jansi", "jansi", "2.4.0"))
 
-  modImplementation(include("net.kyori", "adventure-platform-fabric", "5.4.0-SNAPSHOT"))
+  modImplementation(include("net.kyori", "adventure-platform-fabric", "5.5.0-SNAPSHOT"))
   implementation(include("net.kyori", "adventure-text-serializer-legacy", "4.11.0"))
 
   implementation(include("com.typesafe:config:1.4.2")!!)
@@ -34,7 +34,7 @@ dependencies {
   implementation(include("org.spongepowered:configurate-core:4.1.2")!!)
   implementation(include("org.spongepowered:configurate-hocon:4.1.2")!!)
 
-  compileOnly("org.checkerframework", "checker-qual", "3.22.2")
+  compileOnly("org.checkerframework", "checker-qual", "3.24.0")
 
   implementation(include("net.fabricmc", "mapping-io", "0.3.0"))
 }

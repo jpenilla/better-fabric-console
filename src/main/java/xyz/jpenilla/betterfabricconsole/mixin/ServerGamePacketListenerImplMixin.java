@@ -36,17 +36,7 @@ import xyz.jpenilla.betterfabricconsole.BetterFabricConsole;
 abstract class ServerGamePacketListenerImplMixin implements ServerPlayerConnection {
   @Inject(
     method = "handleChatCommand",
-    at = {
-      @At(
-        value = "INVOKE",
-        target = "Lnet/minecraft/server/network/ServerGamePacketListenerImpl;disconnect(Lnet/minecraft/network/chat/Component;)V"
-      ),
-      @At(
-        value = "INVOKE",
-        target = "Lnet/minecraft/network/protocol/PacketUtils;ensureRunningOnSameThread(Lnet/minecraft/network/protocol/Packet;Lnet/minecraft/network/PacketListener;Lnet/minecraft/server/level/ServerLevel;)V",
-        shift = At.Shift.AFTER
-      )
-    }
+    at = @At("HEAD")
   )
   private void logExecutedCommand(final ServerboundChatCommandPacket packet, final CallbackInfo ci) {
     if (BetterFabricConsole.instance().config().logPlayerExecutedCommands()) {
