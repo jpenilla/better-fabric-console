@@ -152,7 +152,8 @@ public final class HexFormattingConverter extends LogEventPatternConverter {
 
         Matcher matcher = NAMED_PATTERN.matcher(content);
         StringBuilder buffer = new StringBuilder();
-        final String[] ansiCodes = BetterFabricConsole.instance().config().useRgbForNamedTextColors() ? RGB_ANSI_CODES : ANSI_ANSI_CODES;
+        final boolean rgb = BetterFabricConsole.instanceOrNull() == null || BetterFabricConsole.instance().config().useRgbForNamedTextColors();
+        final String[] ansiCodes = rgb ? RGB_ANSI_CODES : ANSI_ANSI_CODES;
         while (matcher.find()) {
             int format = LOOKUP.indexOf(Character.toLowerCase(matcher.group().charAt(1)));
             if (format != -1) {
