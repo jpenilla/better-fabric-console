@@ -145,6 +145,7 @@ public final class BetterFabricConsolePreLaunch implements PreLaunchEntrypoint {
       }
     });
   }
+
   public static @Nullable BetterFabricConsolePreLaunch instanceOrNull() {
     return INSTANCE;
   }
