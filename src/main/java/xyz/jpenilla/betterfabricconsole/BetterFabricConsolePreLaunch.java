@@ -61,7 +61,6 @@ public final class BetterFabricConsolePreLaunch implements PreLaunchEntrypoint {
 
   @Override
   public void onPreLaunch() {
-    INSTANCE = this;
     try {
       loadPluginsFromClassLoader(HexFormattingConverter.class.getClassLoader());
     } catch (final ReflectiveOperationException e) {
@@ -71,6 +70,7 @@ public final class BetterFabricConsolePreLaunch implements PreLaunchEntrypoint {
     this.modContainer = FabricLoader.getInstance().getModContainer("better-fabric-console")
       .orElseThrow(() -> new IllegalStateException("Could not find mod container for better-fabric-console"));
     this.loadModConfig();
+    INSTANCE = this;
     this.initConsole();
   }
 
@@ -90,6 +90,13 @@ public final class BetterFabricConsolePreLaunch implements PreLaunchEntrypoint {
     } catch (final IOException ex) {
       throw new RuntimeException("Failed to load config", ex);
     }
+  }
+
+  public Config config() {
+    if (this.config == null) {
+      throw new IllegalStateException("Config not loaded!");
+    }
+    return this.config;
   }
 
   private void initConsole() {
@@ -137,5 +144,15 @@ public final class BetterFabricConsolePreLaunch implements PreLaunchEntrypoint {
         }
       }
     });
+  }
+  public static @Nullable BetterFabricConsolePreLaunch instanceOrNull() {
+    return INSTANCE;
+  }
+
+  public static BetterFabricConsolePreLaunch instance() {
+    if (INSTANCE == null) {
+      throw new IllegalStateException("BetterFabricConsolePreLaunch has not yet been initialized!");
+    }
+    return INSTANCE;
   }
 }

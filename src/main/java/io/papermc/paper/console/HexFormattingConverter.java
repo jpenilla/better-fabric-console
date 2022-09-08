@@ -15,7 +15,7 @@ import org.apache.logging.log4j.core.pattern.PatternFormatter;
 import org.apache.logging.log4j.core.pattern.PatternParser;
 import org.apache.logging.log4j.util.PerformanceSensitive;
 import org.apache.logging.log4j.util.PropertiesUtil;
-import xyz.jpenilla.betterfabricconsole.BetterFabricConsole;
+import xyz.jpenilla.betterfabricconsole.BetterFabricConsolePreLaunch;
 
 /**
  * Modified version of Paper's HexFormattingConverter to work with Kyori '§#rrggbb' format
@@ -152,8 +152,7 @@ public final class HexFormattingConverter extends LogEventPatternConverter {
 
         Matcher matcher = NAMED_PATTERN.matcher(content);
         StringBuilder buffer = new StringBuilder();
-        final boolean rgb = BetterFabricConsole.instanceOrNull() == null || BetterFabricConsole.instance().config().useRgbForNamedTextColors();
-        final String[] ansiCodes = rgb ? RGB_ANSI_CODES : ANSI_ANSI_CODES;
+        final String[] ansiCodes = ansiCodes();
         while (matcher.find()) {
             int format = LOOKUP.indexOf(Character.toLowerCase(matcher.group().charAt(1)));
             if (format != -1) {
@@ -167,6 +166,12 @@ public final class HexFormattingConverter extends LogEventPatternConverter {
         if (ansi) {
             result.append(ANSI_RESET);
         }
+    }
+
+    private static String[] ansiCodes() {
+        final boolean rgb = BetterFabricConsolePreLaunch.instanceOrNull() == null
+            || BetterFabricConsolePreLaunch.instance().config().useRgbForNamedTextColors();
+        return rgb ? RGB_ANSI_CODES : ANSI_ANSI_CODES;
     }
 
     /**
