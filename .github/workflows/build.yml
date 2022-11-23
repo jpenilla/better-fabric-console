@@ -6,18 +6,23 @@ jobs:
     if: ${{ github.event_name != 'pull_request' || github.repository != github.event.pull_request.head.repo.full_name }}
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
-      - uses: gradle/wrapper-validation-action@v1
-      - name: Set up JDK
-        uses: actions/setup-java@v2
+      - name: "checkout git repository"
+        uses: actions/checkout@v3
+      - name: "setup jdk"
+        uses: actions/setup-java@v3
         with:
-          distribution: 'temurin'
           java-version: '17'
-      - name: Build with Gradle
-        run: ./gradlew build
-      - name: Collect Artifacts
-        run: mkdir staging && cp build/libs/better-fabric-console-mc*.jar staging
-      - uses: actions/upload-artifact@v2
+          distribution: 'temurin'
+      - name: "gradle and caching setup"
+        uses: jpenilla/actions/minecraft-gradle-setup@v0
         with:
-          name: Package
+          loom: true
+      - name: "execute gradle build"
+        run: ./gradlew build
+      - name: "collect artifacts"
+        run: mkdir staging && cp build/libs/better-fabric-console-mc*.jar staging
+      - name: "upload artifacts"
+        uses: actions/upload-artifact@v3
+        with:
+          name: Jars
           path: staging
