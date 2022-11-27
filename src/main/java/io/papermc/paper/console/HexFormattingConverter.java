@@ -156,7 +156,13 @@ public final class HexFormattingConverter extends LogEventPatternConverter {
         while (matcher.find()) {
             int format = LOOKUP.indexOf(Character.toLowerCase(matcher.group().charAt(1)));
             if (format != -1) {
-                matcher.appendReplacement(buffer, ansi ? ansiCodes[format] : "");
+                final String replacement;
+                if (ansi) {
+                    replacement = format < 16 ? ANSI_RESET + ansiCodes[format] : ansiCodes[format];
+                } else {
+                    replacement = "";
+                }
+                matcher.appendReplacement(buffer, replacement);
             }
         }
         matcher.appendTail(buffer);
