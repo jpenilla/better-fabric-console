@@ -33,7 +33,7 @@ public final class HexFormattingConverter extends LogEventPatternConverter {
     private static final char COLOR_CHAR = '§';
     private static final String LOOKUP = "0123456789abcdefklmnor";
 
-    private static final String RGB_ANSI = "\u001B[38;2;%d;%d;%dm";
+    private static final String RGB_ANSI = ANSI_RESET + "\u001B[38;2;%d;%d;%dm";
     private static final Pattern NAMED_PATTERN = Pattern.compile(COLOR_CHAR + "[0-9a-fk-orA-FK-OR]");
     private static final Pattern RGB_PATTERN = Pattern.compile(COLOR_CHAR + "#([0-9a-fA-F]){6}");
 
