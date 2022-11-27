@@ -24,7 +24,7 @@
 package xyz.jpenilla.betterfabricconsole.mixin;
 
 import net.kyori.adventure.audience.Audience;
-import net.kyori.adventure.platform.fabric.FabricAudiences;
+import net.kyori.adventure.platform.fabric.impl.FabricAudiencesInternal;
 import net.kyori.adventure.platform.fabric.impl.server.FabricServerAudiencesImpl;
 import net.minecraft.commands.CommandSource;
 import net.minecraft.server.dedicated.DedicatedServer;
@@ -44,7 +44,7 @@ abstract class FabricServerAudiencesImplMixin {
   )
   private void injectAudience(final CommandSource source, final CallbackInfoReturnable<Audience> cir) {
     if (source instanceof DedicatedServer) {
-      cir.setReturnValue(new CommandSourceAudience(source, (FabricAudiences) this));
+      cir.setReturnValue(new CommandSourceAudience(source, (FabricAudiencesInternal) this));
     }
   }
 }

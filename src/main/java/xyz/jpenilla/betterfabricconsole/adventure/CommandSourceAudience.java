@@ -25,8 +25,11 @@ package xyz.jpenilla.betterfabricconsole.adventure;
 
 import net.kyori.adventure.audience.Audience;
 import net.kyori.adventure.audience.MessageType;
+import net.kyori.adventure.chat.ChatType;
+import net.kyori.adventure.chat.SignedMessage;
 import net.kyori.adventure.identity.Identity;
-import net.kyori.adventure.platform.fabric.FabricAudiences;
+import net.kyori.adventure.platform.fabric.impl.AdventureCommon;
+import net.kyori.adventure.platform.fabric.impl.FabricAudiencesInternal;
 import net.kyori.adventure.text.Component;
 import net.minecraft.commands.CommandSource;
 import org.checkerframework.checker.nullness.qual.NonNull;
@@ -36,14 +39,31 @@ import org.checkerframework.checker.nullness.qual.NonNull;
  */
 public final class CommandSourceAudience implements Audience {
   private final CommandSource output;
-  private final FabricAudiences serializer;
+  private final FabricAudiencesInternal serializer;
 
-  public CommandSourceAudience(final @NonNull CommandSource output, final @NonNull FabricAudiences serializer) {
+  public CommandSourceAudience(final @NonNull CommandSource output, final @NonNull FabricAudiencesInternal serializer) {
     this.output = output;
     this.serializer = serializer;
   }
 
   @Override
+  public void sendMessage(final @NonNull Component message) {
+    this.output.sendSystemMessage(this.serializer.toNative(message));
+  }
+
+  @Override
+  public void sendMessage(final @NonNull Component message, final ChatType.@NonNull Bound boundChatType) {
+    this.output.sendSystemMessage(AdventureCommon.chatTypeToNative(boundChatType, this.serializer).decorate(this.serializer.toNative(message)));
+  }
+
+  @Override
+  public void sendMessage(final @NonNull SignedMessage signedMessage, final ChatType.@NonNull Bound boundChatType) {
+    final Component message = signedMessage.unsignedContent() != null ? signedMessage.unsignedContent() : Component.text(signedMessage.message());
+    this.output.sendSystemMessage(AdventureCommon.chatTypeToNative(boundChatType, this.serializer).decorate(this.serializer.toNative(message)));
+  }
+
+  @Override
+  @Deprecated
   public void sendMessage(final @NonNull Identity source, final @NonNull Component text, final @NonNull MessageType type) {
     this.output.sendSystemMessage(this.serializer.toNative(text));
   }
