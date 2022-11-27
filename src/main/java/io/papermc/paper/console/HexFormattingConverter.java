@@ -63,28 +63,28 @@ public final class HexFormattingConverter extends LogEventPatternConverter {
             ANSI_RESET,                                          // Reset §r
     };
     private static final String[] ANSI_ANSI_CODES = new String[]{
-            "\u001B[0;30m",    // Black §0
-            "\u001B[0;34m",    // Dark Blue §1
-            "\u001B[0;32m",    // Dark Green §2
-            "\u001B[0;36m",    // Dark Aqua §3
-            "\u001B[0;31m",    // Dark Red §4
-            "\u001B[0;35m",    // Dark Purple §5
-            "\u001B[0;33m",    // Gold §6
-            "\u001B[0;37m",    // Gray §7
-            "\u001B[0;30;1m",  // Dark Gray §8
-            "\u001B[0;34;1m",  // Blue §9
-            "\u001B[0;32;1m",  // Green §a
-            "\u001B[0;36;1m",  // Aqua §b
-            "\u001B[0;31;1m",  // Red §c
-            "\u001B[0;35;1m",  // Light Purple §d
-            "\u001B[0;33;1m",  // Yellow §e
-            "\u001B[0;37;1m",  // White §f
-            "\u001B[5m",       // Obfuscated §k
-            "\u001B[1m",       // Bold §l
-            "\u001B[9m",       // Strikethrough §m
-            "\u001B[4m",       // Underline §n
-            "\u001B[3m",       // Italic §o
-            ANSI_RESET,        // Reset §r
+            ANSI_RESET + "\u001B[0;30m",    // Black §0
+            ANSI_RESET + "\u001B[0;34m",    // Dark Blue §1
+            ANSI_RESET + "\u001B[0;32m",    // Dark Green §2
+            ANSI_RESET + "\u001B[0;36m",    // Dark Aqua §3
+            ANSI_RESET + "\u001B[0;31m",    // Dark Red §4
+            ANSI_RESET + "\u001B[0;35m",    // Dark Purple §5
+            ANSI_RESET + "\u001B[0;33m",    // Gold §6
+            ANSI_RESET + "\u001B[0;37m",    // Gray §7
+            ANSI_RESET + "\u001B[0;30;1m",  // Dark Gray §8
+            ANSI_RESET + "\u001B[0;34;1m",  // Blue §9
+            ANSI_RESET + "\u001B[0;32;1m",  // Green §a
+            ANSI_RESET + "\u001B[0;36;1m",  // Aqua §b
+            ANSI_RESET + "\u001B[0;31;1m",  // Red §c
+            ANSI_RESET + "\u001B[0;35;1m",  // Light Purple §d
+            ANSI_RESET + "\u001B[0;33;1m",  // Yellow §e
+            ANSI_RESET + "\u001B[0;37;1m",  // White §f
+            "\u001B[5m",                    // Obfuscated §k
+            "\u001B[1m",                    // Bold §l
+            "\u001B[9m",                    // Strikethrough §m
+            "\u001B[4m",                    // Underline §n
+            "\u001B[3m",                    // Italic §o
+            ANSI_RESET,                     // Reset §r
     };
 
     private final boolean ansi;
@@ -124,19 +124,15 @@ public final class HexFormattingConverter extends LogEventPatternConverter {
     private static String convertRGBColors(final String input) {
         return RGB_PATTERN.matcher(input).replaceAll(result -> {
             final int hex = Integer.decode(result.group().substring(1));
-            return formatHexAnsi(hex, true);
+            return formatHexAnsi(hex);
         });
     }
 
     private static String formatHexAnsi(final int color) {
-        return formatHexAnsi(color, false);
-    }
-
-    private static String formatHexAnsi(final int color, final boolean prependReset) {
         final int red = color >> 16 & 0xFF;
         final int green = color >> 8 & 0xFF;
         final int blue = color & 0xFF;
-        return String.format(prependReset ? RESET_RGB_ANSI : RGB_ANSI, red, green, blue);
+        return String.format(RESET_RGB_ANSI, red, green, blue);
     }
 
     private static String stripRGBColors(final String input) {
@@ -161,13 +157,7 @@ public final class HexFormattingConverter extends LogEventPatternConverter {
         while (matcher.find()) {
             int format = LOOKUP.indexOf(Character.toLowerCase(matcher.group().charAt(1)));
             if (format != -1) {
-                final String replacement;
-                if (ansi) {
-                    replacement = format < 16 ? ANSI_RESET + ansiCodes[format] : ansiCodes[format];
-                } else {
-                    replacement = "";
-                }
-                matcher.appendReplacement(buffer, replacement);
+                matcher.appendReplacement(buffer, ansi ? ansiCodes[format] : "");
             }
         }
         matcher.appendTail(buffer);
