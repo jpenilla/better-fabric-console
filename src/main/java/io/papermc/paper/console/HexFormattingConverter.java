@@ -33,7 +33,8 @@ public final class HexFormattingConverter extends LogEventPatternConverter {
     private static final char COLOR_CHAR = '§';
     private static final String LOOKUP = "0123456789abcdefklmnor";
 
-    private static final String RGB_ANSI = ANSI_RESET + "\u001B[38;2;%d;%d;%dm";
+    private static final String RGB_ANSI = "\u001B[38;2;%d;%d;%dm";
+    private static final String RESET_RGB_ANSI = ANSI_RESET + RGB_ANSI;
     private static final Pattern NAMED_PATTERN = Pattern.compile(COLOR_CHAR + "[0-9a-fk-orA-FK-OR]");
     private static final Pattern RGB_PATTERN = Pattern.compile(COLOR_CHAR + "#([0-9a-fA-F]){6}");
 
@@ -123,15 +124,19 @@ public final class HexFormattingConverter extends LogEventPatternConverter {
     private static String convertRGBColors(final String input) {
         return RGB_PATTERN.matcher(input).replaceAll(result -> {
             final int hex = Integer.decode(result.group().substring(1));
-            return formatHexAnsi(hex);
+            return formatHexAnsi(hex, true);
         });
     }
 
     private static String formatHexAnsi(final int color) {
+        return formatHexAnsi(color, false);
+    }
+
+    private static String formatHexAnsi(final int color, final boolean prependReset) {
         final int red = color >> 16 & 0xFF;
         final int green = color >> 8 & 0xFF;
         final int blue = color & 0xFF;
-        return String.format(RGB_ANSI, red, green, blue);
+        return String.format(prependReset ? RESET_RGB_ANSI : RGB_ANSI, red, green, blue);
     }
 
     private static String stripRGBColors(final String input) {
