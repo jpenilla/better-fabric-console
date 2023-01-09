@@ -1,0 +1,14 @@
+name: Close Invalid PRs
+
+on:
+  pull_request_target:
+    types: [ opened ]
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: superbrothers/close-pull-request@v3
+        if: ${{ github.repository != github.event.pull_request.head.repo.full_name && github.head_ref == 'master' }}
+        with:
+          comment: "Please do not open pull requests from the 'master' branch, create a new branch instead."
