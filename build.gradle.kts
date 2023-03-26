@@ -7,7 +7,7 @@ plugins {
   id("com.modrinth.minotaur") version "2.7.5"
 }
 
-version = "1.1.4-SNAPSHOT"
+version = "1.1.4"
 group = "xyz.jpenilla"
 description = "Server-side Fabric mod enhancing the console with tab completions, colored log output, command syntax highlighting, command history, and more."
 
