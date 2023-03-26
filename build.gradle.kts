@@ -1,9 +1,10 @@
 plugins {
-  val indraVersion = "2.1.1"
+  val indraVersion = "3.0.1"
   id("net.kyori.indra") version indraVersion
   id("net.kyori.indra.checkstyle") version indraVersion
   id("net.kyori.indra.license-header") version indraVersion
   id("quiet-fabric-loom")
+  id("com.modrinth.minotaur") version "2.7.5"
 }
 
 version = "1.1.4-SNAPSHOT"
@@ -66,4 +67,12 @@ tasks {
   remapJar {
     archiveFileName.set("${project.name}-mc$minecraftVersion-${project.version}.jar")
   }
+}
+
+modrinth {
+  projectId.set("Y8o1j1Sf")
+  versionType.set("release")
+  file.set(tasks.remapJar.flatMap { it.archiveFile })
+  changelog.set(providers.environmentVariable("RELEASE_NOTES"))
+  token.set(providers.environmentVariable("MODRINTH_TOKEN"))
 }
