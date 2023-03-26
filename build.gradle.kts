@@ -27,7 +27,7 @@ dependencies {
   implementation(include("org.fusesource.jansi", "jansi", "2.4.0"))
 
   modImplementation(include("net.kyori", "adventure-platform-fabric", "5.8.0"))
-  implementation(include("net.kyori", "adventure-text-serializer-legacy", "4.12.0"))
+  implementation(include("net.kyori", "adventure-text-serializer-legacy", "4.13.0"))
 
   implementation(include("com.typesafe:config:1.4.2")!!)
   implementation(include("io.leangen.geantyref:geantyref:1.3.13")!!)
