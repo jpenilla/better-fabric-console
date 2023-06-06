@@ -16,8 +16,8 @@ val minecraftVersion = "1.19.4"
 dependencies {
   minecraft("com.mojang", "minecraft", minecraftVersion)
   mappings(loom.officialMojangMappings())
-  modImplementation("net.fabricmc", "fabric-loader", "0.14.18")
-  modImplementation("net.fabricmc.fabric-api", "fabric-api", "0.76.0+1.19.4")
+  modImplementation("net.fabricmc", "fabric-loader", "0.14.21")
+  modImplementation("net.fabricmc.fabric-api", "fabric-api", "0.83.0+1.19.4")
 
   annotationProcessor("org.apache.logging.log4j", "log4j-core", "2.17.1")
 
@@ -28,7 +28,7 @@ dependencies {
   implementation(include("org.fusesource.jansi", "jansi", "2.4.0"))
 
   modImplementation(include("net.kyori", "adventure-platform-fabric", "5.8.0"))
-  implementation(include("net.kyori", "adventure-text-serializer-legacy", "4.13.0"))
+  implementation(include("net.kyori", "adventure-text-serializer-legacy", "4.13.1"))
 
   implementation(include("com.typesafe:config:1.4.2")!!)
   implementation(include("io.leangen.geantyref:geantyref:1.3.13")!!)
@@ -37,7 +37,7 @@ dependencies {
 
   compileOnly("org.checkerframework", "checker-qual", "3.28.0")
 
-  implementation(include("net.fabricmc", "mapping-io", "0.3.0"))
+  implementation(include("net.fabricmc", "mapping-io", "0.4.2"))
 }
 
 indra {
