@@ -70,18 +70,11 @@ public final class Config {
     return this.highlightColors;
   }
 
-  @Comment("If true, the RGB color code for NamedTextColors will be used in console. If false, NamedTextColors will use the ANSI color code counterpart, allowing for the console color scheme to effect them.")
-  private boolean useRgbForNamedTextColors = true;
-
   @Comment("Whether to log commands executed by players to console.")
   private boolean logPlayerExecutedCommands = true;
 
   @Comment("Controls whether logger names and stacktraces should be left in intermediary mappings (NONE), remapped to Mojang mappings (MOJANG), or to Yarn mappings (YARN).")
   private RemapMode remapMode = RemapMode.MOJANG;
-
-  public boolean useRgbForNamedTextColors() {
-    return this.useRgbForNamedTextColors;
-  }
 
   public boolean logPlayerExecutedCommands() {
     return this.logPlayerExecutedCommands;

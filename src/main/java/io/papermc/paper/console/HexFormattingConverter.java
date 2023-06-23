@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import net.kyori.adventure.text.format.NamedTextColor;
+import net.kyori.ansi.ColorLevel;
 import org.apache.logging.log4j.core.LogEvent;
 import org.apache.logging.log4j.core.config.Configuration;
 import org.apache.logging.log4j.core.config.plugins.Plugin;
@@ -15,10 +16,11 @@ import org.apache.logging.log4j.core.pattern.PatternFormatter;
 import org.apache.logging.log4j.core.pattern.PatternParser;
 import org.apache.logging.log4j.util.PerformanceSensitive;
 import org.apache.logging.log4j.util.PropertiesUtil;
-import xyz.jpenilla.betterfabricconsole.BetterFabricConsolePreLaunch;
 
 /**
  * Modified version of Paper's HexFormattingConverter to work with Kyori '§#rrggbb' format
+ *
+ * <p>"Deprecated", but kept around for some mods and datapacks that still log legacy codes.</p>
  */
 @Plugin(name = "paperMinecraftFormatting", category = PatternConverter.CATEGORY)
 @ConverterKeys({"paperMinecraftFormatting"})
@@ -115,7 +117,7 @@ public final class HexFormattingConverter extends LogEventPatternConverter {
             return;
         }
 
-        boolean useAnsi = ansi;/* && TerminalConsoleAppender.isAnsiSupported();*/
+        boolean useAnsi = ansi && ColorLevel.compute() != ColorLevel.NONE;
         String content = toAppendTo.substring(start);
         content = useAnsi ? convertRGBColors(content) : stripRGBColors(content);
         format(content, toAppendTo, start, useAnsi);
@@ -170,8 +172,7 @@ public final class HexFormattingConverter extends LogEventPatternConverter {
     }
 
     private static String[] ansiCodes() {
-        final boolean rgb = BetterFabricConsolePreLaunch.instanceOrNull() == null
-            || BetterFabricConsolePreLaunch.instance().config().useRgbForNamedTextColors();
+        final boolean rgb = ColorLevel.compute() == ColorLevel.TRUE_COLOR;
         return rgb ? RGB_ANSI_CODES : ANSI_ANSI_CODES;
     }
 

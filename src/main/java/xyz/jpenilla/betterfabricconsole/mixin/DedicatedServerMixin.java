@@ -25,9 +25,7 @@ package xyz.jpenilla.betterfabricconsole.mixin;
 
 import com.mojang.datafixers.DataFixer;
 import java.net.Proxy;
-import java.util.function.Function;
-import net.kyori.adventure.platform.fabric.FabricServerAudiences;
-import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
+import net.kyori.adventure.text.serializer.ansi.ANSIComponentSerializer;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.Services;
@@ -41,31 +39,17 @@ import org.slf4j.Logger;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
-import xyz.jpenilla.betterfabricconsole.adventure.LoggingComponentSerializerHolder;
 
 @Mixin(DedicatedServer.class)
-abstract class DedicatedServerMixin extends MinecraftServer implements LoggingComponentSerializerHolder {
+abstract class DedicatedServerMixin extends MinecraftServer {
   @Final @Shadow static Logger LOGGER;
-
-  private final FabricServerAudiences audiences = FabricServerAudiences.of(this);
-  private final LegacyComponentSerializer legacySerializer = LegacyComponentSerializer.builder()
-    .flattener(this.audiences.flattener())
-    .hexColors()
-    .character(LegacyComponentSerializer.SECTION_CHAR)
-    .hexCharacter(LegacyComponentSerializer.HEX_CHAR)
-    .build();
 
   DedicatedServerMixin(final Thread thread, final LevelStorageSource.LevelStorageAccess levelStorageAccess, final PackRepository packRepository, final WorldStem worldStem, final Proxy proxy, final DataFixer dataFixer, final Services services, final ChunkProgressListenerFactory chunkProgressListenerFactory) {
     super(thread, levelStorageAccess, packRepository, worldStem, proxy, dataFixer, services, chunkProgressListenerFactory);
   }
 
   @Override
-  public Function<net.kyori.adventure.text.Component, String> loggingComponentSerializer() {
-    return this.legacySerializer::serialize;
-  }
-
-  @Override
   public void sendSystemMessage(final @NonNull Component component) {
-    LOGGER.info(this.legacySerializer.serialize(component.asComponent()));
+    LOGGER.info(ANSIComponentSerializer.ansi().serialize(component.asComponent()));
   }
 }

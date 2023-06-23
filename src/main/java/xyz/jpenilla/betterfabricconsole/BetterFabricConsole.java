@@ -27,11 +27,9 @@ import com.mojang.brigadier.Command;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.logging.LogUtils;
-import java.util.function.Function;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
-import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.TextColor;
 import net.minecraft.DefaultUncaughtExceptionHandler;
 import net.minecraft.commands.CommandBuildContext;
@@ -40,10 +38,8 @@ import net.minecraft.commands.Commands;
 import net.minecraft.server.dedicated.DedicatedServer;
 import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
 import org.checkerframework.checker.nullness.qual.NonNull;
-import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.framework.qual.DefaultQualifier;
 import org.slf4j.Logger;
-import xyz.jpenilla.betterfabricconsole.adventure.LoggingComponentSerializerHolder;
 import xyz.jpenilla.betterfabricconsole.configuration.Config;
 import xyz.jpenilla.betterfabricconsole.console.ConsoleState;
 import xyz.jpenilla.betterfabricconsole.console.ConsoleThread;
@@ -63,17 +59,11 @@ public final class BetterFabricConsole implements ModInitializer {
   private static final TextColor PINK = color(0xFF79C6);
   private static @MonotonicNonNull BetterFabricConsole INSTANCE;
 
-  private volatile @Nullable DedicatedServer server;
-
   @Override
   public void onInitialize() {
     INSTANCE = this;
     CommandRegistrationCallback.EVENT.register(this::registerCommands);
-    ServerLifecycleEvents.SERVER_STARTING.register(server -> {
-      this.server = (DedicatedServer) server;
-      this.initConsoleThread((DedicatedServer) server);
-    });
-    ServerLifecycleEvents.SERVER_STOPPED.register(server -> this.server = null);
+    ServerLifecycleEvents.SERVER_STARTING.register(server -> this.initConsoleThread((DedicatedServer) server));
   }
 
   private void initConsoleThread(final DedicatedServer server) {
@@ -107,17 +97,6 @@ public final class BetterFabricConsole implements ModInitializer {
 
   public Config config() {
     return BetterFabricConsolePreLaunch.INSTANCE.config;
-  }
-
-  public @Nullable Function<Component, String> loggingComponentSerializer() {
-    if (this.server == null) {
-      return null;
-    }
-    return ((LoggingComponentSerializerHolder) this.server).loggingComponentSerializer();
-  }
-
-  public static @Nullable BetterFabricConsole instanceOrNull() {
-    return INSTANCE;
   }
 
   public static BetterFabricConsole instance() {

@@ -10,7 +10,6 @@
   "server": [
     "DedicatedServerConsoleThreadMixin",
     "DedicatedServerMixin",
-    "FabricComponentLoggerProviderMixin",
     "FabricServerAudiencesImplMixin",
     "ServerGamePacketListenerImplMixin"
   ],

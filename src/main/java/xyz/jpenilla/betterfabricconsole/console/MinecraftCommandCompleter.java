@@ -23,14 +23,17 @@
  */
 package xyz.jpenilla.betterfabricconsole.console;
 
-import com.mojang.brigadier.Message;
 import com.mojang.brigadier.ParseResults;
 import com.mojang.brigadier.StringReader;
 import com.mojang.brigadier.suggestion.Suggestion;
 import com.mojang.brigadier.suggestion.Suggestions;
 import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
+import net.kyori.adventure.text.serializer.ansi.ANSIComponentSerializer;
 import net.minecraft.commands.CommandSourceStack;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.ComponentUtils;
 import net.minecraft.server.MinecraftServer;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
@@ -56,14 +59,13 @@ public record MinecraftCommandCompleter(MinecraftServer server) implements Compl
         continue;
       }
 
-      final Message suggestionTooltip = suggestion.getTooltip();
-      final @Nullable String description;
-      if (suggestionTooltip == null) {
-        description = null;
-      } else {
-        final String tooltipString = suggestionTooltip.getString();
-        description = tooltipString.isEmpty() ? null : tooltipString;
-      }
+      final @Nullable String description = Optional.ofNullable(suggestion.getTooltip())
+        .map(tooltip -> {
+          final Component tooltipComponent = ComponentUtils.fromMessage(tooltip);
+          return tooltipComponent.equals(Component.empty()) ? null : tooltipComponent.asComponent();
+        })
+        .map(adventure -> ANSIComponentSerializer.ansi().serialize(adventure))
+        .orElse(null);
 
       candidates.add(new Candidate(
         suggestionText,
