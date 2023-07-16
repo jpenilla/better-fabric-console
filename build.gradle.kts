@@ -27,7 +27,7 @@ dependencies {
 
   implementation(include("org.fusesource.jansi", "jansi", "2.4.0"))
 
-  modImplementation(include("net.kyori", "adventure-platform-fabric", "5.10.0-SNAPSHOT"))
+  modImplementation(include("net.kyori", "adventure-platform-fabric", "5.9.0"))
 
   implementation(include("com.typesafe:config:1.4.2")!!)
   implementation(include("io.leangen.geantyref:geantyref:1.3.13")!!)
