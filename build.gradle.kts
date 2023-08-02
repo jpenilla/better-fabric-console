@@ -7,7 +7,7 @@ plugins {
   id("com.modrinth.minotaur") version "2.7.5"
 }
 
-version = "1.1.6-SNAPSHOT"
+version = "1.1.6"
 group = "xyz.jpenilla"
 description = "Server-side Fabric mod enhancing the console with tab completions, colored log output, command syntax highlighting, command history, and more."
 
@@ -74,4 +74,5 @@ modrinth {
   file.set(tasks.remapJar.flatMap { it.archiveFile })
   changelog.set(providers.environmentVariable("RELEASE_NOTES"))
   token.set(providers.environmentVariable("MODRINTH_TOKEN"))
+  required.project("fabric-api")
 }
