@@ -16,13 +16,13 @@ pluginManagement {
   repositories {
     gradlePluginPortal()
     maven("https://maven.fabricmc.net/")
-    maven("https://maven.quiltmc.org/repository/release/")
     maven("https://repo.jpenilla.xyz/snapshots/")
   }
 }
 
 plugins {
-  id("quiet-fabric-loom") version "1.2-SNAPSHOT"
+  id("quiet-fabric-loom") version "1.3-SNAPSHOT"
+  id("org.gradle.toolchains.foojay-resolver-convention") version "0.7.0"
 }
 
 rootProject.name = "better-fabric-console"
