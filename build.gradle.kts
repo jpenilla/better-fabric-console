@@ -1,10 +1,12 @@
+import me.modmuss50.mpp.ReleaseType
+
 plugins {
   val indraVersion = "3.1.3"
   id("net.kyori.indra") version indraVersion
   id("net.kyori.indra.checkstyle") version indraVersion
   id("net.kyori.indra.license-header") version indraVersion
   id("quiet-fabric-loom")
-  id("com.modrinth.minotaur") version "2.7.5"
+  id("me.modmuss50.mod-publish-plugin") version "0.4.5"
 }
 
 version = "1.1.8-SNAPSHOT"
@@ -68,11 +70,13 @@ tasks {
   }
 }
 
-modrinth {
-  projectId.set("Y8o1j1Sf")
-  versionType.set("release")
-  file.set(tasks.remapJar.flatMap { it.archiveFile })
-  changelog.set(providers.environmentVariable("RELEASE_NOTES"))
-  token.set(providers.environmentVariable("MODRINTH_TOKEN"))
-  required.project("fabric-api")
+publishMods.modrinth {
+  projectId = "Y8o1j1Sf"
+  type = ReleaseType.STABLE
+  file = tasks.remapJar.flatMap { it.archiveFile }
+  changelog = providers.environmentVariable("RELEASE_NOTES")
+  accessToken = providers.environmentVariable("MODRINTH_TOKEN")
+  minecraftVersions.add(minecraftVersion)
+  modLoaders.add("fabric")
+  requires("fabric-api")
 }
