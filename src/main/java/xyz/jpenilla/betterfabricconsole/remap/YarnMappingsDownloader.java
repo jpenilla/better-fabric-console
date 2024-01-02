@@ -45,7 +45,7 @@ final class YarnMappingsDownloader implements MappingsDownloader<YarnMappingsDow
   private static final String YARN_MAPPINGS_PATH = MappingsCache.MAPPINGS_PATH + "/yarn/" + MappingsCache.MINECRAFT_VERSION + ".jar";
   private static final String YARN_MAPPINGS_VERSION_PATH = MappingsCache.MAPPINGS_PATH + "/yarn/" + MappingsCache.MINECRAFT_VERSION + "-current-yarn.txt";
   private static final String YARN_URL = "https://maven.fabricmc.net/net/fabricmc/yarn/{}/yarn-{}-mergedv2.jar";
-  private static final String YARN_VERSIONS_URL = "https://maven.fabricmc.net/net/fabricmc/yarn/versions.json";
+  private static final String YARN_VERSIONS_URL = "https://meta.fabricmc.net/v2/versions/yarn";
 
   private final Path cache;
 
