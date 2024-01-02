@@ -23,8 +23,8 @@
  */
 package xyz.jpenilla.betterfabricconsole.remap;
 
+import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
 import com.mojang.logging.LogUtils;
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -78,16 +78,17 @@ final class YarnMappingsDownloader implements MappingsDownloader<YarnMappingsDow
   }
 
   private static @Nullable Integer findLatestYarnBuildForMcVersion(final Path yarnVersionsPath) throws IOException {
-    final JsonObject yarnVersions;
+    final JsonElement root;
     try (final BufferedReader reader = Files.newBufferedReader(yarnVersionsPath)) {
-      yarnVersions = MappingsCache.GSON.fromJson(reader, JsonObject.class);
+      root = MappingsCache.GSON.fromJson(reader, JsonElement.class);
     }
-    final JsonElement element = yarnVersions.get(MappingsCache.MINECRAFT_VERSION);
-    if (element == null) {
+    if (!(root instanceof JsonArray yarnVersions)) {
       return null;
     }
-    return StreamSupport.stream(element.getAsJsonArray().spliterator(), false)
-      .map(JsonElement::getAsInt)
+    return StreamSupport.stream(yarnVersions.spliterator(), false)
+      .map(JsonElement::getAsJsonObject)
+      .filter(element -> element.get("gameVersion").getAsString().equals(MappingsCache.MINECRAFT_VERSION))
+      .map(object -> object.get("build").getAsInt())
       .max(Comparator.naturalOrder())
       .orElse(null);
   }
