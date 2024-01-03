@@ -32,7 +32,7 @@ import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.util.HashMap;
 import net.fabricmc.mappingio.MappingReader;
-import net.fabricmc.mappingio.format.ProGuardReader;
+import net.fabricmc.mappingio.format.proguard.ProGuardFileReader;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.framework.qual.DefaultQualifier;
 import org.slf4j.Logger;
@@ -66,8 +66,8 @@ public interface Remapper {
         final FileSystem intermediaryJarFs = FileSystems.newFileSystem(URI.create("jar:" + data.intermediaryMappingsJar().toUri()), new HashMap<>());
         final BufferedReader intermediaryReader = Files.newBufferedReader(intermediaryJarFs.getPath("mappings/mappings.tiny"))
       ) {
-        ProGuardReader.read(serverReader, Namespace.MOJANG, Namespace.OFFICIAL, tree);
-        ProGuardReader.read(clientReader, Namespace.MOJANG, Namespace.OFFICIAL, tree);
+        ProGuardFileReader.read(serverReader, Namespace.MOJANG, Namespace.OFFICIAL, tree);
+        ProGuardFileReader.read(clientReader, Namespace.MOJANG, Namespace.OFFICIAL, tree);
         MappingReader.read(intermediaryReader, tree);
       }
     });

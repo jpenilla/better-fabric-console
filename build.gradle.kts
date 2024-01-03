@@ -18,27 +18,27 @@ val minecraftVersion = "1.20.2"
 dependencies {
   minecraft("com.mojang", "minecraft", minecraftVersion)
   mappings(loom.officialMojangMappings())
-  modImplementation("net.fabricmc", "fabric-loader", "0.14.22")
-  modImplementation("net.fabricmc.fabric-api", "fabric-api", "0.89.2+1.20.2")
+  modImplementation("net.fabricmc", "fabric-loader", "0.15.3")
+  modImplementation("net.fabricmc.fabric-api", "fabric-api", "0.91.2+1.20.2")
 
-  annotationProcessor("org.apache.logging.log4j", "log4j-core", "2.19.0")
+  annotationProcessor("org.apache.logging.log4j", "log4j-core", "2.22.1")
 
-  val jlineVersion = "3.23.0"
+  val jlineVersion = "3.25.0"
   implementation(include("org.jline", "jline", jlineVersion))
   implementation(include("org.jline", "jline-terminal-jansi", jlineVersion))
 
-  implementation(include("org.fusesource.jansi", "jansi", "2.4.0"))
+  implementation(include("org.fusesource.jansi", "jansi", "2.4.1"))
 
-  modImplementation(include("net.kyori", "adventure-platform-fabric", "5.10.0"))
+  modImplementation(include("net.kyori", "adventure-platform-fabric", "5.10.1"))
 
-  implementation(include("com.typesafe:config:1.4.2")!!)
+  implementation(include("com.typesafe:config:1.4.3")!!)
   implementation(include("io.leangen.geantyref:geantyref:1.3.13")!!)
   implementation(include("org.spongepowered:configurate-core:4.1.2")!!)
   implementation(include("org.spongepowered:configurate-hocon:4.1.2")!!)
 
-  compileOnly("org.checkerframework", "checker-qual", "3.38.0")
+  compileOnly("org.checkerframework", "checker-qual", "3.42.0")
 
-  implementation(include("net.fabricmc", "mapping-io", "0.4.2"))
+  implementation(include("net.fabricmc", "mapping-io", "0.5.1"))
 }
 
 indra {
