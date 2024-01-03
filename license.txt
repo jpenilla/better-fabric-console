@@ -1,6 +1,6 @@
 MIT License
 
-Copyright (c) 2021-2022 Jason Penilla
+Copyright (c) 2021-2024 Jason Penilla
 
 Copyright (c) 2020 Chris Xiong
 
