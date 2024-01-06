@@ -13,13 +13,13 @@ version = "1.1.8-SNAPSHOT"
 group = "xyz.jpenilla"
 description = "Server-side Fabric mod enhancing the console with tab completions, colored log output, command syntax highlighting, command history, and more."
 
-val minecraftVersion = "1.20.2"
+val minecraftVersion = "1.20.4"
 
 dependencies {
   minecraft("com.mojang", "minecraft", minecraftVersion)
   mappings(loom.officialMojangMappings())
   modImplementation("net.fabricmc", "fabric-loader", "0.15.3")
-  modImplementation("net.fabricmc.fabric-api", "fabric-api", "0.91.2+1.20.2")
+  modImplementation("net.fabricmc.fabric-api", "fabric-api", "0.91.2+1.20.4")
 
   annotationProcessor("org.apache.logging.log4j", "log4j-core", "2.22.1")
 
@@ -29,7 +29,7 @@ dependencies {
 
   implementation(include("org.fusesource.jansi", "jansi", "2.4.1"))
 
-  modImplementation(include("net.kyori", "adventure-platform-fabric", "5.10.1"))
+  modImplementation(include("net.kyori", "adventure-platform-fabric", "5.11.0-SNAPSHOT"))
 
   implementation(include("com.typesafe:config:1.4.3")!!)
   implementation(include("io.leangen.geantyref:geantyref:1.3.13")!!)
