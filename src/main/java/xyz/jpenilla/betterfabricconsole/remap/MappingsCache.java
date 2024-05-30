@@ -28,7 +28,7 @@ import com.google.gson.GsonBuilder;
 import com.mojang.logging.LogUtils;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.net.URL;
+import java.net.URI;
 import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
 import java.nio.file.Files;
@@ -69,10 +69,10 @@ public final class MappingsCache {
     final Path tempDest = dest.resolveSibling(dest.getFileName().toString() + ".download.tmp");
     Files.deleteIfExists(tempDest);
 
-    LOGGER.info("Downloading " + url + "...");
+    LOGGER.info("Downloading {}...", url);
     final long start = System.currentTimeMillis();
     try (
-      final ReadableByteChannel downloadChannel = Channels.newChannel(new URL(url).openStream());
+      final ReadableByteChannel downloadChannel = Channels.newChannel(URI.create(url).toURL().openStream());
       final FileOutputStream outputStream = new FileOutputStream(tempDest.toFile())
     ) {
       outputStream.getChannel().transferFrom(downloadChannel, 0, Long.MAX_VALUE);
