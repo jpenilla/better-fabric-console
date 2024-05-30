@@ -29,10 +29,10 @@ dependencies {
 
   implementation(include("org.fusesource.jansi", "jansi", "2.4.1"))
 
-  modImplementation(include("net.kyori", "adventure-platform-fabric", "5.11.0-SNAPSHOT"))
+  modImplementation(include("net.kyori", "adventure-platform-fabric", "5.12.0"))
 
   implementation(include("com.typesafe:config:1.4.3")!!)
-  implementation(include("io.leangen.geantyref:geantyref:1.3.13")!!)
+  implementation(include("io.leangen.geantyref:geantyref:1.3.14")!!)
   implementation(include("org.spongepowered:configurate-core:4.1.2")!!)
   implementation(include("org.spongepowered:configurate-hocon:4.1.2")!!)
 
