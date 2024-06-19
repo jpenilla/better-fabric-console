@@ -31,14 +31,11 @@ dependencies {
 
   modImplementation(include("net.kyori", "adventure-platform-fabric", "5.14.0-SNAPSHOT"))
 
-  implementation(include("com.typesafe:config:1.4.3")!!)
-  implementation(include("io.leangen.geantyref:geantyref:1.3.14")!!)
-  implementation(include("org.spongepowered:configurate-core:4.1.2")!!)
-  implementation(include("org.spongepowered:configurate-hocon:4.1.2")!!)
+  implementation(transitiveInclude("org.spongepowered:configurate-hocon:4.1.2")!!)
 
   compileOnly("org.checkerframework", "checker-qual", "3.42.0")
 
-  implementation(include("net.fabricmc", "mapping-io", "0.5.1"))
+  implementation(include("net.fabricmc", "mapping-io", "0.6.1"))
 }
 
 indra {
