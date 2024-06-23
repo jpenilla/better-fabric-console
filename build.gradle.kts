@@ -21,7 +21,7 @@ dependencies {
   modImplementation("net.fabricmc", "fabric-loader", "0.15.11")
   modImplementation("net.fabricmc.fabric-api", "fabric-api", "0.100.3+1.21")
 
-  annotationProcessor("org.apache.logging.log4j", "log4j-core", "2.22.1")
+  annotationProcessor("org.apache.logging.log4j", "log4j-core", "2.23.1")
 
   val jlineVersion = "3.25.0"
   implementation(include("org.jline", "jline", jlineVersion))
