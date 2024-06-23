@@ -9,7 +9,7 @@ plugins {
   id("me.modmuss50.mod-publish-plugin") version "0.5.1"
 }
 
-version = "1.1.10"
+version = "1.1.11-SNAPSHOT"
 group = "xyz.jpenilla"
 description = "Server-side Fabric mod enhancing the console with tab completions, colored log output, command syntax highlighting, command history, and more."
 
