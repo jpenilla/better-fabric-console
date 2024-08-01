@@ -30,6 +30,7 @@ import com.mojang.brigadier.suggestion.Suggestions;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
+import net.kyori.adventure.platform.fabric.FabricServerAudiences;
 import net.kyori.adventure.text.serializer.ansi.ANSIComponentSerializer;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.network.chat.Component;
@@ -45,7 +46,7 @@ import org.jline.reader.ParsedLine;
 import xyz.jpenilla.betterfabricconsole.util.Util;
 
 @DefaultQualifier(NonNull.class)
-public record MinecraftCommandCompleter(MinecraftServer server) implements Completer {
+public record MinecraftCommandCompleter(MinecraftServer server, FabricServerAudiences audiences) implements Completer {
   @Override
   public void complete(final LineReader reader, final ParsedLine line, final List<Candidate> candidates) {
     final StringReader stringReader = Util.prepareStringReader(line.line());
@@ -62,7 +63,7 @@ public record MinecraftCommandCompleter(MinecraftServer server) implements Compl
       final @Nullable String description = Optional.ofNullable(suggestion.getTooltip())
         .map(tooltip -> {
           final Component tooltipComponent = ComponentUtils.fromMessage(tooltip);
-          return tooltipComponent.equals(Component.empty()) ? null : tooltipComponent.asComponent();
+          return tooltipComponent.equals(Component.empty()) ? null : this.audiences.toAdventure(tooltipComponent);
         })
         .map(adventure -> ANSIComponentSerializer.ansi().serialize(adventure))
         .orElse(null);

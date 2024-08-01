@@ -30,6 +30,7 @@ import com.mojang.logging.LogUtils;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
+import net.kyori.adventure.platform.fabric.FabricServerAudiences;
 import net.kyori.adventure.text.format.TextColor;
 import net.minecraft.DefaultUncaughtExceptionHandler;
 import net.minecraft.commands.CommandBuildContext;
@@ -68,7 +69,7 @@ public final class BetterFabricConsole implements ModInitializer {
 
   private void initConsoleThread(final DedicatedServer server) {
     final ConsoleState consoleState = BetterFabricConsolePreLaunch.INSTANCE.consoleState;
-    consoleState.completer().delegateTo(new MinecraftCommandCompleter(server));
+    consoleState.completer().delegateTo(new MinecraftCommandCompleter(server, FabricServerAudiences.of(server)));
     consoleState.highlighter().delegateTo(new MinecraftCommandHighlighter(server, this.config().highlightColors()));
     final ConsoleThread consoleThread = new ConsoleThread(server, consoleState.lineReader());
     consoleThread.setDaemon(true);
