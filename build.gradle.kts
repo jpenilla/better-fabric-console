@@ -18,7 +18,7 @@ val minecraftVersion = "1.21"
 dependencies {
   minecraft("com.mojang", "minecraft", minecraftVersion)
   mappings(loom.officialMojangMappings())
-  modImplementation("net.fabricmc", "fabric-loader", "0.15.11")
+  modImplementation("net.fabricmc", "fabric-loader", "0.16.5")
   modImplementation("net.fabricmc.fabric-api", "fabric-api", "0.100.7+1.21")
 
   annotationProcessor("org.apache.logging.log4j", "log4j-core", "2.23.1")
