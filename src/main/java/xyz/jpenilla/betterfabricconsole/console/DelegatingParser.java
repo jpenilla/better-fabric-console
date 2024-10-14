@@ -23,12 +23,23 @@
  */
 package xyz.jpenilla.betterfabricconsole.console;
 
-import org.jline.reader.LineReader;
+import org.checkerframework.checker.nullness.qual.NonNull;
+import org.checkerframework.framework.qual.DefaultQualifier;
+import org.jline.reader.ParsedLine;
+import org.jline.reader.Parser;
+import org.jline.reader.SyntaxError;
+import org.jline.reader.impl.DefaultParser;
 
-public record ConsoleState(
-  LineReader lineReader,
-  DelegatingCompleter completer,
-  DelegatingHighlighter highlighter,
-  DelegatingParser parser
-) {
+@DefaultQualifier(NonNull.class)
+public final class DelegatingParser implements Parser {
+  private Parser delegate = new DefaultParser();
+
+  public void delegateTo(final Parser completer) {
+    this.delegate = completer;
+  }
+
+  @Override
+  public ParsedLine parse(final String line, final int cursor, final ParseContext context) throws SyntaxError {
+    return this.delegate.parse(line, cursor, context);
+  }
 }

@@ -23,6 +23,7 @@
  */
 package xyz.jpenilla.betterfabricconsole.console;
 
+import com.mojang.brigadier.Message;
 import com.mojang.brigadier.ParseResults;
 import com.mojang.brigadier.StringReader;
 import com.mojang.brigadier.suggestion.Suggestion;
@@ -54,29 +55,64 @@ public record MinecraftCommandCompleter(MinecraftServer server, FabricServerAudi
     final CompletableFuture<Suggestions> suggestionsFuture = this.server.getCommands().getDispatcher().getCompletionSuggestions(results, line.cursor());
     final Suggestions suggestions = suggestionsFuture.join();
 
+    final ParseContext parseContext = new ParseContext(line.line(), results.getContext().findSuggestionContext(line.cursor()).startPos);
     for (final Suggestion suggestion : suggestions.getList()) {
       final String suggestionText = suggestion.getText();
       if (suggestionText.isEmpty()) {
         continue;
       }
 
-      final @Nullable String description = Optional.ofNullable(suggestion.getTooltip())
-        .map(tooltip -> {
-          final Component tooltipComponent = ComponentUtils.fromMessage(tooltip);
-          return tooltipComponent.equals(Component.empty()) ? null : this.audiences.toAdventure(tooltipComponent);
-        })
-        .map(adventure -> ANSIComponentSerializer.ansi().serialize(adventure))
-        .orElse(null);
+      candidates.add(this.toCandidate(suggestion, parseContext));
+    }
+  }
 
-      candidates.add(new Candidate(
-        suggestionText,
-        suggestionText,
-        null,
-        description,
-        null,
-        null,
-        false
-      ));
+  private Candidate toCandidate(final Suggestion suggestion, final @NonNull ParseContext context) {
+    return this.toCandidate(
+      context.line.substring(context.suggestionStart, suggestion.getRange().getStart()) + suggestion.getText(),
+      suggestion.getTooltip()
+    );
+  }
+
+  private Candidate toCandidate(final @NonNull String suggestionText, final @NonNull Message descriptionMessage) {
+    final @Nullable String description = Optional.ofNullable(descriptionMessage)
+      .map(tooltip -> {
+        final Component tooltipComponent = ComponentUtils.fromMessage(tooltip);
+        return tooltipComponent.equals(Component.empty()) ? null : this.audiences.toAdventure(tooltipComponent);
+      })
+      .map(adventure -> ANSIComponentSerializer.ansi().serialize(adventure))
+      .orElse(null);
+    //noinspection SpellCheckingInspection
+    return new MinecraftCandidate(
+      suggestionText,
+      suggestionText,
+      null,
+      description,
+      null,
+      null,
+      /*
+      in an ideal world, this would sometimes be true if the suggestion represented the final possible value for a word.
+      Like for `/execute alig`, pressing enter on align would add a trailing space if this value was true. But not all
+      suggestions should add spaces after, like `/execute as @`, accepting any suggestion here would be valid, but its also
+      valid to have a `[` following the selector
+       */
+      false
+    );
+  }
+
+  private record ParseContext(String line, int suggestionStart) {
+  }
+
+  public static final class MinecraftCandidate extends Candidate {
+    public MinecraftCandidate(
+      final String value,
+      final String display,
+      final @Nullable String group,
+      final @Nullable String description,
+      final @Nullable String suffix,
+      final @Nullable String key,
+      final boolean complete
+    ) {
+      super(value, display, group, description, suffix, key, complete);
     }
   }
 }

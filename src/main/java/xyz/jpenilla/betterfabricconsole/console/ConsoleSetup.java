@@ -35,6 +35,7 @@ import org.jline.reader.Completer;
 import org.jline.reader.Highlighter;
 import org.jline.reader.LineReader;
 import org.jline.reader.LineReaderBuilder;
+import org.jline.reader.Parser;
 import xyz.jpenilla.betterfabricconsole.configuration.Config;
 import xyz.jpenilla.betterfabricconsole.remap.Remapper;
 import xyz.jpenilla.betterfabricconsole.remap.RemappingRewriter;
@@ -46,13 +47,18 @@ public final class ConsoleSetup {
 
   private static LineReader buildLineReader(
     final Completer completer,
-    final Highlighter highlighter
+    final Highlighter highlighter,
+    final Parser parser
   ) {
+    System.setProperty("org.jline.reader.support.parsedline", "true"); // to hide a warning message about the parser not supporting
+
     return LineReaderBuilder.builder()
       .appName("Dedicated Server")
       .variable(LineReader.HISTORY_FILE, Paths.get(".console_history"))
       .completer(completer)
       .highlighter(highlighter)
+      .parser(parser)
+      .completionMatcher(new MinecraftCompletionMatcher())
       .option(LineReader.Option.INSERT_TAB, false)
       .option(LineReader.Option.DISABLE_EVENT_EXPANSION, true)
       .option(LineReader.Option.COMPLETE_IN_WORD, true)
@@ -65,9 +71,11 @@ public final class ConsoleSetup {
   ) {
     final DelegatingCompleter delegatingCompleter = new DelegatingCompleter();
     final DelegatingHighlighter delegatingHighlighter = new DelegatingHighlighter();
+    final DelegatingParser delegatingParser = new DelegatingParser();
     final LineReader lineReader = buildLineReader(
       delegatingCompleter,
-      delegatingHighlighter
+      delegatingHighlighter,
+      delegatingParser
     );
 
     final ConsoleAppender consoleAppender = new ConsoleAppender(
@@ -86,6 +94,6 @@ public final class ConsoleSetup {
     loggerConfig.addAppender(consoleAppender, loggerConfig.getLevel(), null);
     loggerContext.updateLoggers();
 
-    return new ConsoleState(lineReader, delegatingCompleter, delegatingHighlighter);
+    return new ConsoleState(lineReader, delegatingCompleter, delegatingHighlighter, delegatingParser);
   }
 }

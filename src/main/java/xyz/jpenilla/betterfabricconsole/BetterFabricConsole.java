@@ -46,6 +46,7 @@ import xyz.jpenilla.betterfabricconsole.console.ConsoleState;
 import xyz.jpenilla.betterfabricconsole.console.ConsoleThread;
 import xyz.jpenilla.betterfabricconsole.console.MinecraftCommandCompleter;
 import xyz.jpenilla.betterfabricconsole.console.MinecraftCommandHighlighter;
+import xyz.jpenilla.betterfabricconsole.console.MinecraftConsoleParser;
 
 import static net.kyori.adventure.text.Component.text;
 import static net.kyori.adventure.text.format.NamedTextColor.GRAY;
@@ -71,6 +72,7 @@ public final class BetterFabricConsole implements ModInitializer {
     final ConsoleState consoleState = BetterFabricConsolePreLaunch.INSTANCE.consoleState;
     consoleState.completer().delegateTo(new MinecraftCommandCompleter(server, FabricServerAudiences.of(server)));
     consoleState.highlighter().delegateTo(new MinecraftCommandHighlighter(server, this.config().highlightColors()));
+    consoleState.parser().delegateTo(new MinecraftConsoleParser(server));
     final ConsoleThread consoleThread = new ConsoleThread(server, consoleState.lineReader());
     consoleThread.setDaemon(true);
     consoleThread.setUncaughtExceptionHandler(new DefaultUncaughtExceptionHandler(LOGGER));
