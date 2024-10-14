@@ -66,14 +66,14 @@ public record MinecraftCommandCompleter(MinecraftServer server, FabricServerAudi
     }
   }
 
-  private Candidate toCandidate(final Suggestion suggestion, final @NonNull ParseContext context) {
+  private Candidate toCandidate(final Suggestion suggestion, final ParseContext context) {
     return this.toCandidate(
       context.line.substring(context.suggestionStart, suggestion.getRange().getStart()) + suggestion.getText(),
       suggestion.getTooltip()
     );
   }
 
-  private Candidate toCandidate(final @NonNull String suggestionText, final @NonNull Message descriptionMessage) {
+  private Candidate toCandidate(final String suggestionText, final Message descriptionMessage) {
     final @Nullable String description = Optional.ofNullable(descriptionMessage)
       .map(tooltip -> {
         final Component tooltipComponent = ComponentUtils.fromMessage(tooltip);
