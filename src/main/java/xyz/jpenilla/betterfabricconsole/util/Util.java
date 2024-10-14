@@ -23,12 +23,28 @@
  */
 package xyz.jpenilla.betterfabricconsole.util;
 
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import com.mojang.brigadier.StringReader;
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.Comparator;
+import java.util.List;
+import java.util.stream.Stream;
+import java.util.zip.GZIPInputStream;
+import java.util.zip.GZIPOutputStream;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.framework.qual.DefaultQualifier;
 
 @DefaultQualifier(NonNull.class)
 public final class Util {
+  public static final Gson GSON = new GsonBuilder().create();
+
   private Util() {
   }
 
@@ -38,5 +54,29 @@ public final class Util {
       stringReader.skip();
     }
     return stringReader;
+  }
+
+  public static void deleteDirectoryIfExists(final Path dir) throws IOException {
+    if (Files.exists(dir)) {
+      try (final Stream<Path> stream = Files.walk(dir)) {
+        final List<Path> list = stream.sorted(Comparator.reverseOrder()).toList();
+        for (final Path path : list) {
+          Files.deleteIfExists(path);
+        }
+      }
+    }
+  }
+
+  @SuppressWarnings("unchecked")
+  public static <X extends Throwable> RuntimeException rethrow(final Throwable t) throws X {
+    throw (X) t;
+  }
+
+  public static BufferedReader gzipBufferedReader(final Path path) throws IOException {
+    return new BufferedReader(new InputStreamReader(new GZIPInputStream(Files.newInputStream(path))));
+  }
+
+  public static BufferedWriter gzipBufferedWriter(final Path path) throws IOException {
+    return new BufferedWriter(new OutputStreamWriter(new GZIPOutputStream(Files.newOutputStream(path))));
   }
 }

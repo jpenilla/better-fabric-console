@@ -23,7 +23,11 @@
  */
 package xyz.jpenilla.betterfabricconsole.remap;
 
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.Map;
 import net.fabricmc.mappingio.tree.MappingTree;
@@ -33,6 +37,7 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.framework.qual.DefaultQualifier;
 import xyz.jpenilla.betterfabricconsole.util.StringPool;
 import xyz.jpenilla.betterfabricconsole.util.ThrowingConsumer;
+import xyz.jpenilla.betterfabricconsole.util.Util;
 
 @DefaultQualifier(NonNull.class)
 record RemapperImpl(
@@ -90,13 +95,42 @@ record RemapperImpl(
     return this.classes.getOrDefault(name, name);
   }
 
-  static Remapper fromMappingTree(
+  static Remapper create(
+    final String toNamespace,
+    final ThrowingConsumer<MemoryMappingTree, IOException> populator,
+    final Path serializedMappings
+  ) throws IOException {
+    final long start = System.currentTimeMillis();
+
+    final RemapperImpl remapper;
+    if (Files.isRegularFile(serializedMappings)) {
+      LOGGER.info("Reading mappings...");
+      try (final BufferedReader reader = Util.gzipBufferedReader(serializedMappings)) {
+        final SerializedMappings deserialized = Util.GSON.fromJson(reader, SerializedMappings.class);
+        final Map<String, String> classMap = new HashMap<>();
+        final Map<String, String> methodMap = new HashMap<>();
+        final StringPool pool = new StringPool(new HashMap<>());
+        deserialized.classMap.forEach((k, v) -> classMap.put(pool.string(k), pool.string(v)));
+        deserialized.methodMap.forEach((k, v) -> methodMap.put(pool.string(k), pool.string(v)));
+        remapper = new RemapperImpl(classMap, methodMap);
+      }
+    } else {
+      LOGGER.info("Reading mappings (building cache, subsequent runs will be faster)...");
+      remapper = fromMappingTree(toNamespace, populator);
+      final SerializedMappings serialized = new SerializedMappings(remapper.classes, remapper.methods);
+      try (final BufferedWriter bufferedWriter = Util.gzipBufferedWriter(serializedMappings)) {
+        Util.GSON.toJson(serialized, bufferedWriter);
+      }
+    }
+
+    LOGGER.info("Done in {} seconds.", MappingsCache.DECIMAL_FORMAT.format((System.currentTimeMillis() - start) / 1000.00D));
+    return remapper;
+  }
+
+  private static RemapperImpl fromMappingTree(
     final String toNamespace,
     final ThrowingConsumer<MemoryMappingTree, IOException> populator
   ) throws IOException {
-    LOGGER.info("Reading mappings...");
-    final long start = System.currentTimeMillis();
-
     final MemoryMappingTree tree = new MemoryMappingTree();
     populator.accept(tree);
 
@@ -118,15 +152,18 @@ record RemapperImpl(
       }
     }
 
-    final RemapperImpl remapper = new RemapperImpl(
+    return new RemapperImpl(
       Map.copyOf(classMapBuilder),
       Map.copyOf(methodMapBuilder)
     );
-    LOGGER.info("Done in {} seconds.", MappingsCache.DECIMAL_FORMAT.format((System.currentTimeMillis() - start) / 1000.00D));
-    return remapper;
   }
 
   private static String slashToDot(final String slahsed) {
     return slahsed.replace("/", ".");
   }
+
+  private record SerializedMappings(
+    Map<String, String> classMap,
+    Map<String, String> methodMap
+  ) {}
 }

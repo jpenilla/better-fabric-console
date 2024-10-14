@@ -115,9 +115,15 @@ public final class BetterFabricConsolePreLaunch implements PreLaunchEntrypoint {
     }
 
     LOGGER.info("Initializing Better Fabric Console mappings...");
-    final MappingsCache mappingsCache = new MappingsCache(
-      FabricLoader.getInstance().getGameDir().resolve("better-fabric-console/mappings-cache")
-    );
+    final MappingsCache mappingsCache;
+    try {
+      mappingsCache = new MappingsCache(
+        FabricLoader.getInstance().getGameDir().resolve("better-fabric-console/mappings-cache")
+      );
+    } catch (final IOException e) {
+      LOGGER.warn("Failed to initialize mappings cache", e);
+      return null;
+    }
     return this.config.remapMode().createRemapper(mappingsCache);
   }
 

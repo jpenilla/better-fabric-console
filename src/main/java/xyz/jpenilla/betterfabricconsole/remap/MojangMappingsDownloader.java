@@ -23,23 +23,27 @@
  */
 package xyz.jpenilla.betterfabricconsole.remap;
 
+import com.google.common.base.Suppliers;
 import com.google.gson.JsonObject;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.function.Supplier;
 import java.util.stream.StreamSupport;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.framework.qual.DefaultQualifier;
+import xyz.jpenilla.betterfabricconsole.util.Util;
 
 @DefaultQualifier(NonNull.class)
 final class MojangMappingsDownloader implements MappingsDownloader<MojangMappingsDownloader.MojangMappingsData> {
-  private static final String MC_MANIFEST_PATH = MappingsCache.DATA_PATH + "/mc-manifest.json";
+  private static final String MC_MANIFEST_PATH = MappingsCache.DATA_PATH + "/mc-manifest.json.gz";
   private static final String MC_VERSION_MANIFEST_PATH = MappingsCache.DATA_PATH + "/mc-version-" + MappingsCache.MINECRAFT_VERSION + ".json";
   private static final String MOJANG_MAPPINGS_PATH = MappingsCache.MAPPINGS_PATH + "/" + Namespace.MOJANG;
-  private static final String MOJANG_SERVER_MAPPINGS_PATH = MOJANG_MAPPINGS_PATH + "/" + MappingsCache.MINECRAFT_VERSION + "-server.txt";
-  private static final String MOJANG_CLIENT_MAPPINGS_PATH = MOJANG_MAPPINGS_PATH + "/" + MappingsCache.MINECRAFT_VERSION + "-client.txt";
+  private static final String MOJANG_SERVER_MAPPINGS_PATH = MOJANG_MAPPINGS_PATH + "/" + MappingsCache.MINECRAFT_VERSION + "-server.txt.gz";
+  private static final String MOJANG_CLIENT_MAPPINGS_PATH = MOJANG_MAPPINGS_PATH + "/" + MappingsCache.MINECRAFT_VERSION + "-client.txt.gz";
+  private static final String SERIALIZED_MAPPINGS_PATH = MOJANG_MAPPINGS_PATH + "/" + MappingsCache.MINECRAFT_VERSION + "-serialized.json.gz";
   private static final String INTERMEDIARY_MAPPINGS_PATH = MappingsCache.MAPPINGS_PATH + "/" + Namespace.INTERMEDIARY + "/" + MappingsCache.MINECRAFT_VERSION + ".jar";
   private static final String INTERMEDIARY_URL = "https://maven.fabricmc.net/net/fabricmc/intermediary/{}/intermediary-{}-v2.jar";
   private static final String MC_MANIFEST_URL = "https://piston-meta.mojang.com/mc/game/version_manifest_v2.json";
@@ -54,11 +58,11 @@ final class MojangMappingsDownloader implements MappingsDownloader<MojangMapping
     final Path mcManifestPath = this.cache.resolve(MC_MANIFEST_PATH);
     final boolean download = forceDownload || !Files.exists(mcManifestPath);
     if (download) {
-      MappingsCache.downloadFile(MC_MANIFEST_URL, mcManifestPath);
+      MappingsCache.downloadFileAndGzip(MC_MANIFEST_URL, mcManifestPath);
     }
     final JsonObject mcManifest;
-    try (final BufferedReader reader = Files.newBufferedReader(mcManifestPath)) {
-      mcManifest = MappingsCache.GSON.fromJson(reader, JsonObject.class);
+    try (final BufferedReader reader = Util.gzipBufferedReader(mcManifestPath)) {
+      mcManifest = Util.GSON.fromJson(reader, JsonObject.class);
     }
     return new McManifestResult(download, mcManifest);
   }
@@ -78,22 +82,26 @@ final class MojangMappingsDownloader implements MappingsDownloader<MojangMapping
       }
       MappingsCache.downloadFile(versionManifestUrl, mcVersionManifestPath);
     }
-    final JsonObject mcVersionManifest;
-    try (final BufferedReader reader = Files.newBufferedReader(mcVersionManifestPath)) {
-      mcVersionManifest = MappingsCache.GSON.fromJson(reader, JsonObject.class);
-    }
-    final JsonObject downloads = mcVersionManifest.get("downloads").getAsJsonObject();
+    final Supplier<JsonObject> downloads = Suppliers.memoize(() -> {
+      final JsonObject mcVersionManifest;
+      try (final BufferedReader reader = Files.newBufferedReader(mcVersionManifestPath)) {
+        mcVersionManifest = Util.GSON.fromJson(reader, JsonObject.class);
+      } catch (final IOException e) {
+        throw Util.rethrow(e);
+      }
+      return mcVersionManifest.get("downloads").getAsJsonObject();
+    });
 
     final Path serverMappings = this.serverMappings();
     if (!Files.exists(serverMappings)) {
-      final String serverMappingsUrl = downloads.get("server_mappings").getAsJsonObject().get("url").getAsString();
-      MappingsCache.downloadFile(serverMappingsUrl, serverMappings);
+      final String serverMappingsUrl = downloads.get().get("server_mappings").getAsJsonObject().get("url").getAsString();
+      MappingsCache.downloadFileAndGzip(serverMappingsUrl, serverMappings);
     }
 
     final Path clientMappings = this.clientMappings();
     if (!Files.exists(clientMappings)) {
-      final String clientMappingsUrl = downloads.get("client_mappings").getAsJsonObject().get("url").getAsString();
-      MappingsCache.downloadFile(clientMappingsUrl, clientMappings);
+      final String clientMappingsUrl = downloads.get().get("client_mappings").getAsJsonObject().get("url").getAsString();
+      MappingsCache.downloadFileAndGzip(clientMappingsUrl, clientMappings);
     }
 
     final Path intermediaryMappings = this.intermediaryMappingsJar();
@@ -101,7 +109,7 @@ final class MojangMappingsDownloader implements MappingsDownloader<MojangMapping
       MappingsCache.downloadFile(INTERMEDIARY_URL.replace("{}", MappingsCache.MINECRAFT_VERSION), intermediaryMappings);
     }
 
-    return new MojangMappingsData(this.serverMappings(), this.clientMappings(), this.intermediaryMappingsJar());
+    return new MojangMappingsData(this.serverMappings(), this.clientMappings(), this.intermediaryMappingsJar(), this.serializedMappings());
   }
 
   private Path serverMappings() {
@@ -110,6 +118,10 @@ final class MojangMappingsDownloader implements MappingsDownloader<MojangMapping
 
   private Path clientMappings() {
     return this.cache.resolve(MOJANG_CLIENT_MAPPINGS_PATH);
+  }
+
+  private Path serializedMappings() {
+    return this.cache.resolve(SERIALIZED_MAPPINGS_PATH);
   }
 
   private Path intermediaryMappingsJar() {
@@ -124,7 +136,7 @@ final class MojangMappingsDownloader implements MappingsDownloader<MojangMapping
       .orElse(null);
   }
 
-  public record MojangMappingsData(Path serverMappings, Path clientMappings, Path intermediaryMappingsJar) {
+  public record MojangMappingsData(Path serverMappings, Path clientMappings, Path intermediaryMappingsJar, Path serialized) {
   }
 
   private record McManifestResult(boolean didDownload, JsonObject result) {

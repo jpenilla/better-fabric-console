@@ -67,13 +67,15 @@ public enum RemapMode {
     try {
       mappingsData = downloader.downloadMappings();
     } catch (final IOException ex) {
-      LOGGER.warn("Failed to download mappings.", ex);
+      LOGGER.warn("Failed to download mappings. Will retry on next startup.", ex);
+      mappingsCache.moveFailed();
       return null;
     }
     try {
       return this.remapperFactory.apply(mappingsData);
     } catch (final IOException ex) {
-      LOGGER.warn("Failed to read mappings.", ex);
+      LOGGER.warn("Failed to read mappings. Will retry on next startup.", ex);
+      mappingsCache.moveFailed();
       return null;
     }
   }

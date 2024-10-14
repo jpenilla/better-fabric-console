@@ -37,12 +37,14 @@ import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.framework.qual.DefaultQualifier;
 import org.slf4j.Logger;
+import xyz.jpenilla.betterfabricconsole.util.Util;
 
 @DefaultQualifier(NonNull.class)
 final class YarnMappingsDownloader implements MappingsDownloader<YarnMappingsDownloader.YarnData> {
   private static final Logger LOGGER = LogUtils.getLogger();
-  private static final String YARN_VERSIONS_PATH = MappingsCache.DATA_PATH + "/yarn-versions.json";
+  private static final String YARN_VERSIONS_PATH = MappingsCache.DATA_PATH + "/yarn-versions.json.gz";
   private static final String YARN_MAPPINGS_PATH = MappingsCache.MAPPINGS_PATH + "/yarn/" + MappingsCache.MINECRAFT_VERSION + ".jar";
+  private static final String SERIALIZED_MAPPINGS_PATH = MappingsCache.MAPPINGS_PATH + "/yarn/" + MappingsCache.MINECRAFT_VERSION + "-serialized.json.gz";
   private static final String YARN_MAPPINGS_VERSION_PATH = MappingsCache.MAPPINGS_PATH + "/yarn/" + MappingsCache.MINECRAFT_VERSION + "-current-yarn.txt";
   private static final String YARN_URL = "https://maven.fabricmc.net/net/fabricmc/yarn/{}/yarn-{}-mergedv2.jar";
   private static final String YARN_VERSIONS_URL = "https://meta.fabricmc.net/v2/versions/yarn";
@@ -74,13 +76,13 @@ final class YarnMappingsDownloader implements MappingsDownloader<YarnMappingsDow
     if (!Files.isRegularFile(versionFile) || !Files.readString(versionFile).equals(yarnVersion)) {
       this.downloadYarn(downloadedJson, yarnVersion);
     }
-    return new YarnData(this.yarnMappingsJar());
+    return new YarnData(this.yarnMappingsJar(), this.serializedMappings());
   }
 
   private static @Nullable Integer findLatestYarnBuildForMcVersion(final Path yarnVersionsPath) throws IOException {
     final JsonElement root;
-    try (final BufferedReader reader = Files.newBufferedReader(yarnVersionsPath)) {
-      root = MappingsCache.GSON.fromJson(reader, JsonElement.class);
+    try (final BufferedReader reader = Util.gzipBufferedReader(yarnVersionsPath)) {
+      root = Util.GSON.fromJson(reader, JsonElement.class);
     }
     if (!(root instanceof JsonArray yarnVersions)) {
       return null;
@@ -95,14 +97,14 @@ final class YarnMappingsDownloader implements MappingsDownloader<YarnMappingsDow
 
   private static boolean downloadYarnVersionsJson(final Path yarnVersionsPath, final boolean forceDownload) throws IOException {
     if (forceDownload || !Files.exists(yarnVersionsPath)) {
-      MappingsCache.downloadFile(YARN_VERSIONS_URL, yarnVersionsPath);
+      MappingsCache.downloadFileAndGzip(YARN_VERSIONS_URL, yarnVersionsPath);
       return true;
     } else {
       final long lastModified = Files.getLastModifiedTime(yarnVersionsPath).toMillis();
       final Duration sinceModified = Duration.ofMillis(System.currentTimeMillis() - lastModified);
       if (sinceModified.compareTo(Duration.ofDays(7)) > 0) {
         try {
-          MappingsCache.downloadFile(YARN_VERSIONS_URL, yarnVersionsPath);
+          MappingsCache.downloadFileAndGzip(YARN_VERSIONS_URL, yarnVersionsPath);
         } catch (final IOException ex) {
           LOGGER.warn("Failed to update yarn version index", ex);
           return false;
@@ -119,6 +121,7 @@ final class YarnMappingsDownloader implements MappingsDownloader<YarnMappingsDow
       MappingsCache.downloadFile(YARN_URL.replace("{}", yarnVersion), yarnMappings);
       final Path version = this.cache.resolve(YARN_MAPPINGS_VERSION_PATH);
       Files.writeString(version, yarnVersion);
+      Files.deleteIfExists(this.serializedMappings());
     }
   }
 
@@ -126,6 +129,10 @@ final class YarnMappingsDownloader implements MappingsDownloader<YarnMappingsDow
     return this.cache.resolve(YARN_MAPPINGS_PATH);
   }
 
-  public record YarnData(Path mappingsJar) {
+  private Path serializedMappings() {
+    return this.cache.resolve(SERIALIZED_MAPPINGS_PATH);
+  }
+
+  public record YarnData(Path mappingsJar, Path serialized) {
   }
 }

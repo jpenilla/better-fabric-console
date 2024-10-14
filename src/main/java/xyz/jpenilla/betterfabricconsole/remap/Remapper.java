@@ -26,6 +26,7 @@ package xyz.jpenilla.betterfabricconsole.remap;
 import com.mojang.logging.LogUtils;
 import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.Reader;
 import java.net.URI;
 import java.nio.file.FileSystem;
 import java.nio.file.FileSystems;
@@ -36,6 +37,7 @@ import net.fabricmc.mappingio.format.proguard.ProGuardFileReader;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.framework.qual.DefaultQualifier;
 import org.slf4j.Logger;
+import xyz.jpenilla.betterfabricconsole.util.Util;
 
 @DefaultQualifier(NonNull.class)
 public interface Remapper {
@@ -47,29 +49,41 @@ public interface Remapper {
 
   String remapClassName(String name);
 
-  static Remapper yarn(final YarnMappingsDownloader.YarnData data) throws IOException {
-    return RemapperImpl.fromMappingTree(Namespace.YARN, tree -> {
-      try (
-        final FileSystem yarnJarFs = FileSystems.newFileSystem(URI.create("jar:" + data.mappingsJar().toUri()), new HashMap<>());
-        final BufferedReader yarnReader = Files.newBufferedReader(yarnJarFs.getPath("mappings/mappings.tiny"))
-      ) {
-        MappingReader.read(yarnReader, tree);
-      }
-    });
+  static Remapper yarn(
+    final YarnMappingsDownloader.YarnData data
+  ) throws IOException {
+    return RemapperImpl.create(
+      Namespace.YARN,
+      tree -> {
+        try (
+          final FileSystem yarnJarFs = FileSystems.newFileSystem(URI.create("jar:" + data.mappingsJar().toUri()), new HashMap<>());
+          final BufferedReader yarnReader = Files.newBufferedReader(yarnJarFs.getPath("mappings/mappings.tiny"))
+        ) {
+          MappingReader.read(yarnReader, tree);
+        }
+      },
+      data.serialized()
+    );
   }
 
-  static Remapper mojangMappings(final MojangMappingsDownloader.MojangMappingsData data) throws IOException {
-    return RemapperImpl.fromMappingTree(Namespace.MOJANG, tree -> {
-      try (
-        final BufferedReader serverReader = Files.newBufferedReader(data.serverMappings());
-        final BufferedReader clientReader = Files.newBufferedReader(data.clientMappings());
-        final FileSystem intermediaryJarFs = FileSystems.newFileSystem(URI.create("jar:" + data.intermediaryMappingsJar().toUri()), new HashMap<>());
-        final BufferedReader intermediaryReader = Files.newBufferedReader(intermediaryJarFs.getPath("mappings/mappings.tiny"))
-      ) {
-        ProGuardFileReader.read(serverReader, Namespace.MOJANG, Namespace.OFFICIAL, tree);
-        ProGuardFileReader.read(clientReader, Namespace.MOJANG, Namespace.OFFICIAL, tree);
-        MappingReader.read(intermediaryReader, tree);
-      }
-    });
+  static Remapper mojangMappings(
+    final MojangMappingsDownloader.MojangMappingsData data
+  ) throws IOException {
+    return RemapperImpl.create(
+      Namespace.MOJANG,
+      tree -> {
+        try (
+          final Reader serverReader = Util.gzipBufferedReader(data.serverMappings());
+          final Reader clientReader = Util.gzipBufferedReader(data.clientMappings());
+          final FileSystem intermediaryJarFs = FileSystems.newFileSystem(URI.create("jar:" + data.intermediaryMappingsJar().toUri()), new HashMap<>());
+          final BufferedReader intermediaryReader = Files.newBufferedReader(intermediaryJarFs.getPath("mappings/mappings.tiny"))
+        ) {
+          ProGuardFileReader.read(serverReader, Namespace.MOJANG, Namespace.OFFICIAL, tree);
+          ProGuardFileReader.read(clientReader, Namespace.MOJANG, Namespace.OFFICIAL, tree);
+          MappingReader.read(intermediaryReader, tree);
+        }
+      },
+      data.serialized()
+    );
   }
 }

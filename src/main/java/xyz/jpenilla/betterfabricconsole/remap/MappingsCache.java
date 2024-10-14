@@ -23,11 +23,10 @@
  */
 package xyz.jpenilla.betterfabricconsole.remap;
 
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
 import com.mojang.logging.LogUtils;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.net.URI;
 import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
@@ -35,24 +34,75 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 import java.text.DecimalFormat;
+import java.util.zip.GZIPOutputStream;
 import net.minecraft.DetectedVersion;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.framework.qual.DefaultQualifier;
 import org.slf4j.Logger;
+import xyz.jpenilla.betterfabricconsole.util.Util;
 
+// TODO: cleanup unused mappings (mappings config switch/mc version upgrade)
+// TODO: keep less intermediary results
 @DefaultQualifier(NonNull.class)
 public final class MappingsCache {
   private static final Logger LOGGER = LogUtils.getLogger();
+  private static final String VERSION = String.valueOf(2);
+  private static final String VERSION_PATH = "version.txt";
   static final String MINECRAFT_VERSION = DetectedVersion.tryDetectVersion().getId();
   static final String DATA_PATH = "data";
   static final String MAPPINGS_PATH = "mappings";
   static final DecimalFormat DECIMAL_FORMAT = new DecimalFormat("0.0000");
-  static final Gson GSON = new GsonBuilder().create();
 
   final Path cache;
+  private final Path failed;
 
-  public MappingsCache(final Path cache) {
+  public MappingsCache(final Path cache) throws IOException {
     this.cache = cache;
+    this.failed = cache.resolveSibling(cache.getFileName() + "_failed");
+    // If this fails, don't try and moveFailed.
+    Util.deleteDirectoryIfExists(this.failed);
+    try {
+      this.checkCacheVersion();
+    } catch (final IOException e) {
+      this.moveFailed();
+      throw e;
+    }
+  }
+
+  private void checkCacheVersion() throws IOException {
+    boolean clean = false;
+    if (!Files.exists(this.cache.resolve(VERSION_PATH))) {
+      clean = true;
+    } else {
+      final String versionString = Files.readString(this.cache.resolve(VERSION_PATH));
+      if (!versionString.equals(VERSION)) {
+        clean = true;
+      }
+    }
+    if (clean) {
+      Util.deleteDirectoryIfExists(this.cache);
+      Files.createDirectories(this.cache);
+      Files.writeString(this.cache.resolve(VERSION_PATH), VERSION);
+    }
+  }
+
+  /**
+   * Attempt to move the failed cache to a separate location to allow inspection. Will be deleted on next startup.
+   */
+  void moveFailed() {
+    if (!Files.exists(this.cache)) {
+      return;
+    }
+    try {
+      Files.move(this.cache, this.failed);
+    } catch (final IOException e) {
+      LOGGER.warn("Failed to move failed mappings cache", e);
+      try {
+        Util.deleteDirectoryIfExists(this.cache);
+      } catch (final IOException e1) {
+        LOGGER.warn("Failed to delete failed mappings cache", e);
+      }
+    }
   }
 
   public MappingsDownloader<MojangMappingsDownloader.MojangMappingsData> createMojangMappingsDownloader() {
@@ -64,6 +114,14 @@ public final class MappingsCache {
   }
 
   static void downloadFile(final String url, final Path dest) throws IOException {
+    downloadFile(url, dest, false);
+  }
+
+  static void downloadFileAndGzip(final String url, final Path dest) throws IOException {
+    downloadFile(url, dest, true);
+  }
+
+  private static void downloadFile(final String url, final Path dest, final boolean gzip) throws IOException {
     Files.createDirectories(dest.getParent());
 
     final Path tempDest = dest.resolveSibling(dest.getFileName().toString() + ".download.tmp");
@@ -76,11 +134,15 @@ public final class MappingsCache {
       final FileOutputStream outputStream = new FileOutputStream(tempDest.toFile())
     ) {
       outputStream.getChannel().transferFrom(downloadChannel, 0, Long.MAX_VALUE);
-    } catch (final IOException ex) {
-      Files.deleteIfExists(tempDest);
-      throw ex;
     }
-    Files.move(tempDest, dest, StandardCopyOption.REPLACE_EXISTING);
+    if (gzip) {
+      try (final OutputStream output = new GZIPOutputStream(Files.newOutputStream(dest))) {
+        Files.copy(tempDest, output);
+        Files.deleteIfExists(tempDest);
+      }
+    } else {
+      Files.move(tempDest, dest, StandardCopyOption.REPLACE_EXISTING);
+    }
     LOGGER.info("Done in {} seconds.", DECIMAL_FORMAT.format((System.currentTimeMillis() - start) / 1000.00D));
   }
 }
