@@ -25,7 +25,7 @@ package xyz.jpenilla.betterfabricconsole.mixin;
 
 import com.mojang.datafixers.DataFixer;
 import java.net.Proxy;
-import net.kyori.adventure.platform.fabric.FabricServerAudiences;
+import net.kyori.adventure.platform.modcommon.MinecraftServerAudiences;
 import net.kyori.adventure.text.serializer.ansi.ANSIComponentSerializer;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.MinecraftServer;
@@ -46,7 +46,7 @@ import org.spongepowered.asm.mixin.Unique;
 abstract class DedicatedServerMixin extends MinecraftServer {
   @Final @Shadow static Logger LOGGER;
 
-  @Unique private final FabricServerAudiences audiences = FabricServerAudiences.of(this);
+  @Unique private final MinecraftServerAudiences audiences = MinecraftServerAudiences.of(this);
 
   DedicatedServerMixin(final Thread thread, final LevelStorageSource.LevelStorageAccess levelStorageAccess, final PackRepository packRepository, final WorldStem worldStem, final Proxy proxy, final DataFixer dataFixer, final Services services, final ChunkProgressListenerFactory chunkProgressListenerFactory) {
     super(thread, levelStorageAccess, packRepository, worldStem, proxy, dataFixer, services, chunkProgressListenerFactory);
@@ -54,6 +54,6 @@ abstract class DedicatedServerMixin extends MinecraftServer {
 
   @Override
   public void sendSystemMessage(final @NonNull Component component) {
-    LOGGER.info(ANSIComponentSerializer.ansi().serialize(this.audiences.toAdventure(component)));
+    LOGGER.info(ANSIComponentSerializer.ansi().serialize(this.audiences.asAdventure(component)));
   }
 }

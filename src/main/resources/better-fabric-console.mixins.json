@@ -10,7 +10,7 @@
   "server": [
     "DedicatedServerConsoleThreadMixin",
     "DedicatedServerMixin",
-    "FabricServerAudiencesImplMixin",
+    "MinecraftServerAudiencesImplMixin",
     "ServerGamePacketListenerImplMixin"
   ],
   "injectors": {

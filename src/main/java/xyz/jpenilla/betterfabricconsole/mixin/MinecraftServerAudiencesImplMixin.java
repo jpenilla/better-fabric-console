@@ -24,8 +24,8 @@
 package xyz.jpenilla.betterfabricconsole.mixin;
 
 import net.kyori.adventure.audience.Audience;
-import net.kyori.adventure.platform.fabric.impl.FabricAudiencesInternal;
-import net.kyori.adventure.platform.fabric.impl.server.FabricServerAudiencesImpl;
+import net.kyori.adventure.platform.modcommon.impl.MinecraftAudiencesInternal;
+import net.kyori.adventure.platform.modcommon.impl.server.MinecraftServerAudiencesImpl;
 import net.minecraft.commands.CommandSource;
 import net.minecraft.server.dedicated.DedicatedServer;
 import org.spongepowered.asm.mixin.Mixin;
@@ -34,8 +34,8 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import xyz.jpenilla.betterfabricconsole.adventure.CommandSourceAudience;
 
-@Mixin(value = FabricServerAudiencesImpl.class, remap = false)
-abstract class FabricServerAudiencesImplMixin {
+@Mixin(value = MinecraftServerAudiencesImpl.class, remap = false)
+abstract class MinecraftServerAudiencesImplMixin {
   @Inject(
     method = "audience(Lnet/minecraft/commands/CommandSource;)Lnet/kyori/adventure/audience/Audience;",
     at = @At("HEAD"),
@@ -44,7 +44,7 @@ abstract class FabricServerAudiencesImplMixin {
   )
   private void injectAudience(final CommandSource source, final CallbackInfoReturnable<Audience> cir) {
     if (source instanceof DedicatedServer) {
-      cir.setReturnValue(new CommandSourceAudience(source, (FabricAudiencesInternal) this));
+      cir.setReturnValue(new CommandSourceAudience(source, (MinecraftAudiencesInternal) this));
     }
   }
 }
