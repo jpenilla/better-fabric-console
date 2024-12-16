@@ -13,13 +13,13 @@ version = "1.2.2-SNAPSHOT"
 group = "xyz.jpenilla"
 description = "Server-side Fabric mod enhancing the console with tab completions, colored log output, command syntax highlighting, command history, and more."
 
-val minecraftVersion = "1.21.3"
+val minecraftVersion = "1.21.4"
 
 dependencies {
   minecraft("com.mojang", "minecraft", minecraftVersion)
   mappings(loom.officialMojangMappings())
   modImplementation("net.fabricmc", "fabric-loader", "0.16.9")
-  modImplementation("net.fabricmc.fabric-api", "fabric-api", "0.107.0+1.21.3")
+  modImplementation("net.fabricmc.fabric-api", "fabric-api", "0.112.1+1.21.4")
 
   annotationProcessor("org.apache.logging.log4j", "log4j-core", "2.24.1")
 
