@@ -21,7 +21,7 @@ pluginManagement {
 }
 
 plugins {
-  id("quiet-fabric-loom") version "1.7-SNAPSHOT"
+  id("quiet-fabric-loom") version "1.9-SNAPSHOT"
   id("org.gradle.toolchains.foojay-resolver-convention") version "0.9.0"
 }
 
