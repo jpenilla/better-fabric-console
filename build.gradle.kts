@@ -33,7 +33,7 @@ dependencies {
 
   implementation(transitiveInclude("org.spongepowered:configurate-hocon:4.1.2")!!)
 
-  compileOnly("org.checkerframework", "checker-qual", "3.48.1")
+  compileOnly("org.checkerframework", "checker-qual", "3.48.3")
 
   implementation(include("net.fabricmc", "mapping-io", "0.6.1"))
 }
