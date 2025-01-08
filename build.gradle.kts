@@ -35,7 +35,7 @@ dependencies {
 
   compileOnly("org.checkerframework", "checker-qual", "3.48.4")
 
-  implementation(include("net.fabricmc", "mapping-io", "0.7.0"))
+  implementation(include("net.fabricmc", "mapping-io", "0.7.1"))
 }
 
 indra {
