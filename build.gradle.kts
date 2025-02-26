@@ -31,7 +31,7 @@ dependencies {
 
   modImplementation(include("net.kyori", "adventure-platform-fabric", "6.2.0"))
 
-  implementation(transitiveInclude("org.spongepowered:configurate-hocon:4.1.2")!!)
+  implementation(transitiveInclude("org.spongepowered:configurate-hocon:4.2.0")!!)
 
   compileOnly("org.checkerframework", "checker-qual", "3.49.0")
 
