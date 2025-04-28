@@ -1,6 +1,12 @@
 dependencyResolutionManagement {
   repositories {
     mavenCentral()
+    maven("https://repo.jpenilla.xyz/snapshots/") {
+      mavenContent {
+        snapshotsOnly()
+        includeGroup("net.kyori") // TODO adventure-platform-mod 6.4.0
+      }
+    }
     maven("https://maven.fabricmc.net/")
     maven("https://s01.oss.sonatype.org/content/repositories/snapshots/") {
       mavenContent { snapshotsOnly() }
@@ -16,7 +22,9 @@ pluginManagement {
   repositories {
     gradlePluginPortal()
     maven("https://maven.fabricmc.net/")
-    maven("https://repo.jpenilla.xyz/snapshots/")
+    maven("https://repo.jpenilla.xyz/snapshots/") {
+      mavenContent { snapshotsOnly() }
+    }
   }
 }
 
