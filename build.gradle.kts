@@ -27,7 +27,7 @@ dependencies {
   implementation(include("org.jline", "jline", jlineVersion))
   implementation(include("org.jline", "jline-terminal-jansi", jlineVersion))
 
-  implementation(include("org.fusesource.jansi", "jansi", "2.4.1"))
+  implementation(include("org.fusesource.jansi", "jansi", "2.4.2"))
 
   modImplementation(include("net.kyori", "adventure-platform-fabric", "6.4.0-SNAPSHOT"))
 
