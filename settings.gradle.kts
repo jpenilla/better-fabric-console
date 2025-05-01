@@ -3,8 +3,8 @@ dependencyResolutionManagement {
     mavenCentral()
     maven("https://repo.jpenilla.xyz/snapshots/") {
       mavenContent {
+        includeGroup("xyz.jpenilla")
         snapshotsOnly()
-        includeGroup("net.kyori") // TODO adventure-platform-mod 6.4.0
       }
     }
     maven("https://maven.fabricmc.net/")
