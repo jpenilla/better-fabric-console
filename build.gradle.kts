@@ -1,4 +1,5 @@
 import me.modmuss50.mpp.ReleaseType
+import xyz.jpenilla.resourcefactory.fabric.Environment
 
 plugins {
   val indraVersion = "3.1.3"
@@ -7,6 +8,7 @@ plugins {
   id("net.kyori.indra.license-header") version indraVersion
   id("quiet-fabric-loom")
   id("me.modmuss50.mod-publish-plugin") version "0.8.4"
+  id("xyz.jpenilla.resource-factory-fabric-convention") version "1.3.0"
 }
 
 version = "1.2.4-SNAPSHOT"
@@ -48,19 +50,28 @@ license {
   exclude("io/papermc/**")
 }
 
-tasks {
-  processResources {
-    val props = mapOf(
-      "name" to "Better Fabric Console",
-      "description" to project.description,
-      "version" to project.version,
-      "githubUrl" to "https://github.com/jpenilla/better-fabric-console"
-    )
-    inputs.properties(props)
-    filesMatching("fabric.mod.json") {
-      expand(props)
-    }
+fabricModJson {
+  name = "Better Fabric Console"
+  author("jmp")
+  val githubUrl = "https://github.com/jpenilla/better-fabric-console"
+  contact {
+    homepage = githubUrl
+    sources = githubUrl
+    issues = "$githubUrl/issues"
   }
+  mitLicense()
+  icon("assets/better-fabric-console/icon.png")
+  environment = Environment.SERVER
+  mainEntrypoint("xyz.jpenilla.betterfabricconsole.BetterFabricConsole")
+  entrypoint("preLaunch", "xyz.jpenilla.betterfabricconsole.BetterFabricConsolePreLaunch")
+  mixin("better-fabric-console.mixins.json")
+  depends("fabricloader", ">=0.16.14")
+  depends("fabric-api", "*")
+  depends("minecraft", minecraftVersion)
+  depends("adventure-platform-fabric", "*")
+}
+
+tasks {
   jar {
     from("LICENSE")
   }
