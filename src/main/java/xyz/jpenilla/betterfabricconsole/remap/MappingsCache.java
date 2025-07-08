@@ -48,7 +48,7 @@ public final class MappingsCache {
   private static final Logger LOGGER = LogUtils.getLogger();
   private static final String VERSION = String.valueOf(2);
   private static final String VERSION_PATH = "version.txt";
-  static final String MINECRAFT_VERSION = DetectedVersion.tryDetectVersion().getId();
+  static final String MINECRAFT_VERSION = DetectedVersion.tryDetectVersion().id();
   static final String DATA_PATH = "data";
   static final String MAPPINGS_PATH = "mappings";
   static final DecimalFormat DECIMAL_FORMAT = new DecimalFormat("0.0000");

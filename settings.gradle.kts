@@ -3,15 +3,13 @@ dependencyResolutionManagement {
     mavenCentral()
     maven("https://repo.jpenilla.xyz/snapshots/") {
       mavenContent {
-        includeGroup("xyz.jpenilla")
         snapshotsOnly()
+        includeGroup("xyz.jpenilla")
+        includeGroup("net.kyori") // TODO adventure-platform
       }
     }
     maven("https://maven.fabricmc.net/")
-    maven("https://s01.oss.sonatype.org/content/repositories/snapshots/") {
-      mavenContent { snapshotsOnly() }
-    }
-    maven("https://oss.sonatype.org/content/repositories/snapshots/") {
+    maven("https://central.sonatype.com/repository/maven-snapshots/") {
       mavenContent { snapshotsOnly() }
     }
   }
@@ -29,7 +27,7 @@ pluginManagement {
 }
 
 plugins {
-  id("quiet-fabric-loom") version "1.10-SNAPSHOT"
+  id("quiet-fabric-loom") version "1.11-SNAPSHOT"
   id("org.gradle.toolchains.foojay-resolver-convention") version "1.0.0"
 }
 
