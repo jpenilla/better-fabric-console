@@ -5,13 +5,12 @@ dependencyResolutionManagement {
       mavenContent {
         snapshotsOnly()
         includeGroup("xyz.jpenilla")
-        includeGroup("net.kyori") // TODO adventure-platform
       }
     }
-    maven("https://maven.fabricmc.net/")
     maven("https://central.sonatype.com/repository/maven-snapshots/") {
       mavenContent { snapshotsOnly() }
     }
+    maven("https://maven.fabricmc.net/")
   }
   repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
 }
