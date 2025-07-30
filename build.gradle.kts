@@ -2,7 +2,7 @@ import me.modmuss50.mpp.ReleaseType
 import xyz.jpenilla.resourcefactory.fabric.Environment
 
 plugins {
-  val indraVersion = "3.1.3"
+  val indraVersion = "3.2.0"
   id("net.kyori.indra") version indraVersion
   id("net.kyori.indra.checkstyle") version indraVersion
   id("net.kyori.indra.license-header") version indraVersion
