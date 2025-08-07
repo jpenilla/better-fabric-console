@@ -11,7 +11,7 @@ plugins {
   id("xyz.jpenilla.resource-factory-fabric-convention") version "1.3.0"
 }
 
-version = "1.2.5-SNAPSHOT"
+version = "1.2.5"
 group = "xyz.jpenilla"
 description = "Server-side Fabric mod enhancing the console with tab completions, colored log output, command syntax highlighting, command history, and more."
 
