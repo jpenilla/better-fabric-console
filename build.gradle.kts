@@ -37,7 +37,7 @@ dependencies {
     exclude("net.kyori", "option") // provided by adventure-platform-fabric
   })
 
-  compileOnly("org.checkerframework", "checker-qual", "3.49.3")
+  compileOnly("org.checkerframework", "checker-qual", "3.49.5")
 
   implementation(include("net.fabricmc", "mapping-io", "0.7.1"))
 }
