@@ -8,7 +8,7 @@ plugins {
   id("net.kyori.indra.license-header") version indraVersion
   id("quiet-fabric-loom")
   id("me.modmuss50.mod-publish-plugin") version "0.8.4"
-  id("xyz.jpenilla.resource-factory-fabric-convention") version "1.3.0"
+  id("xyz.jpenilla.resource-factory-fabric-convention") version "1.3.1"
 }
 
 version = "1.2.6-SNAPSHOT"
