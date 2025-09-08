@@ -33,13 +33,12 @@ import java.nio.file.Path;
 import java.time.Duration;
 import java.util.Comparator;
 import java.util.stream.StreamSupport;
-import org.checkerframework.checker.nullness.qual.NonNull;
-import org.checkerframework.checker.nullness.qual.Nullable;
-import org.checkerframework.framework.qual.DefaultQualifier;
+import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 import xyz.jpenilla.betterfabricconsole.util.Util;
 
-@DefaultQualifier(NonNull.class)
+@NullMarked
 final class YarnMappingsDownloader implements MappingsDownloader<YarnMappingsDownloader.YarnData> {
   private static final Logger LOGGER = LogUtils.getLogger();
   private static final String YARN_VERSIONS_PATH = MappingsCache.DATA_PATH + "/yarn-versions.json.gz";

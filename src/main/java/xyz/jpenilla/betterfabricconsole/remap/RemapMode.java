@@ -26,13 +26,12 @@ package xyz.jpenilla.betterfabricconsole.remap;
 import com.mojang.logging.LogUtils;
 import java.io.IOException;
 import java.util.function.Function;
-import org.checkerframework.checker.nullness.qual.NonNull;
-import org.checkerframework.checker.nullness.qual.Nullable;
-import org.checkerframework.framework.qual.DefaultQualifier;
+import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 import xyz.jpenilla.betterfabricconsole.util.ThrowingFunction;
 
-@DefaultQualifier(NonNull.class)
+@NullMarked
 public enum RemapMode {
   MOJANG(MappingsCache::createMojangMappingsDownloader, Remapper::mojangMappings),
   YARN(MappingsCache::createYarnMappingsDownloader, Remapper::yarn),

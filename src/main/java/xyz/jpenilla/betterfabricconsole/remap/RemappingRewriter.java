@@ -26,10 +26,9 @@ package xyz.jpenilla.betterfabricconsole.remap;
 import org.apache.logging.log4j.core.LogEvent;
 import org.apache.logging.log4j.core.appender.rewrite.RewritePolicy;
 import org.apache.logging.log4j.core.impl.Log4jLogEvent;
-import org.checkerframework.checker.nullness.qual.NonNull;
-import org.checkerframework.framework.qual.DefaultQualifier;
+import org.jspecify.annotations.NullMarked;
 
-@DefaultQualifier(NonNull.class)
+@NullMarked
 public final class RemappingRewriter implements RewritePolicy {
   private final Remapper remapper;
 

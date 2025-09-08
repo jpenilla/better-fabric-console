@@ -36,14 +36,13 @@ import java.nio.file.StandardCopyOption;
 import java.text.DecimalFormat;
 import java.util.zip.GZIPOutputStream;
 import net.minecraft.DetectedVersion;
-import org.checkerframework.checker.nullness.qual.NonNull;
-import org.checkerframework.framework.qual.DefaultQualifier;
+import org.jspecify.annotations.NullMarked;
 import org.slf4j.Logger;
 import xyz.jpenilla.betterfabricconsole.util.Util;
 
 // TODO: cleanup unused mappings (mappings config switch/mc version upgrade)
 // TODO: keep less intermediary results
-@DefaultQualifier(NonNull.class)
+@NullMarked
 public final class MappingsCache {
   private static final Logger LOGGER = LogUtils.getLogger();
   private static final String VERSION = String.valueOf(2);

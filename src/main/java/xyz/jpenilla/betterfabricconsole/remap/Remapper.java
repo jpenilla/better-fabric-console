@@ -34,12 +34,11 @@ import java.nio.file.Files;
 import java.util.HashMap;
 import net.fabricmc.mappingio.MappingReader;
 import net.fabricmc.mappingio.format.proguard.ProGuardFileReader;
-import org.checkerframework.checker.nullness.qual.NonNull;
-import org.checkerframework.framework.qual.DefaultQualifier;
+import org.jspecify.annotations.NullMarked;
 import org.slf4j.Logger;
 import xyz.jpenilla.betterfabricconsole.util.Util;
 
-@DefaultQualifier(NonNull.class)
+@NullMarked
 public interface Remapper {
   Logger LOGGER = LogUtils.getLogger();
 

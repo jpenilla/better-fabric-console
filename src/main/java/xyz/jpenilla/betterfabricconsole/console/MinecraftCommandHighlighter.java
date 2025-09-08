@@ -30,17 +30,16 @@ import com.mojang.brigadier.tree.LiteralCommandNode;
 import java.util.regex.Pattern;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.server.MinecraftServer;
-import org.checkerframework.checker.nullness.qual.NonNull;
-import org.checkerframework.framework.qual.DefaultQualifier;
 import org.jline.reader.Highlighter;
 import org.jline.reader.LineReader;
 import org.jline.utils.AttributedString;
 import org.jline.utils.AttributedStringBuilder;
 import org.jline.utils.AttributedStyle;
+import org.jspecify.annotations.NullMarked;
 import xyz.jpenilla.betterfabricconsole.configuration.Config;
 import xyz.jpenilla.betterfabricconsole.util.Util;
 
-@DefaultQualifier(NonNull.class)
+@NullMarked
 public record MinecraftCommandHighlighter(
   MinecraftServer server,
   Config.StyleColor[] colors

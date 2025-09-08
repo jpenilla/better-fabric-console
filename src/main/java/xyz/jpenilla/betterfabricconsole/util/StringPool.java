@@ -25,13 +25,12 @@ package xyz.jpenilla.betterfabricconsole.util;
 
 import java.util.Map;
 import java.util.function.Function;
-import org.checkerframework.checker.nullness.qual.NonNull;
-import org.checkerframework.framework.qual.DefaultQualifier;
+import org.jspecify.annotations.NullMarked;
 
 /**
  * Wrapper around {@link Map#computeIfAbsent(Object, Function)} to deduplicate string instances.
  */
-@DefaultQualifier(NonNull.class)
+@NullMarked
 public final class StringPool {
   private final Map<String, String> cache;
 

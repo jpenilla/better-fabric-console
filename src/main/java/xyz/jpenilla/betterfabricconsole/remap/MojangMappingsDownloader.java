@@ -31,12 +31,11 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.function.Supplier;
 import java.util.stream.StreamSupport;
-import org.checkerframework.checker.nullness.qual.NonNull;
-import org.checkerframework.checker.nullness.qual.Nullable;
-import org.checkerframework.framework.qual.DefaultQualifier;
+import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 import xyz.jpenilla.betterfabricconsole.util.Util;
 
-@DefaultQualifier(NonNull.class)
+@NullMarked
 final class MojangMappingsDownloader implements MappingsDownloader<MojangMappingsDownloader.MojangMappingsData> {
   private static final String MC_MANIFEST_PATH = MappingsCache.DATA_PATH + "/mc-manifest.json.gz";
   private static final String MC_VERSION_MANIFEST_PATH = MappingsCache.DATA_PATH + "/mc-version-" + MappingsCache.MINECRAFT_VERSION + ".json";

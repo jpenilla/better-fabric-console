@@ -23,14 +23,13 @@
  */
 package xyz.jpenilla.betterfabricconsole.configuration;
 
-import org.checkerframework.checker.nullness.qual.NonNull;
-import org.checkerframework.framework.qual.DefaultQualifier;
+import org.jspecify.annotations.NullMarked;
 import org.spongepowered.configurate.objectmapping.ConfigSerializable;
 import org.spongepowered.configurate.objectmapping.meta.Comment;
 import xyz.jpenilla.betterfabricconsole.remap.RemapMode;
 
 @ConfigSerializable
-@DefaultQualifier(NonNull.class)
+@NullMarked
 public final class Config {
   /**
    * Mirrors {@link org.jline.utils.AttributedStyle} color constants.

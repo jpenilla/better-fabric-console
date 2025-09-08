@@ -27,14 +27,13 @@ import com.google.common.collect.Iterables;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import org.checkerframework.checker.nullness.qual.NonNull;
-import org.checkerframework.framework.qual.DefaultQualifier;
 import org.jline.reader.Candidate;
 import org.jline.reader.CompletingParsedLine;
 import org.jline.reader.LineReader;
 import org.jline.reader.impl.CompletionMatcherImpl;
+import org.jspecify.annotations.NullMarked;
 
-@DefaultQualifier(NonNull.class)
+@NullMarked
 public final class MinecraftCompletionMatcher extends CompletionMatcherImpl {
 
   @Override

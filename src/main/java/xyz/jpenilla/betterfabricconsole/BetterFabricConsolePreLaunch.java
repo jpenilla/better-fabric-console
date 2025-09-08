@@ -36,10 +36,8 @@ import net.fabricmc.loader.api.ModContainer;
 import net.fabricmc.loader.api.entrypoint.PreLaunchEntrypoint;
 import org.apache.logging.log4j.core.config.plugins.util.PluginRegistry;
 import org.apache.logging.log4j.core.config.plugins.util.PluginType;
-import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
-import org.checkerframework.checker.nullness.qual.NonNull;
-import org.checkerframework.checker.nullness.qual.Nullable;
-import org.checkerframework.framework.qual.DefaultQualifier;
+import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 import org.spongepowered.configurate.CommentedConfigurationNode;
 import org.spongepowered.configurate.hocon.HoconConfigurationLoader;
@@ -50,14 +48,16 @@ import xyz.jpenilla.betterfabricconsole.remap.MappingsCache;
 import xyz.jpenilla.betterfabricconsole.remap.RemapMode;
 import xyz.jpenilla.betterfabricconsole.remap.Remapper;
 
-@DefaultQualifier(NonNull.class)
+import static java.util.Objects.requireNonNull;
+
+@NullMarked
 public final class BetterFabricConsolePreLaunch implements PreLaunchEntrypoint {
   private static final Logger LOGGER = LogUtils.getLogger();
-  static @MonotonicNonNull BetterFabricConsolePreLaunch INSTANCE;
+  private static @Nullable BetterFabricConsolePreLaunch INSTANCE;
 
-  @MonotonicNonNull ModContainer modContainer;
-  @MonotonicNonNull Config config;
-  @MonotonicNonNull ConsoleState consoleState;
+  private @Nullable ModContainer modContainer;
+  private @Nullable Config config;
+  private @Nullable ConsoleState consoleState;
 
   @Override
   public void onPreLaunch() {
@@ -76,7 +76,7 @@ public final class BetterFabricConsolePreLaunch implements PreLaunchEntrypoint {
 
   private void loadModConfig() {
     final Path configFile = FabricLoader.getInstance().getConfigDir()
-      .resolve(this.modContainer.getMetadata().getId() + ".conf");
+      .resolve(this.modContainer().getMetadata().getId() + ".conf");
     final HoconConfigurationLoader loader = HoconConfigurationLoader.builder()
       .path(configFile)
       .build();
@@ -99,10 +99,18 @@ public final class BetterFabricConsolePreLaunch implements PreLaunchEntrypoint {
     return this.config;
   }
 
+  public ModContainer modContainer() {
+    return requireNonNull(this.modContainer);
+  }
+
+  public ConsoleState consoleState() {
+    return requireNonNull(this.consoleState);
+  }
+
   private void initConsole() {
     LOGGER.info("Initializing Better Fabric Console...");
-    final @Nullable Remapper remapper = this.createRemapper();
-    this.consoleState = ConsoleSetup.init(remapper, this.config);
+    final Remapper remapper = this.createRemapper();
+    this.consoleState = ConsoleSetup.init(remapper, this.config());
   }
 
   private @Nullable Remapper createRemapper() {
@@ -110,7 +118,7 @@ public final class BetterFabricConsolePreLaunch implements PreLaunchEntrypoint {
       LOGGER.info("Skipping Better Fabric Console mappings initialization, we are in a development environment (already mapped).");
       return null;
     }
-    if (this.config.remapMode() == RemapMode.NONE) {
+    if (this.config().remapMode() == RemapMode.NONE) {
       return null;
     }
 
@@ -124,7 +132,7 @@ public final class BetterFabricConsolePreLaunch implements PreLaunchEntrypoint {
       LOGGER.warn("Failed to initialize mappings cache", e);
       return null;
     }
-    return this.config.remapMode().createRemapper(mappingsCache);
+    return this.config().remapMode().createRemapper(mappingsCache);
   }
 
   @SuppressWarnings("unchecked")

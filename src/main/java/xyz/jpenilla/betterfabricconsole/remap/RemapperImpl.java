@@ -32,14 +32,13 @@ import java.util.HashMap;
 import java.util.Map;
 import net.fabricmc.mappingio.tree.MappingTree;
 import net.fabricmc.mappingio.tree.MemoryMappingTree;
-import org.checkerframework.checker.nullness.qual.NonNull;
-import org.checkerframework.checker.nullness.qual.Nullable;
-import org.checkerframework.framework.qual.DefaultQualifier;
+import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 import xyz.jpenilla.betterfabricconsole.util.StringPool;
 import xyz.jpenilla.betterfabricconsole.util.ThrowingConsumer;
 import xyz.jpenilla.betterfabricconsole.util.Util;
 
-@DefaultQualifier(NonNull.class)
+@NullMarked
 record RemapperImpl(
   Map<String, String> classes,
   Map<String, String> methods

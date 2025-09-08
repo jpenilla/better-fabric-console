@@ -32,7 +32,7 @@ import net.kyori.adventure.platform.modcommon.impl.AdventureCommon;
 import net.kyori.adventure.platform.modcommon.impl.MinecraftAudiencesInternal;
 import net.kyori.adventure.text.Component;
 import net.minecraft.commands.CommandSource;
-import org.checkerframework.checker.nullness.qual.NonNull;
+import org.jspecify.annotations.NonNull;
 
 /**
  * copy pasta of a class from adventure-platform-fabric, because it's not visible and this is easy.

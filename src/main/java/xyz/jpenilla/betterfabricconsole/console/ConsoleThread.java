@@ -25,14 +25,13 @@ package xyz.jpenilla.betterfabricconsole.console;
 
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.dedicated.DedicatedServer;
-import org.checkerframework.checker.nullness.qual.NonNull;
-import org.checkerframework.framework.qual.DefaultQualifier;
 import org.jline.reader.EndOfFileException;
 import org.jline.reader.LineReader;
 import org.jline.reader.UserInterruptException;
+import org.jspecify.annotations.NullMarked;
 import xyz.jpenilla.betterfabricconsole.BetterFabricConsole;
 
-@DefaultQualifier(NonNull.class)
+@NullMarked
 public final class ConsoleThread extends Thread {
   private static final String TERMINAL_PROMPT = "> ";
   private static final String STOP_COMMAND = "stop";

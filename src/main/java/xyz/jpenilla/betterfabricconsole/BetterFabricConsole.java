@@ -37,9 +37,8 @@ import net.minecraft.commands.CommandBuildContext;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.server.dedicated.DedicatedServer;
-import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
-import org.checkerframework.checker.nullness.qual.NonNull;
-import org.checkerframework.framework.qual.DefaultQualifier;
+import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 import xyz.jpenilla.betterfabricconsole.configuration.Config;
 import xyz.jpenilla.betterfabricconsole.console.ConsoleState;
@@ -55,11 +54,11 @@ import static net.kyori.adventure.text.format.TextDecoration.BOLD;
 import static net.kyori.adventure.text.format.TextDecoration.ITALIC;
 import static net.minecraft.commands.Commands.literal;
 
-@DefaultQualifier(NonNull.class)
+@NullMarked
 public final class BetterFabricConsole implements ModInitializer {
   public static final Logger LOGGER = LogUtils.getLogger();
   private static final TextColor PINK = color(0xFF79C6);
-  private static @MonotonicNonNull BetterFabricConsole INSTANCE;
+  private static @Nullable BetterFabricConsole INSTANCE;
 
   @Override
   public void onInitialize() {
@@ -69,7 +68,7 @@ public final class BetterFabricConsole implements ModInitializer {
   }
 
   private void initConsoleThread(final DedicatedServer server) {
-    final ConsoleState consoleState = BetterFabricConsolePreLaunch.INSTANCE.consoleState;
+    final ConsoleState consoleState = BetterFabricConsolePreLaunch.instance().consoleState();
     consoleState.completer().delegateTo(new MinecraftCommandCompleter(server, MinecraftServerAudiences.of(server)));
     consoleState.highlighter().delegateTo(new MinecraftCommandHighlighter(server, this.config().highlightColors()));
     consoleState.parser().delegateTo(new MinecraftConsoleParser(server));
@@ -94,12 +93,12 @@ public final class BetterFabricConsole implements ModInitializer {
       .color(GRAY)
       .append(text("Better Fabric Console", PINK, BOLD))
       .append(text().content(" v").decorate(ITALIC))
-      .append(text(BetterFabricConsolePreLaunch.INSTANCE.modContainer.getMetadata().getVersion().getFriendlyString())));
+      .append(text(BetterFabricConsolePreLaunch.instance().modContainer().getMetadata().getVersion().getFriendlyString())));
     return Command.SINGLE_SUCCESS;
   }
 
   public Config config() {
-    return BetterFabricConsolePreLaunch.INSTANCE.config;
+    return BetterFabricConsolePreLaunch.instance().config();
   }
 
   public static BetterFabricConsole instance() {

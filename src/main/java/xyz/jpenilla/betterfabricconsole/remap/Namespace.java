@@ -23,10 +23,9 @@
  */
 package xyz.jpenilla.betterfabricconsole.remap;
 
-import org.checkerframework.checker.nullness.qual.NonNull;
-import org.checkerframework.framework.qual.DefaultQualifier;
+import org.jspecify.annotations.NullMarked;
 
-@DefaultQualifier(NonNull.class)
+@NullMarked
 public final class Namespace {
   private Namespace() {
   }
