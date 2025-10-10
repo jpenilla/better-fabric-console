@@ -32,7 +32,7 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.Services;
 import net.minecraft.server.WorldStem;
 import net.minecraft.server.dedicated.DedicatedServer;
-import net.minecraft.server.level.progress.ChunkProgressListenerFactory;
+import net.minecraft.server.level.progress.LevelLoadListener;
 import net.minecraft.server.packs.repository.PackRepository;
 import net.minecraft.world.level.storage.LevelStorageSource;
 import org.jspecify.annotations.NonNull;
@@ -48,8 +48,8 @@ abstract class DedicatedServerMixin extends MinecraftServer {
 
   @Unique private final MinecraftServerAudiences audiences = MinecraftServerAudiences.of(this);
 
-  DedicatedServerMixin(final Thread thread, final LevelStorageSource.LevelStorageAccess levelStorageAccess, final PackRepository packRepository, final WorldStem worldStem, final Proxy proxy, final DataFixer dataFixer, final Services services, final ChunkProgressListenerFactory chunkProgressListenerFactory) {
-    super(thread, levelStorageAccess, packRepository, worldStem, proxy, dataFixer, services, chunkProgressListenerFactory);
+  DedicatedServerMixin(final Thread thread, final LevelStorageSource.LevelStorageAccess levelStorageAccess, final PackRepository packRepository, final WorldStem worldStem, final Proxy proxy, final DataFixer dataFixer, final Services services, final LevelLoadListener levelLoadListener) {
+    super(thread, levelStorageAccess, packRepository, worldStem, proxy, dataFixer, services, levelLoadListener);
   }
 
   @Override

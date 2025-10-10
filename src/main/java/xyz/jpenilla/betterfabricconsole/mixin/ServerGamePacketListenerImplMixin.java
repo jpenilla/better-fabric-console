@@ -55,7 +55,7 @@ abstract class ServerGamePacketListenerImplMixin implements ServerPlayerConnecti
   @Unique
   private void logCommand(final String command) {
     if (BetterFabricConsole.instance().config().logPlayerExecutedCommands()) {
-      BetterFabricConsole.LOGGER.info("{} issued server command: /{}", this.getPlayer().getGameProfile().getName(), command);
+      BetterFabricConsole.LOGGER.info("{} issued server command: /{}", this.getPlayer().getGameProfile().name(), command);
     }
   }
 }

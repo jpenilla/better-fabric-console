@@ -84,7 +84,7 @@ public final class BetterFabricConsole implements ModInitializer {
     final Commands.CommandSelection commandSelection
   ) {
     dispatcher.register(literal("better-fabric-console")
-      .requires(stack -> stack.hasPermission(stack.getServer().getOperatorUserPermissionLevel()))
+      .requires(stack -> stack.hasPermission(stack.getServer().operatorUserPermissionLevel()))
       .executes(this::executeCommand));
   }
 
