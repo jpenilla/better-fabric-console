@@ -11,7 +11,7 @@ plugins {
   id("xyz.jpenilla.resource-factory-fabric-convention") version "1.3.1"
 }
 
-version = "1.2.7-SNAPSHOT"
+version = "1.2.7"
 group = "xyz.jpenilla"
 description = "Server-side Fabric mod enhancing the console with tab completions, colored log output, command syntax highlighting, command history, and more."
 
@@ -31,7 +31,7 @@ dependencies {
 
   implementation(include("org.fusesource.jansi", "jansi", "2.4.2"))
 
-  modImplementation(include("net.kyori", "adventure-platform-fabric", "6.7.0"))
+  modImplementation("net.kyori", "adventure-platform-fabric", "6.7.0")
 
   implementation(transitiveInclude("org.spongepowered:configurate-hocon:4.2.0") {
     exclude("net.kyori", "option") // provided by adventure-platform-fabric
@@ -67,7 +67,7 @@ fabricModJson {
   mixin("better-fabric-console.mixins.json")
   depends("fabricloader", ">=0.17.2")
   depends("fabric-api", "*")
-  depends("minecraft", minecraftVersion)
+  depends("minecraft", ">=$minecraftVersion")
   depends("adventure-platform-fabric", "*")
 }
 
@@ -89,4 +89,5 @@ publishMods.modrinth {
   minecraftVersions.add(minecraftVersion)
   modLoaders.add("fabric")
   requires("fabric-api")
+  requires("adventure-platform-mod")
 }
