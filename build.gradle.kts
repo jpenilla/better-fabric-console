@@ -39,7 +39,7 @@ dependencies {
 
   compileOnly("org.jspecify:jspecify:1.0.0")
 
-  implementation(include("net.fabricmc", "mapping-io", "0.7.1"))
+  implementation(include("net.fabricmc", "mapping-io", "0.8.0"))
 }
 
 indra {
