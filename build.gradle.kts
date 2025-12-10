@@ -31,7 +31,7 @@ dependencies {
 
   implementation(include("org.fusesource.jansi", "jansi", "2.4.2"))
 
-  modImplementation("net.kyori", "adventure-platform-fabric", "6.7.0")
+  modImplementation("net.kyori", "adventure-platform-fabric", "6.8.0")
 
   implementation(transitiveInclude("org.spongepowered:configurate-hocon:4.2.0") {
     exclude("net.kyori", "option") // provided by adventure-platform-fabric
