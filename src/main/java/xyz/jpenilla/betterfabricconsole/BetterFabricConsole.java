@@ -37,6 +37,7 @@ import net.minecraft.commands.CommandBuildContext;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.server.dedicated.DedicatedServer;
+import net.minecraft.server.permissions.Permission;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
@@ -84,7 +85,8 @@ public final class BetterFabricConsole implements ModInitializer {
     final Commands.CommandSelection commandSelection
   ) {
     dispatcher.register(literal("better-fabric-console")
-      .requires(stack -> stack.hasPermission(stack.getServer().operatorUserPermissionLevel()))
+      .requires(stack -> stack.permissions().hasPermission(
+        new Permission.HasCommandLevel(stack.getServer().operatorUserPermissions().level())))
       .executes(this::executeCommand));
   }
 

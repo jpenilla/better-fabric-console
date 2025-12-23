@@ -2,10 +2,10 @@ import me.modmuss50.mpp.ReleaseType
 import xyz.jpenilla.resourcefactory.fabric.Environment
 
 plugins {
-  val indraVersion = "3.2.0"
+  val indraVersion = "4.0.0"
   id("net.kyori.indra") version indraVersion
   id("net.kyori.indra.checkstyle") version indraVersion
-  id("net.kyori.indra.license-header") version indraVersion
+  id("net.kyori.indra.licenser.spotless") version indraVersion
   id("quiet-fabric-loom")
   id("me.modmuss50.mod-publish-plugin") version "1.1.0"
   id("xyz.jpenilla.resource-factory-fabric-convention") version "1.3.1"
@@ -15,13 +15,13 @@ version = "1.2.8-SNAPSHOT"
 group = "xyz.jpenilla"
 description = "Server-side Fabric mod enhancing the console with tab completions, colored log output, command syntax highlighting, command history, and more."
 
-val minecraftVersion = "1.21.10"
+val minecraftVersion = "1.21.11"
 
 dependencies {
   minecraft("com.mojang", "minecraft", minecraftVersion)
   mappings(loom.officialMojangMappings())
   modImplementation("net.fabricmc", "fabric-loader", "0.18.3")
-  modImplementation("net.fabricmc.fabric-api", "fabric-api", "0.135.0+1.21.10")
+  modImplementation("net.fabricmc.fabric-api", "fabric-api", "0.140.2+1.21.11")
 
   annotationProcessor("org.apache.logging.log4j", "log4j-core", "2.25.3")
 
@@ -31,7 +31,7 @@ dependencies {
 
   implementation(include("org.fusesource.jansi", "jansi", "2.4.2"))
 
-  modImplementation("net.kyori", "adventure-platform-fabric", "6.7.0")
+  modImplementation("net.kyori", "adventure-platform-fabric", "6.8.0")
 
   implementation(transitiveInclude("org.spongepowered:configurate-hocon:4.2.0") {
     exclude("net.kyori", "option") // provided by adventure-platform-fabric
@@ -44,10 +44,6 @@ dependencies {
 
 indra {
   javaVersions().target(21)
-}
-
-license {
-  exclude("io/papermc/**")
 }
 
 fabricModJson {
