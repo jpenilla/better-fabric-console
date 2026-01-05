@@ -21,7 +21,7 @@ dependencies {
   minecraft("com.mojang", "minecraft", minecraftVersion)
   mappings(loom.officialMojangMappings())
   modImplementation("net.fabricmc", "fabric-loader", "0.18.3")
-  modImplementation("net.fabricmc.fabric-api", "fabric-api", "0.140.2+1.21.11")
+  modImplementation("net.fabricmc.fabric-api", "fabric-api", "0.141.1+1.21.11")
 
   annotationProcessor("org.apache.logging.log4j", "log4j-core", "2.25.3")
 
