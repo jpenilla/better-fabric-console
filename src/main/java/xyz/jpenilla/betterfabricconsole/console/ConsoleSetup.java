@@ -34,10 +34,7 @@ import org.jline.reader.LineReader;
 import org.jline.reader.LineReaderBuilder;
 import org.jline.reader.Parser;
 import org.jspecify.annotations.NullMarked;
-import org.jspecify.annotations.Nullable;
 import xyz.jpenilla.betterfabricconsole.configuration.Config;
-import xyz.jpenilla.betterfabricconsole.remap.Remapper;
-import xyz.jpenilla.betterfabricconsole.remap.RemappingRewriter;
 
 @NullMarked
 public final class ConsoleSetup {
@@ -65,7 +62,6 @@ public final class ConsoleSetup {
   }
 
   public static ConsoleState init(
-    final @Nullable Remapper remapper,
     final Config config
   ) {
     final DelegatingCompleter delegatingCompleter = new DelegatingCompleter();
@@ -80,7 +76,7 @@ public final class ConsoleSetup {
     final ConsoleAppender consoleAppender = new ConsoleAppender(
       lineReader,
       config.logPattern(),
-      remapper != null ? new RemappingRewriter(remapper) : null
+      null
     );
     consoleAppender.start();
 

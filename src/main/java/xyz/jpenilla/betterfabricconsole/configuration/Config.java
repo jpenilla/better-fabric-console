@@ -26,7 +26,6 @@ package xyz.jpenilla.betterfabricconsole.configuration;
 import org.jspecify.annotations.NullMarked;
 import org.spongepowered.configurate.objectmapping.ConfigSerializable;
 import org.spongepowered.configurate.objectmapping.meta.Comment;
-import xyz.jpenilla.betterfabricconsole.remap.RemapMode;
 
 @ConfigSerializable
 @NullMarked
@@ -72,14 +71,7 @@ public final class Config {
   @Comment("Whether to log commands executed by players to console.")
   private boolean logPlayerExecutedCommands = true;
 
-  @Comment("Controls whether logger names and stacktraces should be left in intermediary mappings (NONE), remapped to Mojang mappings (MOJANG), or to Yarn mappings (YARN).")
-  private RemapMode remapMode = RemapMode.MOJANG;
-
   public boolean logPlayerExecutedCommands() {
     return this.logPlayerExecutedCommands;
-  }
-
-  public RemapMode remapMode() {
-    return this.remapMode;
   }
 }

@@ -44,9 +44,6 @@ import org.spongepowered.configurate.hocon.HoconConfigurationLoader;
 import xyz.jpenilla.betterfabricconsole.configuration.Config;
 import xyz.jpenilla.betterfabricconsole.console.ConsoleSetup;
 import xyz.jpenilla.betterfabricconsole.console.ConsoleState;
-import xyz.jpenilla.betterfabricconsole.remap.MappingsCache;
-import xyz.jpenilla.betterfabricconsole.remap.RemapMode;
-import xyz.jpenilla.betterfabricconsole.remap.Remapper;
 
 import static java.util.Objects.requireNonNull;
 
@@ -109,30 +106,7 @@ public final class BetterFabricConsolePreLaunch implements PreLaunchEntrypoint {
 
   private void initConsole() {
     LOGGER.info("Initializing Better Fabric Console...");
-    final Remapper remapper = this.createRemapper();
-    this.consoleState = ConsoleSetup.init(remapper, this.config());
-  }
-
-  private @Nullable Remapper createRemapper() {
-    if (FabricLoader.getInstance().isDevelopmentEnvironment()) {
-      LOGGER.info("Skipping Better Fabric Console mappings initialization, we are in a development environment (already mapped).");
-      return null;
-    }
-    if (this.config().remapMode() == RemapMode.NONE) {
-      return null;
-    }
-
-    LOGGER.info("Initializing Better Fabric Console mappings...");
-    final MappingsCache mappingsCache;
-    try {
-      mappingsCache = new MappingsCache(
-        FabricLoader.getInstance().getGameDir().resolve("better-fabric-console/mappings-cache")
-      );
-    } catch (final IOException e) {
-      LOGGER.warn("Failed to initialize mappings cache", e);
-      return null;
-    }
-    return this.config().remapMode().createRemapper(mappingsCache);
+    this.consoleState = ConsoleSetup.init(this.config());
   }
 
   @SuppressWarnings("unchecked")
