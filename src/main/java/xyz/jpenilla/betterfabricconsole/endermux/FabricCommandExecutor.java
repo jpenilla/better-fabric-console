@@ -21,46 +21,24 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package xyz.jpenilla.betterfabricconsole.util;
+package xyz.jpenilla.betterfabricconsole.endermux;
 
-import java.io.IOException;
-import org.jline.terminal.Terminal;
-import org.jline.terminal.TerminalBuilder;
+import net.minecraft.server.dedicated.DedicatedServer;
 import org.jspecify.annotations.NullMarked;
+import xyz.jpenilla.endermux.protocol.Payloads;
+import xyz.jpenilla.endermux.server.api.ServerHooks;
 
 @NullMarked
-public final class TerminalModeDetection {
-  private static final boolean CONSOLE_INPUT_AVAILABLE = System.console() != null;
-  private static final TerminalMode MODE = detectMode();
+public final class FabricCommandExecutor implements ServerHooks.CommandExecutor {
+  private final DedicatedServer server;
 
-  private TerminalModeDetection() {
+  public FabricCommandExecutor(final DedicatedServer server) {
+    this.server = server;
   }
 
-  private static TerminalMode detectMode() {
-    if (!CONSOLE_INPUT_AVAILABLE) {
-      return TerminalMode.DUMB;
-    }
-
-    try (Terminal terminal = TerminalBuilder.builder().system(true).dumb(false).build()) {
-      return Terminal.TYPE_DUMB.equals(terminal.getType()) ? TerminalMode.DUMB : TerminalMode.INTERACTIVE;
-    } catch (final IOException | IllegalStateException e) {
-      return TerminalMode.DUMB;
-    }
-  }
-
-  public static TerminalMode mode() {
-    return MODE;
-  }
-
-  public static boolean isDumb() {
-    return MODE == TerminalMode.DUMB;
-  }
-
-  public static boolean isInteractive() {
-    return MODE == TerminalMode.INTERACTIVE;
-  }
-
-  public static boolean hasConsoleInput() {
-    return CONSOLE_INPUT_AVAILABLE;
+  @Override
+  public Payloads.CommandResponse execute(final String command) {
+    this.server.handleConsoleInput(command, this.server.createCommandSourceStack());
+    return new Payloads.CommandResponse(Payloads.CommandResponse.Status.EXECUTED, command);
   }
 }

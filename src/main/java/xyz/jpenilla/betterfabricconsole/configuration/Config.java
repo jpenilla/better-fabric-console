@@ -54,8 +54,11 @@ public final class Config {
     }
   }
 
+  public static final String DEFAULT_LOG_PATTERN =
+    "%highlight{[%d{HH:mm:ss} %level] [%t]: [%logger{1}]}{FATAL=red, ERROR=red, WARN=yellow, INFO=default, DEBUG=yellow, TRACE=blue} %paperMinecraftFormatting{%msg}%n";
+
   @Comment("Log4j logger pattern. See https://logging.apache.org/log4j/2.x/manual/layouts.html#Patterns for documentation.")
-  private String logPattern = "%highlight{[%d{HH:mm:ss} %level] [%t]: [%logger{1}]}{FATAL=red, ERROR=red, WARN=yellow, INFO=default, DEBUG=yellow, TRACE=blue} %paperMinecraftFormatting{%msg}%n";
+  private String logPattern = DEFAULT_LOG_PATTERN;
 
   public String logPattern() {
     return this.logPattern;
@@ -73,5 +76,36 @@ public final class Config {
 
   public boolean logPlayerExecutedCommands() {
     return this.logPlayerExecutedCommands;
+  }
+
+  @Comment("Console socket server configuration.")
+  private ConsoleSocketConfig consoleSocket = new ConsoleSocketConfig();
+
+  public ConsoleSocketConfig consoleSocket() {
+    return this.consoleSocket;
+  }
+
+  @ConfigSerializable
+  public static final class ConsoleSocketConfig {
+    @Comment("Whether to enable Unix socket console connections.")
+    private boolean enabled = false;
+
+    public boolean enabled() {
+      return this.enabled;
+    }
+
+    @Comment("Path to the Unix socket file relative to the server directory.")
+    private String socketPath = "console.sock";
+
+    public String socketPath() {
+      return this.socketPath;
+    }
+
+    @Comment("Maximum number of concurrent socket connections.")
+    private int maxConnections = 5;
+
+    public int maxConnections() {
+      return this.maxConnections;
+    }
   }
 }
