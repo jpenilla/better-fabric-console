@@ -9,8 +9,8 @@
   ],
   "server": [
     "DedicatedServerConsoleThreadMixin",
-    "DedicatedServerMixin",
     "MinecraftServerAudiencesImplMixin",
+    "MinecraftServerMixin",
     "ServerGamePacketListenerImplMixin"
   ],
   "injectors": {

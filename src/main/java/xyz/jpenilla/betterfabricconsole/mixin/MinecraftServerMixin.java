@@ -23,37 +23,28 @@
  */
 package xyz.jpenilla.betterfabricconsole.mixin;
 
-import com.mojang.datafixers.DataFixer;
-import java.net.Proxy;
+import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
+import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import net.kyori.adventure.platform.modcommon.MinecraftServerAudiences;
 import net.kyori.adventure.text.serializer.ansi.ANSIComponentSerializer;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.Services;
-import net.minecraft.server.WorldStem;
 import net.minecraft.server.dedicated.DedicatedServer;
-import net.minecraft.server.level.progress.LevelLoadListener;
-import net.minecraft.server.packs.repository.PackRepository;
-import net.minecraft.world.level.storage.LevelStorageSource;
-import org.jspecify.annotations.NonNull;
-import org.slf4j.Logger;
-import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.Shadow;
-import org.spongepowered.asm.mixin.Unique;
+import org.spongepowered.asm.mixin.injection.At;
 
-@Mixin(DedicatedServer.class)
-abstract class DedicatedServerMixin extends MinecraftServer {
-  @Final @Shadow static Logger LOGGER;
-
-  @Unique private final MinecraftServerAudiences audiences = MinecraftServerAudiences.of(this);
-
-  DedicatedServerMixin(final Thread thread, final LevelStorageSource.LevelStorageAccess levelStorageAccess, final PackRepository packRepository, final WorldStem worldStem, final Proxy proxy, final DataFixer dataFixer, final Services services, final LevelLoadListener levelLoadListener) {
-    super(thread, levelStorageAccess, packRepository, worldStem, proxy, dataFixer, services, levelLoadListener);
-  }
-
-  @Override
-  public void sendSystemMessage(final @NonNull Component component) {
-    LOGGER.info(ANSIComponentSerializer.ansi().serialize(this.audiences.asAdventure(component)));
+@Mixin(MinecraftServer.class)
+abstract class MinecraftServerMixin {
+  @WrapOperation(
+    method = "sendSystemMessage",
+    at = @At(value = "INVOKE", target = "Lnet/minecraft/network/chat/Component;getString()Ljava/lang/String;")
+  )
+  private String wrapMessage(final Component instance, final Operation<String> original) {
+    if ((Object) this instanceof DedicatedServer dedicated) {
+      MinecraftServerAudiences audiences = MinecraftServerAudiences.of(dedicated);
+      return ANSIComponentSerializer.ansi().serialize(audiences.asAdventure(instance));
+    } else {
+      return original.call(instance);
+    }
   }
 }
