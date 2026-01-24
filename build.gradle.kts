@@ -10,7 +10,7 @@ plugins {
   alias(libs.plugins.resourceFactoryFabricConvention)
 }
 
-version = "2.0.0-SNAPSHOT"
+version = "1.3.0-SNAPSHOT"
 group = "xyz.jpenilla"
 description = "Server-side Fabric mod enhancing the console with tab completions, colored log output, command syntax highlighting, command history, and more."
 
@@ -21,16 +21,18 @@ dependencies {
   implementation(libs.fabricLoader)
   implementation(libs.fabricApi)
 
-  annotationProcessor(platform(libs.log4jBom))
-  annotationProcessor(libs.log4jCore)
+  implementation(project(":endermux-common"))
+  include(project(":endermux-common"))
+  implementation(project(":endermux-server"))
+  include(project(":endermux-server"))
+  implementation(project(":endermux-log4j-plugins"))
+  include(project(":endermux-log4j-plugins"))
 
   implementation(libs.bundles.jline)
   include(libs.bundles.jline)
 
   implementation(libs.jansi)
   include(libs.jansi)
-  implementation(libs.jline.terminal.jansi)
-  include(libs.jline.terminal.jansi)
 
   implementation(libs.adventurePlatformFabric)
 
@@ -42,6 +44,8 @@ dependencies {
   }
 
   compileOnly(libs.jspecify)
+  
+  implementation("com.google.code.gson:gson:2.10.1")
 }
 
 indra {
@@ -63,18 +67,19 @@ fabricModJson {
   mainEntrypoint("xyz.jpenilla.betterfabricconsole.BetterFabricConsole")
   entrypoint("preLaunch", "xyz.jpenilla.betterfabricconsole.BetterFabricConsolePreLaunch")
   mixin("better-fabric-console.mixins.json")
-  depends("fabricloader", ">=${libs.versions.fabric.loader.get()}")
+  depends("fabricloader", ">=0.18.4")
   depends("fabric-api", "*")
-  depends("minecraft", ">=$minecraftVersion", "<26.2")
+  depends("minecraft", ">1.21.11", "<26.2") // TODO ">=$minecraftVersion")
   depends("adventure-platform-fabric", "*")
-  breaks("better_log4j_config", "*")
-  breaks("jline4mcdsrv", "*")
 }
 
 tasks {
   jar {
     from("LICENSE")
     archiveFileName.set("${project.name}-mc$minecraftVersion-${project.version}.jar")
+  }
+  runServer {
+    // jvmArgs("-Dmixin.debug=true")
   }
 }
 
@@ -88,6 +93,4 @@ publishMods.modrinth {
   modLoaders.add("fabric")
   requires("fabric-api")
   requires("adventure-platform-mod")
-  incompatible("better-log4j-config")
-  incompatible("jline4mcdsrv")
 }

@@ -35,7 +35,7 @@ import org.jline.reader.LineReader;
 import org.jline.reader.UserInterruptException;
 import org.jspecify.annotations.NullMarked;
 import xyz.jpenilla.betterfabricconsole.BetterFabricConsole;
-import xyz.jpenilla.betterfabricconsole.util.TerminalModeDetection;
+import xyz.jpenilla.endermux.jline.TerminalModeDetection;
 
 @NullMarked
 public final class ConsoleThread extends Thread {

@@ -30,6 +30,7 @@ import org.jline.reader.LineReader;
 import org.jline.reader.LineReaderBuilder;
 import org.jline.reader.Parser;
 import org.jspecify.annotations.NullMarked;
+import xyz.jpenilla.endermux.jline.MinecraftCompletionMatcher;
 
 @NullMarked
 public final class ConsoleSetup {

@@ -46,9 +46,25 @@ public record MinecraftCommandHighlighter(
 ) implements Highlighter {
   @Override
   public AttributedString highlight(final LineReader reader, final String buffer) {
+    return highlight(this.server, buffer, this.colors);
+  }
+
+  @Override
+  public void setErrorPattern(final Pattern errorPattern) {
+  }
+
+  @Override
+  public void setErrorIndex(final int errorIndex) {
+  }
+
+  public static AttributedString highlight(
+    final MinecraftServer server,
+    final String buffer,
+    final Config.StyleColor[] colors
+  ) {
     final AttributedStringBuilder builder = new AttributedStringBuilder();
     final StringReader stringReader = Util.prepareStringReader(buffer);
-    final ParseResults<CommandSourceStack> results = this.server.getCommands().getDispatcher().parse(stringReader, this.server.createCommandSourceStack());
+    final ParseResults<CommandSourceStack> results = server.getCommands().getDispatcher().parse(stringReader, server.createCommandSourceStack());
     int pos = 0;
     if (buffer.startsWith("/")) {
       builder.append("/", AttributedStyle.DEFAULT);
@@ -67,11 +83,11 @@ public record MinecraftCommandHighlighter(
         builder.append(buffer.substring(pos, start), AttributedStyle.DEFAULT);
         builder.append(buffer.substring(start, end), AttributedStyle.DEFAULT);
       } else {
-        if (++colorIndex >= this.colors.length) {
+        if (++colorIndex >= colors.length) {
           colorIndex = 0;
         }
         builder.append(buffer.substring(pos, start), AttributedStyle.DEFAULT);
-        builder.append(buffer.substring(start, end), AttributedStyle.DEFAULT.foreground(this.colors[colorIndex].index()));
+        builder.append(buffer.substring(start, end), AttributedStyle.DEFAULT.foreground(colors[colorIndex].index()));
       }
       pos = end;
     }
@@ -81,13 +97,5 @@ public record MinecraftCommandHighlighter(
     }
 
     return builder.toAttributedString();
-  }
-
-  @Override
-  public void setErrorPattern(final Pattern errorPattern) {
-  }
-
-  @Override
-  public void setErrorIndex(final int errorIndex) {
   }
 }

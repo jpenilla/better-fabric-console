@@ -21,32 +21,43 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package xyz.jpenilla.betterfabricconsole.console;
+package xyz.jpenilla.betterfabricconsole.endermux;
 
-import com.google.common.collect.Iterables;
-import java.util.HashMap;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import org.jline.reader.Candidate;
-import org.jline.reader.CompletingParsedLine;
 import org.jline.reader.LineReader;
-import org.jline.reader.impl.CompletionMatcherImpl;
+import org.jline.reader.ParsedLine;
 import org.jspecify.annotations.NullMarked;
+import xyz.jpenilla.betterfabricconsole.console.ConsoleState;
+import xyz.jpenilla.endermux.protocol.Payloads;
+import xyz.jpenilla.endermux.server.api.ServerHooks;
 
 @NullMarked
-public final class MinecraftCompletionMatcher extends CompletionMatcherImpl {
+public final class FabricCommandCompleter implements ServerHooks.CommandCompleter {
+  private final ConsoleState consoleState;
+
+  public FabricCommandCompleter(final ConsoleState consoleState) {
+    this.consoleState = consoleState;
+  }
 
   @Override
-  protected void defaultMatchers(final Map<LineReader.Option, Boolean> options, final boolean prefix, final CompletingParsedLine line, final boolean caseInsensitive, final int errors, final String originalGroupName) {
-    super.defaultMatchers(options, prefix, line, caseInsensitive, errors, originalGroupName);
-    this.matchers.addFirst(m -> {
-      final Map<String, List<Candidate>> candidates = new HashMap<>();
-      for (final Map.Entry<String, List<Candidate>> entry : m.entrySet()) {
-        if (Iterables.all(entry.getValue(), MinecraftCommandCompleter.MinecraftCandidate.class::isInstance)) {
-          candidates.put(entry.getKey(), entry.getValue());
-        }
-      }
-      return candidates;
-    });
+  public Payloads.CompletionResponse complete(final String command, final int cursor) {
+    final LineReader dummyReader = this.consoleState.lineReader();
+    final ParsedLine parsedLine = dummyReader.getParser().parse(command, cursor);
+
+    final List<Candidate> candidates = new ArrayList<>();
+    this.consoleState.completer().complete(dummyReader, parsedLine, candidates);
+
+    final List<Payloads.CompletionResponse.CandidateInfo> candidateInfos = new ArrayList<>();
+    for (final Candidate candidate : candidates) {
+      candidateInfos.add(new Payloads.CompletionResponse.CandidateInfo(
+        candidate.value(),
+        candidate.displ(),
+        candidate.descr()
+      ));
+    }
+
+    return new Payloads.CompletionResponse(candidateInfos);
   }
 }
