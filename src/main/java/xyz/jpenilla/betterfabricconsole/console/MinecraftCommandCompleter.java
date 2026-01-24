@@ -44,6 +44,7 @@ import org.jline.reader.ParsedLine;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 import xyz.jpenilla.betterfabricconsole.util.Util;
+import xyz.jpenilla.endermux.jline.MinecraftCandidate;
 
 @NullMarked
 public record MinecraftCommandCompleter(MinecraftServer server, MinecraftServerAudiences audiences) implements Completer {
@@ -99,19 +100,5 @@ public record MinecraftCommandCompleter(MinecraftServer server, MinecraftServerA
   }
 
   private record ParseContext(String line, int suggestionStart) {
-  }
-
-  public static final class MinecraftCandidate extends Candidate {
-    public MinecraftCandidate(
-      final String value,
-      final String display,
-      final @Nullable String group,
-      final @Nullable String description,
-      final @Nullable String suffix,
-      final @Nullable String key,
-      final boolean complete
-    ) {
-      super(value, display, group, description, suffix, key, complete);
-    }
   }
 }

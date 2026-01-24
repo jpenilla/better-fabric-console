@@ -21,25 +21,24 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package xyz.jpenilla.betterfabricconsole.util;
+package xyz.jpenilla.betterfabricconsole.endermux;
 
-import org.checkerframework.checker.nullness.qual.Nullable;
-import org.jline.terminal.Terminal;
-import org.jline.terminal.TerminalBuilder;
-import java.io.IOException;
+import net.minecraft.server.dedicated.DedicatedServer;
+import org.jspecify.annotations.NullMarked;
+import xyz.jpenilla.endermux.protocol.Payloads;
+import xyz.jpenilla.endermux.server.api.ServerHooks;
 
-public final class TerminalDetection {
-  private static final @Nullable Terminal TERMINAL = detectTerminal();
+@NullMarked
+public final class FabricCommandExecutor implements ServerHooks.CommandExecutor {
+  private final DedicatedServer server;
 
-  private static @Nullable Terminal detectTerminal() {
-    try {
-      return TerminalBuilder.builder().dumb(false).build();
-    } catch (final IOException | IllegalStateException e) {
-      return null;
-    }
+  public FabricCommandExecutor(final DedicatedServer server) {
+    this.server = server;
   }
 
-  public static boolean isDumb() {
-    return TERMINAL == null;
+  @Override
+  public Payloads.CommandResponse execute(final String command) {
+    this.server.handleConsoleInput(command, this.server.createCommandSourceStack());
+    return new Payloads.CommandResponse(Payloads.CommandResponse.Status.EXECUTED, command);
   }
 }

@@ -23,6 +23,11 @@
  */
 package xyz.jpenilla.betterfabricconsole.console;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.UncheckedIOException;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.dedicated.DedicatedServer;
 import org.jline.reader.EndOfFileException;
@@ -30,12 +35,7 @@ import org.jline.reader.LineReader;
 import org.jline.reader.UserInterruptException;
 import org.jspecify.annotations.NullMarked;
 import xyz.jpenilla.betterfabricconsole.BetterFabricConsole;
-import xyz.jpenilla.betterfabricconsole.util.TerminalDetection;
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.UncheckedIOException;
+import xyz.jpenilla.endermux.jline.TerminalDetection;
 
 @NullMarked
 public final class ConsoleThread extends Thread {

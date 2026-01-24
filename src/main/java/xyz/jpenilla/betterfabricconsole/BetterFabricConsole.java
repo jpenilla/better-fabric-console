@@ -37,7 +37,6 @@ import net.minecraft.commands.CommandBuildContext;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.server.dedicated.DedicatedServer;
-import net.minecraft.server.permissions.Permission;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
@@ -47,6 +46,7 @@ import xyz.jpenilla.betterfabricconsole.console.ConsoleThread;
 import xyz.jpenilla.betterfabricconsole.console.MinecraftCommandCompleter;
 import xyz.jpenilla.betterfabricconsole.console.MinecraftCommandHighlighter;
 import xyz.jpenilla.betterfabricconsole.console.MinecraftConsoleParser;
+import xyz.jpenilla.betterfabricconsole.endermux.FabricEndermux;
 
 import static net.kyori.adventure.text.Component.text;
 import static net.kyori.adventure.text.format.NamedTextColor.GRAY;
@@ -60,12 +60,14 @@ public final class BetterFabricConsole implements ModInitializer {
   public static final Logger LOGGER = LogUtils.getLogger();
   private static final TextColor PINK = color(0xFF79C6);
   private static @Nullable BetterFabricConsole INSTANCE;
+  private @Nullable FabricEndermux endermux;
 
   @Override
   public void onInitialize() {
     INSTANCE = this;
     CommandRegistrationCallback.EVENT.register(this::registerCommands);
     ServerLifecycleEvents.SERVER_STARTING.register(server -> this.initConsoleThread((DedicatedServer) server));
+    ServerLifecycleEvents.SERVER_STOPPED.register($ -> this.closeSocketConsole());
   }
 
   private void initConsoleThread(final DedicatedServer server) {
@@ -77,6 +79,18 @@ public final class BetterFabricConsole implements ModInitializer {
     consoleThread.setDaemon(true);
     consoleThread.setUncaughtExceptionHandler(new DefaultUncaughtExceptionHandler(LOGGER));
     consoleThread.start();
+
+    if (this.config().consoleSocket().enabled()) {
+      this.endermux = new FabricEndermux();
+      this.endermux.start(server, consoleState, this.config());
+    }
+  }
+
+  private void closeSocketConsole() {
+    if (this.endermux != null) {
+      this.endermux.close();
+      this.endermux = null;
+    }
   }
 
   private void registerCommands(
@@ -85,15 +99,7 @@ public final class BetterFabricConsole implements ModInitializer {
     final Commands.CommandSelection commandSelection
   ) {
     dispatcher.register(literal("better-fabric-console")
-      .requires(stack -> {
-        final var server = stack.getServer();
-        // noinspection ConstantConditions - Vanilla violates it's own contract
-        if (server == null) {
-          return false;
-        }
-        return stack.permissions().hasPermission(
-          new Permission.HasCommandLevel(server.operatorUserPermissions().level()));
-      })
+      .requires(Commands.hasPermission(Commands.LEVEL_OWNERS))
       .executes(this::executeCommand));
   }
 
