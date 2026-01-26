@@ -41,7 +41,7 @@ abstract class MinecraftServerMixin {
   )
   private String wrapMessage(final Component instance, final Operation<String> original) {
     if ((Object) this instanceof DedicatedServer dedicated) {
-      MinecraftServerAudiences audiences = MinecraftServerAudiences.of(dedicated);
+      final MinecraftServerAudiences audiences = MinecraftServerAudiences.of(dedicated);
       return ANSIComponentSerializer.ansi().serialize(audiences.asAdventure(instance));
     } else {
       return original.call(instance);
