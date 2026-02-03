@@ -30,6 +30,12 @@ import org.jline.reader.LineReader;
 import org.jline.reader.UserInterruptException;
 import org.jspecify.annotations.NullMarked;
 import xyz.jpenilla.betterfabricconsole.BetterFabricConsole;
+import xyz.jpenilla.betterfabricconsole.util.TerminalDetection;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.UncheckedIOException;
 
 @NullMarked
 public final class ConsoleThread extends Thread {
@@ -51,14 +57,18 @@ public final class ConsoleThread extends Thread {
   @Override
   public void run() {
     BetterFabricConsole.LOGGER.info("Initialized Better Fabric Console console thread.");
-    this.acceptInput();
+    if (TerminalDetection.isDumb()) {
+      this.acceptInput(System.in);
+    } else {
+      this.acceptTerminalInput();
+    }
   }
 
   private static boolean isRunning(final MinecraftServer server) {
     return !server.isStopped() && server.isRunning();
   }
 
-  private void acceptInput() {
+  private void acceptTerminalInput() {
     while (isRunning(this.server)) {
       try {
         final String input = this.lineReader.readLine(TERMINAL_PROMPT).trim();
@@ -73,6 +83,28 @@ public final class ConsoleThread extends Thread {
         this.server.handleConsoleInput(STOP_COMMAND, this.server.createCommandSourceStack());
         break;
       }
+    }
+  }
+
+  private void acceptInput(final InputStream in) {
+    try (final BufferedReader reader = new BufferedReader(new InputStreamReader(in))) {
+      String input;
+      while (isRunning(this.server) && (input = reader.readLine()) != null) {
+        try {
+          if (input.isEmpty()) {
+            continue;
+          }
+          this.server.handleConsoleInput(input, this.server.createCommandSourceStack());
+          if (input.equals(STOP_COMMAND)) {
+            break;
+          }
+        } catch (final EndOfFileException | UserInterruptException ex) {
+          this.server.handleConsoleInput(STOP_COMMAND, this.server.createCommandSourceStack());
+          break;
+        }
+      }
+    } catch (final IOException e) {
+      throw new UncheckedIOException("Error reading console input", e);
     }
   }
 }
