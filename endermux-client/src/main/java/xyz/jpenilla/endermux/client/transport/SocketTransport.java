@@ -57,7 +57,7 @@ public final class SocketTransport {
     this.serializer = MessageSerializer.createStandard();
   }
 
-  public void connect() throws IOException {
+  public void connect() throws IOException, ProtocolMismatchException {
     if (!this.state.compareAndSet(ConnectionState.DISCONNECTED, ConnectionState.CONNECTING)) {
       throw new IllegalStateException("Cannot connect: current state is " + this.state.get());
     }
@@ -78,7 +78,7 @@ public final class SocketTransport {
       final Thread receiverThread = new Thread(this::receiveMessages, "SocketTransport-Receiver");
       receiverThread.setDaemon(true);
       receiverThread.start();
-    } catch (final IOException e) {
+    } catch (final IOException | ProtocolMismatchException e) {
       this.closeResources();
       this.state.set(ConnectionState.DISCONNECTED);
       throw e;
@@ -206,7 +206,7 @@ public final class SocketTransport {
     return this.serverLogLayout;
   }
 
-  private void performHandshake() throws IOException {
+  private void performHandshake() throws IOException, ProtocolMismatchException {
     final Payloads.Hello hello = new Payloads.Hello(SocketProtocolConstants.PROTOCOL_VERSION);
     final Message<Payloads.Hello> helloMessage = Message.<Payloads.Hello>builder(MessageType.HELLO)
       .requestId(UUID.randomUUID())
@@ -220,6 +220,13 @@ public final class SocketTransport {
     }
 
     if (response.type() == MessageType.REJECT && response.payload() instanceof Payloads.Reject(String reason, int expectedVersion)) {
+      if (expectedVersion != SocketProtocolConstants.PROTOCOL_VERSION) {
+        throw new ProtocolMismatchException(
+          "Handshake rejected: " + reason,
+          expectedVersion,
+          SocketProtocolConstants.PROTOCOL_VERSION
+        );
+      }
       throw new IOException("Handshake rejected: " + reason + " (expected version " + expectedVersion + ")");
     }
 
@@ -228,7 +235,11 @@ public final class SocketTransport {
     }
 
     if (welcome.protocolVersion() != SocketProtocolConstants.PROTOCOL_VERSION) {
-      throw new IOException("Unsupported protocol version: " + welcome.protocolVersion());
+      throw new ProtocolMismatchException(
+        "Unsupported protocol version: " + welcome.protocolVersion(),
+        welcome.protocolVersion(),
+        SocketProtocolConstants.PROTOCOL_VERSION
+      );
     }
 
     this.serverLogLayout = welcome.logLayout();
