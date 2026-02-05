@@ -9,6 +9,7 @@ import java.nio.file.StandardWatchEventKinds;
 import java.nio.file.WatchEvent;
 import java.nio.file.WatchKey;
 import java.nio.file.WatchService;
+import java.util.Locale;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -30,6 +31,7 @@ import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 import xyz.jpenilla.endermux.client.completer.RemoteCommandCompleter;
 import xyz.jpenilla.endermux.client.parser.RemoteParser;
+import xyz.jpenilla.endermux.client.transport.ProtocolMismatchException;
 import xyz.jpenilla.endermux.client.transport.SocketTransport;
 import xyz.jpenilla.endermux.protocol.LayoutConfig;
 import xyz.jpenilla.endermux.protocol.Message;
@@ -49,6 +51,7 @@ public final class EndermuxClient {
   private @Nullable PatternLayout logPatternLayout;
   private @Nullable SocketTransport socketClient;
   private @Nullable Terminal terminal;
+  private boolean lastSessionConnected;
 
   private final ExecutorService logExecutor = Executors.newSingleThreadExecutor(r -> {
     final Thread thread = new Thread(r, "LogOutput");
@@ -60,6 +63,7 @@ public final class EndermuxClient {
     this.terminal = this.createTerminal();
 
     try {
+      int retryCount = 0;
       while (true) {
         final Path path = Paths.get(socketPath);
         this.waitForSocket(path);
@@ -69,7 +73,18 @@ public final class EndermuxClient {
           break;
         }
 
+        if (this.lastSessionConnected) {
+          retryCount = 0;
+        }
+
+        retryCount++;
+        final long backoffMs = this.retryBackoffMs(retryCount);
+
         System.out.println("Disconnected from server. Waiting for reconnection...");
+        if (backoffMs > 0) {
+          System.out.println("Reconnecting in " + formatBackoff(backoffMs) + "...");
+          Thread.sleep(backoffMs);
+        }
       }
     } finally {
       this.shutdown();
@@ -128,6 +143,7 @@ public final class EndermuxClient {
   }
 
   private boolean runSession(final String socketPath) {
+    this.lastSessionConnected = false;
     try {
       this.socketClient = new SocketTransport(socketPath);
 
@@ -139,6 +155,7 @@ public final class EndermuxClient {
       });
 
       this.socketClient.connect();
+      this.lastSessionConnected = true;
       System.out.println("Connected to Endermux server via socket: " + socketPath);
 
       this.socketClient.setMessageHandler(this::handleMessage);
@@ -151,6 +168,9 @@ public final class EndermuxClient {
       this.socketClient.sendMessage(Message.unsolicited(MessageType.CLIENT_READY, new Payloads.ClientReady()));
 
       return this.acceptInput(this.lineReader);
+    } catch (final ProtocolMismatchException e) {
+      System.err.println(protocolMismatchMessage(e));
+      return true;
     } catch (final Exception e) {
       LOGGER.debug("Connection failure", e);
       System.err.println("Connection failed: " + e.getMessage());
@@ -158,6 +178,41 @@ public final class EndermuxClient {
     } finally {
       this.cleanupSession();
     }
+  }
+
+  private static String protocolMismatchMessage(final ProtocolMismatchException e) {
+    final StringBuilder message = new StringBuilder();
+    message.append("Protocol mismatch: server expects v");
+    message.append(e.expectedVersion());
+    message.append(", client is v");
+    message.append(e.actualVersion());
+    final String reason = e.reason();
+    if (reason != null && !reason.isBlank()) {
+      message.append(". Reason: ");
+      message.append(reason);
+    }
+    message.append(". Please update client/server to matching versions.");
+    return message.toString();
+  }
+
+  private long retryBackoffMs(final int attempt) {
+    return switch (attempt) {
+      case 1 -> 0L;
+      case 2 -> 500L;
+      case 3 -> 1000L;
+      case 4 -> 2000L;
+      case 5 -> 3000L;
+      case 6 -> 4000L;
+      default -> 5000L;
+    };
+  }
+
+  private static String formatBackoff(final long backoffMs) {
+    if (backoffMs % 1000L == 0) {
+      return Long.toString(backoffMs / 1000L) + "s";
+    }
+    final double seconds = backoffMs / 1000.0;
+    return String.format(Locale.ROOT, "%.1fs", seconds);
   }
 
   private void cleanupSession() {
