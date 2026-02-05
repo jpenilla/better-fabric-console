@@ -26,10 +26,10 @@ package xyz.jpenilla.betterfabricconsole.endermux;
 import net.minecraft.server.dedicated.DedicatedServer;
 import org.jspecify.annotations.NullMarked;
 import xyz.jpenilla.endermux.protocol.Payloads;
-import xyz.jpenilla.endermux.server.api.ServerHooks;
+import xyz.jpenilla.endermux.server.api.ConsoleHooks;
 
 @NullMarked
-public final class FabricCommandExecutor implements ServerHooks.CommandExecutor {
+public final class FabricCommandExecutor implements ConsoleHooks.CommandExecutor {
   private final DedicatedServer server;
 
   public FabricCommandExecutor(final DedicatedServer server) {

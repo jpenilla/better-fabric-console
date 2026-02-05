@@ -5,16 +5,16 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import xyz.jpenilla.endermux.protocol.MessageType;
 import xyz.jpenilla.endermux.protocol.Payloads;
-import xyz.jpenilla.endermux.server.api.ServerHooks;
+import xyz.jpenilla.endermux.server.api.ConsoleHooks;
 
 @NullMarked
 public final class ParseHandler implements MessageHandler<Payloads.ParseRequest> {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(ParseHandler.class);
 
-  private final ServerHooks hooks;
+  private final ConsoleHooks hooks;
 
-  public ParseHandler(final ServerHooks hooks) {
+  public ParseHandler(final ConsoleHooks hooks) {
     this.hooks = hooks;
   }
 
@@ -36,7 +36,7 @@ public final class ParseHandler implements MessageHandler<Payloads.ParseRequest>
     }
 
     try {
-      final ServerHooks.CommandParser parser = this.hooks.parser();
+      final ConsoleHooks.CommandParser parser = this.hooks.parser();
       if (parser == null) {
         ctx.error("Parsing is not supported");
         return;
