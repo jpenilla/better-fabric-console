@@ -74,9 +74,27 @@ public final class Payloads {
     String level,
     String message,
     @Nullable String componentMessageJson,
+    @Nullable ThrowableInfo throwable,
     long timestamp,
     String thread
   ) implements MessagePayload {
+  }
+
+  public record ThrowableInfo(
+    String type,
+    @Nullable String message,
+    List<StackFrame> frames,
+    @Nullable ThrowableInfo cause,
+    List<ThrowableInfo> suppressed
+  ) {
+  }
+
+  public record StackFrame(
+    String className,
+    String methodName,
+    @Nullable String fileName,
+    int lineNumber
+  ) {
   }
 
   public record Pong() implements MessagePayload {
