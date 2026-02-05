@@ -24,7 +24,6 @@
 package xyz.jpenilla.betterfabricconsole.endermux;
 
 import java.nio.file.Path;
-import java.util.function.Supplier;
 import net.minecraft.server.dedicated.DedicatedServer;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.core.Logger;
@@ -38,7 +37,7 @@ import xyz.jpenilla.betterfabricconsole.console.ConsoleState;
 import xyz.jpenilla.endermux.log4j.EndermuxForwardingAppender;
 import xyz.jpenilla.endermux.protocol.LayoutConfig;
 import xyz.jpenilla.endermux.server.SocketServerManager;
-import xyz.jpenilla.endermux.server.api.ServerHooks;
+import xyz.jpenilla.endermux.server.api.ConsoleHooks;
 import xyz.jpenilla.endermux.server.log.RemoteLogForwarder;
 
 @NullMarked
@@ -50,13 +49,13 @@ public final class FabricEndermux {
 
   public void start(final DedicatedServer server, final ConsoleState consoleState, final Config config) {
     final Path socketPath = server.getServerDirectory().toFile().toPath().resolve(config.consoleSocket().socketPath());
-    final ServerHooks hooks = new FabricServerHooks(
-      new FabricCommandCompleter(consoleState),
-      new FabricCommandParser(consoleState),
-      new FabricCommandExecutor(server),
-      new FabricCommandHighlighter(server, config.highlightColors()),
-      new FabricServerMetadata(() -> this.forwardingAppender)
-    );
+    final ConsoleHooks hooks = ConsoleHooks.builder()
+      .completer(new FabricCommandCompleter(consoleState))
+      .parser(new FabricCommandParser(consoleState))
+      .executor(new FabricCommandExecutor(server))
+      .highlighter(new FabricCommandHighlighter(server, config.highlightColors()))
+      .metadata(new ConsoleHooks.Metadata(this.logLayout()))
+      .build();
     this.socketServerManager = new SocketServerManager(hooks, socketPath, config.consoleSocket().maxConnections());
     this.socketServerManager.start();
 
@@ -94,25 +93,11 @@ public final class FabricEndermux {
     EndermuxForwardingAppender.TARGET = null;
   }
 
-  private record FabricServerMetadata(
-    Supplier<@Nullable EndermuxForwardingAppender> appenderSupplier
-  ) implements ServerHooks.ServerMetadata {
-    @Override
-    public LayoutConfig logLayout() {
-      final EndermuxForwardingAppender appender = this.appenderSupplier.get();
-      if (appender != null) {
-        return appender.logLayout();
-      }
-      throw new IllegalStateException("No forwarding appender available to provide log layout");
+  private LayoutConfig logLayout() {
+    final EndermuxForwardingAppender appender = this.forwardingAppender;
+    if (appender != null) {
+      return appender.logLayout();
     }
-  }
-
-  private record FabricServerHooks(
-    CommandCompleter completer,
-    CommandParser parser,
-    CommandExecutor executor,
-    CommandHighlighter highlighter,
-    ServerMetadata metadata
-  ) implements ServerHooks {
+    throw new IllegalStateException("No forwarding appender available to provide log layout");
   }
 }

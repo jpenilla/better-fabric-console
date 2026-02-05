@@ -30,10 +30,10 @@ import org.jspecify.annotations.NullMarked;
 import xyz.jpenilla.betterfabricconsole.configuration.Config;
 import xyz.jpenilla.betterfabricconsole.console.MinecraftCommandHighlighter;
 import xyz.jpenilla.endermux.protocol.Payloads;
-import xyz.jpenilla.endermux.server.api.ServerHooks;
+import xyz.jpenilla.endermux.server.api.ConsoleHooks;
 
 @NullMarked
-public final class FabricCommandHighlighter implements ServerHooks.CommandHighlighter {
+public final class FabricCommandHighlighter implements ConsoleHooks.CommandHighlighter {
   private final DedicatedServer server;
   private final Config.StyleColor[] colors;
 

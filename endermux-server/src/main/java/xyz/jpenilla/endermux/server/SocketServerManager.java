@@ -22,7 +22,7 @@ import xyz.jpenilla.endermux.protocol.MessageSerializer;
 import xyz.jpenilla.endermux.protocol.MessageType;
 import xyz.jpenilla.endermux.protocol.Payloads;
 import xyz.jpenilla.endermux.protocol.SocketProtocolConstants;
-import xyz.jpenilla.endermux.server.api.ServerHooks;
+import xyz.jpenilla.endermux.server.api.ConsoleHooks;
 import xyz.jpenilla.endermux.server.handlers.CommandHandler;
 import xyz.jpenilla.endermux.server.handlers.CompletionHandler;
 import xyz.jpenilla.endermux.server.handlers.HandlerRegistry;
@@ -36,19 +36,19 @@ public final class SocketServerManager {
   private final Set<ClientEndpoint> connections = ConcurrentHashMap.newKeySet();
   private final ConcurrentHashMap<ClientEndpoint, ClientSession> sessions = new ConcurrentHashMap<>();
   private final ExecutorService executor;
-  private final ServerHooks hooks;
+  private final ConsoleHooks hooks;
   private final HandlerRegistry handlerRegistry;
   private final MessageSerializer serializer;
   private final Path socketPath;
   private final int maxConnections;
-  private final ServerHooks.ServerMetadata metadata;
+  private final ConsoleHooks.Metadata metadata;
 
   private final AtomicBoolean running = new AtomicBoolean(false);
   private ServerSocketChannel serverChannel;
   private Thread acceptorThread;
 
   public SocketServerManager(
-    final ServerHooks hooks,
+    final ConsoleHooks hooks,
     final Path socketPath,
     final int maxConnections
   ) {
