@@ -255,7 +255,14 @@ public final class EndermuxClient {
     final long timestamp = logForward.timestamp();
     final String threadName = logForward.thread();
 
-    this.printLogMessage(this.formatLogMessage(logger, level, logMessage, timestamp, threadName));
+    this.printLogMessage(this.formatLogMessage(
+      logger,
+      level,
+      logMessage,
+      timestamp,
+      threadName,
+      logForward.throwable()
+    ));
   }
 
   private String formatLogMessage(
@@ -263,7 +270,8 @@ public final class EndermuxClient {
     final String level,
     final String logMessage,
     final long timestamp,
-    final String threadName
+    final String threadName,
+    final Payloads.@Nullable ThrowableInfo throwable
   ) {
     final PatternLayout layout = this.logPatternLayout;
     if (layout == null) {
@@ -274,7 +282,8 @@ public final class EndermuxClient {
       Level.valueOf(level),
       logMessage,
       timestamp,
-      threadName
+      threadName,
+      ThrowableInfoUtil.toThrowable(throwable)
     );
     return layout.toSerializable(logEvent);
   }
