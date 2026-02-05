@@ -21,7 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package xyz.jpenilla.betterfabricconsole.endermux;
+package xyz.jpenilla.endermux.server.log;
 
 import java.util.Arrays;
 import java.util.concurrent.atomic.AtomicLong;
