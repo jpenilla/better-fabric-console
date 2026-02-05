@@ -52,6 +52,8 @@ public final class EndermuxClient {
   private @Nullable SocketTransport socketClient;
   private @Nullable Terminal terminal;
   private boolean lastSessionConnected;
+  private @Nullable ExitReason exitReason;
+  private volatile boolean shutdownRequested;
 
   private final ExecutorService logExecutor = Executors.newSingleThreadExecutor(r -> {
     final Thread thread = new Thread(r, "LogOutput");
@@ -63,10 +65,18 @@ public final class EndermuxClient {
     this.terminal = this.createTerminal();
 
     try {
+      this.registerSignalHandlers();
       int retryCount = 0;
       while (true) {
+        if (this.shutdownRequested) {
+          break;
+        }
         final Path path = Paths.get(socketPath);
         this.waitForSocket(path);
+
+        if (this.shutdownRequested) {
+          break;
+        }
 
         final boolean userQuit = this.runSession(socketPath);
         if (userQuit) {
@@ -88,6 +98,7 @@ public final class EndermuxClient {
       }
     } finally {
       this.shutdown();
+      this.printFarewellIfNeeded();
       if (this.terminal != null) {
         this.terminal.close();
       }
@@ -117,7 +128,13 @@ public final class EndermuxClient {
       }
 
       while (true) {
-        final WatchKey key = watchService.take();
+        if (this.shutdownRequested) {
+          return;
+        }
+        final WatchKey key = watchService.poll(SOCKET_POLL_INTERVAL_MS, TimeUnit.MILLISECONDS);
+        if (key == null) {
+          continue;
+        }
 
         for (final WatchEvent<?> event : key.pollEvents()) {
           if (event.kind() == StandardWatchEventKinds.ENTRY_CREATE) {
@@ -138,6 +155,9 @@ public final class EndermuxClient {
     }
 
     while (!Files.exists(resolvedSocketPath)) {
+      if (this.shutdownRequested) {
+        return;
+      }
       Thread.sleep(SOCKET_POLL_INTERVAL_MS);
     }
   }
@@ -178,6 +198,19 @@ public final class EndermuxClient {
     } finally {
       this.cleanupSession();
     }
+  }
+
+  private void registerSignalHandlers() {
+    final Terminal term = this.terminal;
+    if (term == null) {
+      return;
+    }
+    term.handle(Terminal.Signal.INT, signal -> {
+      if (this.connectedClient() == null) {
+        this.exitReason = ExitReason.USER_INTERRUPT_WHILE_WAITING;
+        this.shutdownRequested = true;
+      }
+    });
   }
 
   private static String protocolMismatchMessage(final ProtocolMismatchException e) {
@@ -225,6 +258,13 @@ public final class EndermuxClient {
     this.logPatternLayout = null;
   }
 
+  private void printFarewellIfNeeded() {
+    if (this.exitReason == null) {
+      return;
+    }
+    System.out.println("Goodbye!");
+  }
+
   private void shutdown() {
     this.logExecutor.shutdown();
     try {
@@ -252,6 +292,8 @@ public final class EndermuxClient {
 
         final String input = lineReader.readLine(TERMINAL_PROMPT);
         if (input == null) {
+          this.exitReason = ExitReason.USER_EOF;
+          System.out.println("Disconnecting...");
           return true;
         }
 
@@ -263,6 +305,8 @@ public final class EndermuxClient {
         this.sendCommand(client, trimmedInput);
 
       } catch (final EndOfFileException e) {
+        this.exitReason = ExitReason.USER_EOF;
+        System.out.println("Disconnecting...");
         return true;
       } catch (final UserInterruptException e) {
         if (this.connectedClient() == null) {
@@ -271,6 +315,11 @@ public final class EndermuxClient {
         System.out.println("Press Ctrl+D to disconnect from console.");
       }
     }
+  }
+
+  private enum ExitReason {
+    USER_EOF,
+    USER_INTERRUPT_WHILE_WAITING
   }
 
   private void handleMessage(final Message<? extends MessagePayload> message) {
