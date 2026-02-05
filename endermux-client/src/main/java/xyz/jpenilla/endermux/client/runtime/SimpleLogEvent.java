@@ -26,6 +26,7 @@ final class SimpleLogEvent implements LogEvent {
   private final String message;
   private final long timestamp;
   private final String threadName;
+  private final @Nullable Throwable thrown;
   private final long threadId;
 
   SimpleLogEvent(
@@ -33,13 +34,15 @@ final class SimpleLogEvent implements LogEvent {
     final Level level,
     final String message,
     final long timestamp,
-    final String threadName
+    final String threadName,
+    final @Nullable Throwable thrown
   ) {
     this.loggerName = loggerName;
     this.level = level;
     this.message = message;
     this.timestamp = timestamp;
     this.threadName = threadName;
+    this.thrown = thrown;
     this.threadId = Thread.currentThread().getId();
   }
 
@@ -92,12 +95,12 @@ final class SimpleLogEvent implements LogEvent {
 
   @Override
   public @Nullable Throwable getThrown() {
-    return null;
+    return this.thrown;
   }
 
   @Override
   public @Nullable ThrowableProxy getThrownProxy() {
-    return null;
+    return this.thrown == null ? null : new ThrowableProxy(this.thrown);
   }
 
   @Override
