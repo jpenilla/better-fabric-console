@@ -41,7 +41,7 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import xyz.jpenilla.betterfabricconsole.BetterFabricConsole;
-import xyz.jpenilla.betterfabricconsole.endermux.RemoteLogForwarder;
+import xyz.jpenilla.endermux.server.log.RemoteLogForwarder;
 import xyz.jpenilla.endermux.server.util.LanguageRenderer;
 
 @Mixin(MinecraftServer.class)
