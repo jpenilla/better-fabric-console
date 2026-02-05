@@ -5,16 +5,16 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import xyz.jpenilla.endermux.protocol.MessageType;
 import xyz.jpenilla.endermux.protocol.Payloads;
-import xyz.jpenilla.endermux.server.api.ServerHooks;
+import xyz.jpenilla.endermux.server.api.ConsoleHooks;
 
 @NullMarked
 public final class CompletionHandler implements MessageHandler<Payloads.CompletionRequest> {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(CompletionHandler.class);
 
-  private final ServerHooks hooks;
+  private final ConsoleHooks hooks;
 
-  public CompletionHandler(final ServerHooks hooks) {
+  public CompletionHandler(final ConsoleHooks hooks) {
     this.hooks = hooks;
   }
 
@@ -36,7 +36,7 @@ public final class CompletionHandler implements MessageHandler<Payloads.Completi
     }
 
     try {
-      final ServerHooks.CommandCompleter completer = this.hooks.completer();
+      final ConsoleHooks.CommandCompleter completer = this.hooks.completer();
       if (completer == null) {
         ctx.error("Completions are not supported");
         return;

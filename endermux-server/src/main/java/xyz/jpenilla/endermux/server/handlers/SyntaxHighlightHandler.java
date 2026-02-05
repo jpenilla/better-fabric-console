@@ -5,16 +5,16 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import xyz.jpenilla.endermux.protocol.MessageType;
 import xyz.jpenilla.endermux.protocol.Payloads;
-import xyz.jpenilla.endermux.server.api.ServerHooks;
+import xyz.jpenilla.endermux.server.api.ConsoleHooks;
 
 @NullMarked
 public final class SyntaxHighlightHandler implements MessageHandler<Payloads.SyntaxHighlightRequest> {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(SyntaxHighlightHandler.class);
 
-  private final ServerHooks hooks;
+  private final ConsoleHooks hooks;
 
-  public SyntaxHighlightHandler(final ServerHooks hooks) {
+  public SyntaxHighlightHandler(final ConsoleHooks hooks) {
     this.hooks = hooks;
   }
 
@@ -36,7 +36,7 @@ public final class SyntaxHighlightHandler implements MessageHandler<Payloads.Syn
     }
 
     try {
-      final ServerHooks.CommandHighlighter highlighter = this.hooks.highlighter();
+      final ConsoleHooks.CommandHighlighter highlighter = this.hooks.highlighter();
       if (highlighter == null) {
         ctx.error("Syntax highlighting is not supported");
         return;
