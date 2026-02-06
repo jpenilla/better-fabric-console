@@ -11,7 +11,16 @@ indra {
 }
 
 dependencies {
-  implementation(libs.gson)
+  api(libs.gson)
   api(libs.jline)
-  compileOnly(libs.jspecify)
+  compileOnlyApi(libs.jspecify)
+
+  api(libs.adventureApi)
+  implementation(libs.adventureTextSerializerAnsi)
+
+  implementation(platform(libs.log4jBom))
+  annotationProcessor(platform(libs.log4jBom))
+  implementation(libs.log4jApi)
+  implementation(libs.log4jCore)
+  annotationProcessor(libs.log4jCore)
 }

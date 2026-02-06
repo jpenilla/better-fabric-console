@@ -12,7 +12,7 @@ indra {
 
 dependencies {
   api(project(":endermux-common"))
-  implementation(project(":endermux-log4j-plugins"))
+  implementation(libs.picocli)
   annotationProcessor(libs.picocliCodegen)
   implementation(platform(libs.log4jBom))
   implementation(libs.log4jCore)
@@ -21,9 +21,6 @@ dependencies {
   implementation(libs.jansi)
   implementation(libs.adventureTextSerializerAnsi)
   implementation(libs.adventureTextSerializerGson)
-  implementation(libs.picocli)
-  implementation(libs.gson)
-  compileOnly(libs.jspecify)
 }
 
 application {

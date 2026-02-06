@@ -22,7 +22,7 @@
  * THE SOFTWARE.
  */
 
-package net.minecrell.terminalconsole.util;
+package xyz.jpenilla.endermux.log4j;
 
 import org.apache.logging.log4j.core.LogEvent;
 import org.apache.logging.log4j.core.config.Configuration;
@@ -44,8 +44,6 @@ import org.jspecify.annotations.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 
-// TODO: Consider moving this into a separate project
-
 /**
  * A {@link PatternSelector} that selects patterns based on the logger name.
  * Can be used to log messages from different loggers using different patterns.
@@ -56,16 +54,18 @@ import java.util.List;
  *
  * <p><b>Example usage:</b></p>
  * <pre>{@code  <PatternLayout>
- *     <LoggerNamePatternSelector defaultPattern="[%d{HH:mm:ss} %level] [%logger]: %msg%n">
+ *     <EndermuxLoggerNamePatternSelector defaultPattern="[%d{HH:mm:ss} %level] [%logger]: %msg%n">
  *         <!-- Log root (empty logger name), "Main", and net.minecrell.* without logger prefix -->
  *         <PatternMatch key=",Main,net.minecrell." pattern="[%d{HH:mm:ss} %level]: %msg%n"/>
  *         <PatternMatch key="com.example.Logger" pattern="EXAMPLE: %msg%n"/>
- *     </LoggerNamePatternSelector>
+ *     </EndermuxLoggerNamePatternSelector>
  * </PatternLayout>}</pre>
+ *
+ * <p>Endermux version differs from TCA: saves original construction parameters for network serialization.</p>
  */
 @Plugin(name = "EndermuxLoggerNamePatternSelector", category = Node.CATEGORY, elementType = PatternSelector.ELEMENT_TYPE)
 @PerformanceSensitive("allocation")
-public final class EndermuxLoggerNamePatternSelector implements PatternSelector {
+public final class LoggerNamePatternSelector implements PatternSelector {
 
     private final String defaultPattern;
     private final PatternMatch[] properties;
@@ -99,7 +99,7 @@ public final class EndermuxLoggerNamePatternSelector implements PatternSelector 
     private final List<LoggerNameSelector> formatters = new ArrayList<>();
 
     /**
-     * Constructs a new {@link EndermuxLoggerNamePatternSelector}.
+     * Constructs a new {@link LoggerNamePatternSelector}.
      *
      * @param defaultPattern The default pattern to use if no logger name matches
      * @param properties The pattern match rules to use
@@ -110,8 +110,8 @@ public final class EndermuxLoggerNamePatternSelector implements PatternSelector 
      *     disable ANSI escape codes
      * @param config The configuration
      */
-    protected EndermuxLoggerNamePatternSelector(String defaultPattern, PatternMatch[] properties,
-                                                boolean alwaysWriteExceptions, boolean disableAnsi, boolean noConsoleNoAnsi, Configuration config) {
+    protected LoggerNamePatternSelector(String defaultPattern, PatternMatch[] properties,
+                                        boolean alwaysWriteExceptions, boolean disableAnsi, boolean noConsoleNoAnsi, Configuration config) {
         this.defaultPattern = defaultPattern;
         this.properties = properties == null ? new PatternMatch[0] : properties;
         this.alwaysWriteExceptions = alwaysWriteExceptions;
@@ -167,7 +167,7 @@ public final class EndermuxLoggerNamePatternSelector implements PatternSelector 
     }
 
     /**
-     * Creates a new {@link EndermuxLoggerNamePatternSelector}.
+     * Creates a new {@link LoggerNamePatternSelector}.
      *
      * @param defaultPattern The default pattern to use if no logger name matches
      * @param properties The pattern match rules to use
@@ -180,14 +180,14 @@ public final class EndermuxLoggerNamePatternSelector implements PatternSelector 
      * @return The new pattern selector
      */
     @PluginFactory
-    public static EndermuxLoggerNamePatternSelector createSelector(
+    public static LoggerNamePatternSelector createSelector(
             @Required(message = "Default pattern is required") @PluginAttribute(value = "defaultPattern") String defaultPattern,
             @PluginElement("PatternMatch") PatternMatch[] properties,
             @PluginAttribute(value = "alwaysWriteExceptions", defaultBoolean = true) boolean alwaysWriteExceptions,
             @PluginAttribute("disableAnsi") boolean disableAnsi,
             @PluginAttribute("noConsoleNoAnsi") boolean noConsoleNoAnsi,
             @PluginConfiguration Configuration config) {
-        return new EndermuxLoggerNamePatternSelector(defaultPattern, properties, alwaysWriteExceptions, disableAnsi, noConsoleNoAnsi, config);
+        return new LoggerNamePatternSelector(defaultPattern, properties, alwaysWriteExceptions, disableAnsi, noConsoleNoAnsi, config);
     }
 
 }

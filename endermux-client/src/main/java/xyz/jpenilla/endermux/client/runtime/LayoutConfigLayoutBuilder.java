@@ -2,7 +2,7 @@ package xyz.jpenilla.endermux.client.runtime;
 
 import java.nio.charset.Charset;
 import java.util.List;
-import net.minecrell.terminalconsole.util.EndermuxLoggerNamePatternSelector;
+import xyz.jpenilla.endermux.log4j.LoggerNamePatternSelector;
 import org.apache.logging.log4j.core.layout.PatternLayout;
 import org.apache.logging.log4j.core.layout.PatternMatch;
 import org.jspecify.annotations.NullMarked;
@@ -35,10 +35,10 @@ final class LayoutConfigLayoutBuilder {
     if (pattern == null) {
       throw new IllegalArgumentException("Pattern layout requires a pattern");
     }
-    return pattern;
+    return transformPattern(pattern);
   }
 
-  private static EndermuxLoggerNamePatternSelector buildSelector(final LayoutConfig config) {
+  private static LoggerNamePatternSelector buildSelector(final LayoutConfig config) {
     final LayoutConfig.SelectorConfig selector = config.selector();
     if (selector == null) {
       throw new IllegalArgumentException("Logger name selector layout requires selector config");
@@ -47,16 +47,20 @@ final class LayoutConfigLayoutBuilder {
     final PatternMatch[] patternMatches = new PatternMatch[matches.size()];
     for (int i = 0; i < matches.size(); i++) {
       final LayoutConfig.Match match = matches.get(i);
-      patternMatches[i] = new PatternMatch(match.key(), match.pattern());
+      patternMatches[i] = new PatternMatch(match.key(), transformPattern(match.pattern()));
     }
     final LayoutConfig.Flags flags = config.flags();
-    return EndermuxLoggerNamePatternSelector.createSelector(
-      selector.defaultPattern(),
+    return LoggerNamePatternSelector.createSelector(
+      transformPattern(selector.defaultPattern()),
       patternMatches,
       flags.alwaysWriteExceptions(),
       flags.disableAnsi(),
       flags.noConsoleNoAnsi(),
       null
     );
+  }
+
+  private static String transformPattern(final String pattern) {
+    return pattern.replace("%highlightError{", "%EndermuxHighlightError{");
   }
 }

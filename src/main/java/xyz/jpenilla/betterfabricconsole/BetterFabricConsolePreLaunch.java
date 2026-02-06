@@ -24,7 +24,6 @@
 package xyz.jpenilla.betterfabricconsole;
 
 import com.mojang.logging.LogUtils;
-import io.papermc.paper.console.HexFormattingConverter;
 import java.io.IOException;
 import java.lang.reflect.Method;
 import java.nio.file.Files;
@@ -44,6 +43,7 @@ import org.spongepowered.configurate.hocon.HoconConfigurationLoader;
 import xyz.jpenilla.betterfabricconsole.configuration.Config;
 import xyz.jpenilla.betterfabricconsole.console.ConsoleSetup;
 import xyz.jpenilla.betterfabricconsole.console.ConsoleState;
+import xyz.jpenilla.endermux.log4j.HexFormattingConverter;
 
 import static java.util.Objects.requireNonNull;
 

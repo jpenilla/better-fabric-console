@@ -25,8 +25,6 @@ dependencies {
   include(project(":endermux-common"))
   implementation(project(":endermux-server"))
   include(project(":endermux-server"))
-  implementation(project(":endermux-log4j-plugins"))
-  include(project(":endermux-log4j-plugins"))
 
   implementation(libs.bundles.jline)
   include(libs.bundles.jline)

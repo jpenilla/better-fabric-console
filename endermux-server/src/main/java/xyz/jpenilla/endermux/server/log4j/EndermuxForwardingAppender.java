@@ -1,4 +1,4 @@
-package xyz.jpenilla.endermux.log4j;
+package xyz.jpenilla.endermux.server.log4j;
 
 import org.apache.logging.log4j.core.Appender;
 import org.apache.logging.log4j.core.Core;
@@ -19,7 +19,7 @@ import java.io.Serializable;
 import java.lang.reflect.Field;
 import java.util.Arrays;
 import java.util.List;
-import net.minecrell.terminalconsole.util.EndermuxLoggerNamePatternSelector;
+import xyz.jpenilla.endermux.log4j.LoggerNamePatternSelector;
 import org.apache.logging.log4j.core.layout.PatternMatch;
 import org.apache.logging.log4j.core.layout.PatternSelector;
 import xyz.jpenilla.endermux.protocol.LayoutConfig;
@@ -29,7 +29,7 @@ import xyz.jpenilla.endermux.protocol.LayoutConfig;
   category = Core.CATEGORY_NAME,
   elementType = Appender.ELEMENT_TYPE
 )
-public class EndermuxForwardingAppender extends AbstractAppender {
+public final class EndermuxForwardingAppender extends AbstractAppender {
 
   public static @Nullable LogForwardingTarget TARGET = null;
   public static @Nullable EndermuxForwardingAppender INSTANCE = null;
@@ -66,8 +66,8 @@ public class EndermuxForwardingAppender extends AbstractAppender {
   private static LayoutConfig extractLayoutConfig(final Layout<? extends Serializable> layout) {
     if (layout instanceof PatternLayout patternLayout) {
       final PatternSelector selector = patternSelector(patternLayout);
-      final EndermuxLoggerNamePatternSelector loggerNameSelector = selector instanceof EndermuxLoggerNamePatternSelector
-        ? (EndermuxLoggerNamePatternSelector) selector
+      final LoggerNamePatternSelector loggerNameSelector = selector instanceof LoggerNamePatternSelector
+        ? (LoggerNamePatternSelector) selector
         : null;
       if (loggerNameSelector != null) {
         return layoutFromLoggerNameSelector(loggerNameSelector, patternLayout.getCharset().name());
@@ -85,7 +85,7 @@ public class EndermuxForwardingAppender extends AbstractAppender {
   }
 
   private static LayoutConfig layoutFromLoggerNameSelector(
-    final EndermuxLoggerNamePatternSelector selector,
+    final LoggerNamePatternSelector selector,
     final @Nullable String charset
   ) {
     final PatternMatch[] matches = selector.properties();

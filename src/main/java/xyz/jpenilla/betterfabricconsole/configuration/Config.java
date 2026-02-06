@@ -55,7 +55,7 @@ public final class Config {
   }
 
   public static final String DEFAULT_LOG_PATTERN =
-    "%highlight{[%d{HH:mm:ss} %level] [%t]: [%logger{1}]}{FATAL=red, ERROR=red, WARN=yellow, INFO=default, DEBUG=yellow, TRACE=blue} %paperMinecraftFormatting{%msg}%n";
+    "%highlight{[%d{HH:mm:ss} %level] [%t]: [%logger{1}]}{FATAL=red, ERROR=red, WARN=yellow, INFO=default, DEBUG=yellow, TRACE=blue} %legacyMinecraftFormatting{%msg}%n";
 
   @Comment("Log4j logger pattern. See https://logging.apache.org/log4j/2.x/manual/layouts.html#Patterns for documentation.")
   private String logPattern = DEFAULT_LOG_PATTERN;
