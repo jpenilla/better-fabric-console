@@ -34,10 +34,10 @@ import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 import xyz.jpenilla.betterfabricconsole.configuration.Config;
 import xyz.jpenilla.betterfabricconsole.console.ConsoleState;
-import xyz.jpenilla.endermux.log4j.EndermuxForwardingAppender;
 import xyz.jpenilla.endermux.server.EndermuxServer;
 import xyz.jpenilla.endermux.server.api.InteractiveConsoleHooks;
-import xyz.jpenilla.endermux.server.log.RemoteLogForwarder;
+import xyz.jpenilla.endermux.server.log4j.EndermuxForwardingAppender;
+import xyz.jpenilla.endermux.server.log4j.RemoteLogForwarder;
 
 @NullMarked
 public final class FabricEndermux {

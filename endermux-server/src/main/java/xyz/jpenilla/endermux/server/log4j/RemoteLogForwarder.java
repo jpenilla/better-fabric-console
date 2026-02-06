@@ -21,7 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package xyz.jpenilla.endermux.server.log;
+package xyz.jpenilla.endermux.server.log4j;
 
 import java.util.Arrays;
 import java.util.concurrent.atomic.AtomicLong;
@@ -32,7 +32,6 @@ import org.apache.logging.log4j.core.impl.ExtendedStackTraceElement;
 import org.apache.logging.log4j.core.impl.ThrowableProxy;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
-import xyz.jpenilla.endermux.log4j.EndermuxForwardingAppender;
 import xyz.jpenilla.endermux.protocol.Payloads;
 import xyz.jpenilla.endermux.server.EndermuxServer;
 

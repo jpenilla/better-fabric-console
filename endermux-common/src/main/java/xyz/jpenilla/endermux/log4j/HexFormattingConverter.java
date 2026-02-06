@@ -1,4 +1,4 @@
-package io.papermc.paper.console;
+package xyz.jpenilla.endermux.log4j;
 
 import java.util.List;
 import java.util.regex.Matcher;
@@ -22,8 +22,8 @@ import org.apache.logging.log4j.util.PropertiesUtil;
  *
  * <p>"Deprecated", but kept around for some mods and datapacks that still log legacy codes.</p>
  */
-@Plugin(name = "paperMinecraftFormatting", category = PatternConverter.CATEGORY)
-@ConverterKeys({"paperMinecraftFormatting"})
+@Plugin(name = "legacyMinecraftFormatting", category = PatternConverter.CATEGORY)
+@ConverterKeys({"legacyMinecraftFormatting", "paperMinecraftFormatting"})
 @PerformanceSensitive("allocation")
 public final class HexFormattingConverter extends LogEventPatternConverter {
 
@@ -99,7 +99,7 @@ public final class HexFormattingConverter extends LogEventPatternConverter {
      * @param strip      If true, the converter will strip all formatting codes
      */
     protected HexFormattingConverter(List<PatternFormatter> formatters, boolean strip) {
-        super("paperMinecraftFormatting", null);
+        super("legacyMinecraftFormatting", null);
         this.formatters = formatters;
         this.ansi = !strip;
     }
@@ -187,11 +187,11 @@ public final class HexFormattingConverter extends LogEventPatternConverter {
      */
     public static HexFormattingConverter newInstance(Configuration config, String[] options) {
         if (options.length < 1 || options.length > 2) {
-            LOGGER.error("Incorrect number of options on paperMinecraftFormatting. Expected at least 1, max 2 received " + options.length);
+            LOGGER.error("Incorrect number of options on legacyMinecraftFormatting. Expected at least 1, max 2 received " + options.length);
             return null;
         }
         if (options[0] == null) {
-            LOGGER.error("No pattern supplied on paperMinecraftFormatting");
+            LOGGER.error("No pattern supplied on legacyMinecraftFormatting");
             return null;
         }
 

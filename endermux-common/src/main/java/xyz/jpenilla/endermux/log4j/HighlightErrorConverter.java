@@ -22,7 +22,7 @@
  * THE SOFTWARE.
  */
 
-package net.minecrell.terminalconsole;
+package xyz.jpenilla.endermux.log4j;
 
 import net.kyori.ansi.ColorLevel;
 import org.apache.logging.log4j.Level;
@@ -49,10 +49,12 @@ import java.util.List;
  * <p>If configured, it will mark all logged errors with a red color and all
  * warnings with a yellow color.</p>
  *
- * <p><b>Example usage:</b> {@code %highlightError{%level: %message}}</p>
+ * <p><b>Example usage:</b> {@code %EndermuxHighlightError{%level: %message}}</p>
+ *
+ * <p>Endermux version differs from TCA: Uses Kyori ANSI for color support detection.</p>
  */
-@Plugin(name = "highlightError", category = PatternConverter.CATEGORY)
-@ConverterKeys({ "highlightError" })
+@Plugin(name = "EndermuxHighlightError", category = PatternConverter.CATEGORY)
+@ConverterKeys({ "EndermuxHighlightError" })
 @PerformanceSensitive("allocation")
 public final class HighlightErrorConverter extends LogEventPatternConverter {
 
@@ -69,7 +71,7 @@ public final class HighlightErrorConverter extends LogEventPatternConverter {
      * @param formatters The pattern formatters to generate the text to highlight
      */
     protected HighlightErrorConverter(List<PatternFormatter> formatters) {
-        super("highlightError", null);
+        super("EndermuxHighlightError", null);
         this.formatters = formatters;
         this.ansi = ColorLevel.compute() != ColorLevel.NONE;
     }
@@ -132,11 +134,11 @@ public final class HighlightErrorConverter extends LogEventPatternConverter {
      */
     public static @Nullable HighlightErrorConverter newInstance(Configuration config, String[] options) {
         if (options.length != 1) {
-            LOGGER.error("Incorrect number of options on highlightError. Expected 1 received " + options.length);
+            LOGGER.error("Incorrect number of options on EndermuxHighlightError. Expected 1 received " + options.length);
             return null;
         }
         if (options[0] == null) {
-            LOGGER.error("No pattern supplied on highlightError");
+            LOGGER.error("No pattern supplied on EndermuxHighlightError");
             return null;
         }
 

@@ -30,7 +30,6 @@ plugins {
 
 rootProject.name = "better-fabric-console"
 
-include("endermux-log4j-plugins")
 include("endermux-client")
 include("endermux-common")
 include("endermux-server")

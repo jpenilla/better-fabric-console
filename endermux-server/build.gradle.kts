@@ -12,8 +12,13 @@ indra {
 
 dependencies {
   api(project(":endermux-common"))
-  compileOnly(project(":endermux-log4j-plugins"))
-  compileOnly(libs.log4jCore)
+
+  implementation(platform(libs.log4jBom))
+  annotationProcessor(platform(libs.log4jBom))
+  implementation(libs.log4jApi)
+  implementation(libs.log4jCore)
+  annotationProcessor(libs.log4jCore)
+
   implementation(libs.slf4jApi)
   compileOnlyApi(libs.jspecify)
   compileOnly(libs.adventureApi)
