@@ -25,16 +25,26 @@ dependencies {
   annotationProcessor(libs.log4jCore)
 
   implementation(libs.bundles.jline)
-  implementation(libs.jansi)
   implementation(libs.adventureTextSerializerAnsi)
   implementation(libs.adventureTextSerializerGson)
 }
 
 application {
   mainClass = "xyz.jpenilla.endermux.client.EndermuxCli"
+  applicationDefaultJvmArgs = listOf(
+    //"--enable-native-access=org.jline.terminal.ffm", // For jline 4
+    "--enable-native-access=ALL-UNNAMED"
+  )
 }
 
 tasks {
+  jar {
+    manifest {
+      attributes(
+        "Implementation-Version" to project.version,
+      )
+    }
+  }
   compileJava {
     options.compilerArgs.add("-Aproject=${project.group}/${project.name}")
   }

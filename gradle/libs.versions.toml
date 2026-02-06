@@ -38,7 +38,8 @@ log4jSlf4j2Impl = { module = "org.apache.logging.log4j:log4j-slf4j2-impl", versi
 slf4jApi = { module = "org.slf4j:slf4j-api", version.ref = "slf4j" }
 
 jline = { module = "org.jline:jline", version.ref = "jline" }
-jlineTerminalJansi = { module = "org.jline:jline-terminal-jansi", version.ref = "jline" }
+jline-terminal-ffm = { module = "org.jline:jline-terminal-ffm", version.ref = "jline" }
+jline-terminal-jansi = { module = "org.jline:jline-terminal-jansi", version.ref = "jline" }
 jansi = { module = "org.fusesource.jansi:jansi", version.ref = "jansi" }
 
 gson = "com.google.code.gson:gson:2.10.1"
@@ -55,4 +56,4 @@ picocli = { module = "info.picocli:picocli", version.ref = "picocli" }
 picocliCodegen = { module = "info.picocli:picocli-codegen", version.ref = "picocli" }
 
 [bundles]
-jline = ["jline", "jlineTerminalJansi"]
+jline = ["jline", "jline-terminal-ffm"]

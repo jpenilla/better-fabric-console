@@ -29,8 +29,11 @@ dependencies {
   implementation(libs.bundles.jline)
   include(libs.bundles.jline)
 
+  // Fallback in case native access flags not passed - TODO verify this works as intended
   implementation(libs.jansi)
   include(libs.jansi)
+  implementation(libs.jline.terminal.jansi)
+  include(libs.jline.terminal.jansi)
 
   implementation(libs.adventurePlatformFabric)
 
