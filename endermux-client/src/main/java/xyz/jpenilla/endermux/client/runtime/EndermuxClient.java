@@ -1,6 +1,8 @@
 package xyz.jpenilla.endermux.client.runtime;
 
 import java.io.IOException;
+import java.io.IOError;
+import java.io.InterruptedIOException;
 import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -75,14 +77,8 @@ public final class EndermuxClient {
           break;
         }
         final Path path = Paths.get(socketPath);
-        try {
-          this.waitForSocket(path);
-        } catch (final InterruptedException e) {
-          if (this.shutdownRequested) {
-            break;
-          }
-          LOGGER.debug("Interrupted while waiting for socket, continuing reconnect loop", e);
-          continue;
+        if (!this.waitForSocket(path)) {
+          break;
         }
 
         if (this.shutdownRequested) {
@@ -102,34 +98,24 @@ public final class EndermuxClient {
         final long backoffMs = this.retryBackoffMs(retryCount);
 
         LOGGER.info("Disconnected from server. Waiting for reconnection...");
-        if (backoffMs > 0) {
-          LOGGER.info("Reconnecting in {}...", formatBackoff(backoffMs));
-          try {
-            Thread.sleep(backoffMs);
-          } catch (final InterruptedException e) {
-            if (this.shutdownRequested) {
-              break;
-            }
-            LOGGER.debug("Interrupted during reconnect backoff, continuing reconnect loop", e);
-          }
+        if (!this.waitForBackoff(backoffMs)) {
+          break;
         }
       }
     } finally {
       this.shutdown();
       this.printFarewellIfNeeded();
-      if (this.terminal != null) {
-        this.terminal.close();
-      }
+      this.closeTerminal();
       TerminalOutput.setLineReader(null);
       TerminalOutput.setTerminal(null);
     }
   }
 
-  private void waitForSocket(final Path socketPath) throws InterruptedException, IOException {
+  private boolean waitForSocket(final Path socketPath) {
     final Path resolvedSocketPath = socketPath.toAbsolutePath().normalize();
     final String displayPath = socketPath.toString();
     if (Files.exists(resolvedSocketPath)) {
-      return;
+      return true;
     }
 
     final Path parentDir = resolvedSocketPath.getParent();
@@ -144,14 +130,23 @@ public final class EndermuxClient {
       parentDir.register(watchService, StandardWatchEventKinds.ENTRY_CREATE);
 
       if (Files.exists(resolvedSocketPath)) {
-        return;
+        return true;
       }
 
       while (true) {
         if (this.shutdownRequested) {
-          return;
+          return false;
         }
-        final WatchKey key = watchService.poll(SOCKET_POLL_INTERVAL_MS, TimeUnit.MILLISECONDS);
+        final WatchKey key;
+        try {
+          key = watchService.poll(SOCKET_POLL_INTERVAL_MS, TimeUnit.MILLISECONDS);
+        } catch (final InterruptedException e) {
+          if (this.shutdownRequested) {
+            return false;
+          }
+          LOGGER.debug("Interrupted while waiting for the socket to appear", e);
+          continue;
+        }
         if (key == null) {
           continue;
         }
@@ -160,7 +155,7 @@ public final class EndermuxClient {
           if (event.kind() == StandardWatchEventKinds.ENTRY_CREATE) {
             final Path created = parentDir.resolve((Path) event.context());
             if (created.equals(resolvedSocketPath)) {
-              return;
+              return true;
             }
           }
         }
@@ -176,9 +171,53 @@ public final class EndermuxClient {
 
     while (!Files.exists(resolvedSocketPath)) {
       if (this.shutdownRequested) {
-        return;
+        return false;
       }
-      Thread.sleep(SOCKET_POLL_INTERVAL_MS);
+      try {
+        Thread.sleep(SOCKET_POLL_INTERVAL_MS);
+      } catch (final InterruptedException e) {
+        if (this.shutdownRequested) {
+          return false;
+        }
+        LOGGER.debug("Interrupted while polling for socket availability", e);
+      }
+    }
+    return true;
+  }
+
+  private boolean waitForBackoff(final long backoffMs) {
+    if (backoffMs <= 0) {
+      return true;
+    }
+    LOGGER.info("Reconnecting in {}...", formatBackoff(backoffMs));
+    try {
+      Thread.sleep(backoffMs);
+      return true;
+    } catch (final InterruptedException e) {
+      if (this.shutdownRequested) {
+        return false;
+      }
+      LOGGER.debug("Interrupted while sleeping for reconnect backoff", e);
+      return true;
+    }
+  }
+
+  private void closeTerminal() {
+    final Terminal term = this.terminal;
+    if (term == null) {
+      return;
+    }
+    // Clear the interrupt flag before closing. JLine close paths may spawn commands
+    // and can fail with InterruptedIOException if the thread remains interrupted.
+    if (Thread.currentThread().isInterrupted()) {
+      Thread.interrupted();
+    }
+    try {
+      term.close();
+    } catch (final InterruptedIOException e) {
+      LOGGER.debug("Interrupted while closing terminal", e);
+    } catch (final IOException e) {
+      LOGGER.warn("Failed to close terminal cleanly: {}", e.getMessage(), e);
     }
   }
 
@@ -314,7 +353,9 @@ public final class EndermuxClient {
         }
 
         if (!this.interactiveAvailable) {
-          this.waitForInteractivity();
+          if (!this.waitForInteractivity()) {
+            return false;
+          }
           continue;
         }
 
@@ -338,25 +379,35 @@ public final class EndermuxClient {
         return true;
       } catch (final UserInterruptException e) {
         if (this.connectedClient() == null) {
+          Thread.interrupted();
           return false;
         }
         if (!this.interactiveAvailable) {
           continue;
         }
-        LOGGER.info("Press Ctrl+D to disconnect and quit the client.");
+        LOGGER.info("Press Ctrl+D to disconnect from console.");
+      } catch (final IOError e) {
+        Thread.interrupted();
+        if (this.connectedClient() == null || this.shutdownRequested) {
+          return false;
+        }
+        LOGGER.debug("Ignoring terminal IO error while reading input", e);
+        LOGGER.info("Press Ctrl+D to disconnect from console.");
       }
     }
   }
 
-  private void waitForInteractivity() {
+  private boolean waitForInteractivity() {
     synchronized (this.interactivityLock) {
       try {
         this.interactivityLock.wait(SOCKET_POLL_INTERVAL_MS);
+        return !this.shutdownRequested;
       } catch (final InterruptedException e) {
         if (this.shutdownRequested) {
-          return;
+          return false;
         }
         LOGGER.debug("Interrupted while waiting for interactivity update", e);
+        return true;
       }
     }
   }

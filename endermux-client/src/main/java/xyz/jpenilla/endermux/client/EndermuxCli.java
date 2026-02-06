@@ -18,6 +18,7 @@ import xyz.jpenilla.endermux.client.runtime.TerminalOutput;
 @Command(
   name = "endermux-client",
   mixinStandardHelpOptions = true,
+  versionProvider = EndermuxCli.ManifestVersionProvider.class,
   description = "Endermux Client - Fully-featured remote console experience for Minecraft servers implementing the Endermux protocol."
 )
 @NullMarked
@@ -64,5 +65,15 @@ public final class EndermuxCli implements Callable<Integer> {
       context.updateLoggers();
     }
     StreamRedirection.install();
+  }
+
+  static class ManifestVersionProvider implements CommandLine.IVersionProvider {
+    @Override
+    public String[] getVersion() {
+      return new String[]{
+        "Endermux Client",
+        EndermuxCli.class.getPackage().getImplementationVersion()
+      };
+    }
   }
 }
