@@ -1,8 +1,6 @@
 package xyz.jpenilla.endermux.client.runtime;
 
 import java.io.IOException;
-import java.io.IOError;
-import java.io.InterruptedIOException;
 import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -15,49 +13,15 @@ import java.util.Locale;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
-import net.kyori.adventure.text.serializer.ansi.ANSIComponentSerializer;
-import net.kyori.adventure.text.serializer.gson.GsonComponentSerializer;
-import org.apache.logging.log4j.Level;
-import org.apache.logging.log4j.core.LogEvent;
-import org.apache.logging.log4j.core.layout.PatternLayout;
-import org.jline.reader.EndOfFileException;
-import org.jline.reader.Highlighter;
-import org.jline.reader.LineReader;
-import org.jline.reader.LineReaderBuilder;
-import org.jline.reader.UserInterruptException;
-import org.jline.terminal.Terminal;
-import org.jline.terminal.TerminalBuilder;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import xyz.jpenilla.endermux.client.completer.RemoteCommandCompleter;
-import xyz.jpenilla.endermux.client.parser.RemoteParser;
-import xyz.jpenilla.endermux.client.transport.ProtocolMismatchException;
-import xyz.jpenilla.endermux.client.transport.SocketTransport;
-import xyz.jpenilla.endermux.protocol.LayoutConfig;
-import xyz.jpenilla.endermux.protocol.Message;
-import xyz.jpenilla.endermux.protocol.MessagePayload;
-import xyz.jpenilla.endermux.protocol.MessageType;
-import xyz.jpenilla.endermux.protocol.Payloads;
-import xyz.jpenilla.endermux.jline.MinecraftCompletionMatcher;
 
 @NullMarked
 public final class EndermuxClient {
-
-  private static final String TERMINAL_PROMPT = "> ";
   private static final long SOCKET_POLL_INTERVAL_MS = 500;
   private static final Logger LOGGER = LoggerFactory.getLogger(EndermuxClient.class);
-
-  private @Nullable LineReader lineReader;
-  private @Nullable PatternLayout logPatternLayout;
-  private @Nullable SocketTransport socketClient;
-  private @Nullable Terminal terminal;
-  private boolean lastSessionConnected;
-  private volatile boolean interactiveAvailable;
-  private @Nullable ExitReason exitReason;
-  private volatile boolean shutdownRequested;
-  private final Object interactivityLock = new Object();
 
   private final ExecutorService logExecutor = Executors.newSingleThreadExecutor(r -> {
     final Thread thread = new Thread(r, "LogOutput");
@@ -65,9 +29,13 @@ public final class EndermuxClient {
     return thread;
   });
 
+  private volatile boolean shutdownRequested;
+  private @Nullable ExitReason exitReason;
+  private @Nullable TerminalRuntimeContext terminalContext;
+  private volatile @Nullable RemoteConsoleSession activeSession;
+
   public void run(final String socketPath) throws Exception {
-    this.terminal = this.createTerminal();
-    TerminalOutput.setTerminal(this.terminal);
+    this.terminalContext = TerminalRuntimeContext.create();
 
     try {
       this.registerSignalHandlers();
@@ -76,8 +44,8 @@ public final class EndermuxClient {
         if (this.shutdownRequested) {
           break;
         }
-        final Path path = Paths.get(socketPath);
-        if (!this.waitForSocket(path)) {
+
+        if (!this.waitForSocket(Paths.get(socketPath))) {
           break;
         }
 
@@ -85,12 +53,15 @@ public final class EndermuxClient {
           break;
         }
 
-        final boolean userQuit = this.runSession(socketPath);
-        if (userQuit) {
+        final RemoteConsoleSession.SessionOutcome sessionOutcome = this.runSession(socketPath);
+        if (sessionOutcome.disconnectReason() == RemoteConsoleSession.DisconnectReason.USER_EOF) {
+          this.exitReason = ExitReason.USER_EOF;
+        }
+        if (sessionOutcome.stopClient()) {
           break;
         }
 
-        if (this.lastSessionConnected) {
+        if (sessionOutcome.connected()) {
           retryCount = 0;
         }
 
@@ -105,10 +76,45 @@ public final class EndermuxClient {
     } finally {
       this.shutdown();
       this.printFarewellIfNeeded();
-      this.closeTerminal();
-      TerminalOutput.setLineReader(null);
-      TerminalOutput.setTerminal(null);
+      final TerminalRuntimeContext context = this.terminalContext;
+      if (context != null) {
+        context.close();
+      }
+      this.terminalContext = null;
     }
+  }
+
+  private RemoteConsoleSession.SessionOutcome runSession(final String socketPath) {
+    final TerminalRuntimeContext context = this.terminalContext;
+    if (context == null) {
+      throw new IllegalStateException("Terminal context is not initialized");
+    }
+    final RemoteConsoleSession session = new RemoteConsoleSession(
+      socketPath,
+      context,
+      this.logExecutor,
+      () -> this.shutdownRequested
+    );
+    this.activeSession = session;
+    try {
+      return session.run();
+    } finally {
+      this.activeSession = null;
+    }
+  }
+
+  private void registerSignalHandlers() {
+    final TerminalRuntimeContext context = this.terminalContext;
+    if (context == null) {
+      return;
+    }
+    context.registerInterruptHandler(() -> {
+      final RemoteConsoleSession session = this.activeSession;
+      if (session == null || !session.isConnected()) {
+        this.exitReason = ExitReason.USER_INTERRUPT_WHILE_WAITING;
+        this.shutdownRequested = true;
+      }
+    });
   }
 
   private boolean waitForSocket(final Path socketPath) {
@@ -202,93 +208,6 @@ public final class EndermuxClient {
     }
   }
 
-  private void closeTerminal() {
-    final Terminal term = this.terminal;
-    if (term == null) {
-      return;
-    }
-    // Clear the interrupt flag before closing. JLine close paths may spawn commands
-    // and can fail with InterruptedIOException if the thread remains interrupted.
-    if (Thread.currentThread().isInterrupted()) {
-      Thread.interrupted();
-    }
-    try {
-      term.close();
-    } catch (final InterruptedIOException e) {
-      LOGGER.debug("Interrupted while closing terminal", e);
-    } catch (final IOException e) {
-      LOGGER.warn("Failed to close terminal cleanly: {}", e.getMessage(), e);
-    }
-  }
-
-  private boolean runSession(final String socketPath) {
-    this.lastSessionConnected = false;
-    try {
-      this.socketClient = new SocketTransport(socketPath);
-      this.interactiveAvailable = false;
-
-      final Terminal term = this.terminal;
-      this.socketClient.setDisconnectCallback(() -> {
-        final LineReader reader = this.lineReader;
-        if (term != null && reader != null && reader.isReading()) {
-          term.raise(Terminal.Signal.INT);
-        }
-      });
-      this.socketClient.setMessageHandler(this::handleMessage);
-
-      this.socketClient.connect();
-      this.lastSessionConnected = true;
-      LOGGER.info("Connected to Endermux server via socket: {}", socketPath);
-
-      final Highlighter highlighter = new RemoteHighlighter(this.socketClient);
-
-      this.lineReader = this.createLineReader(term, highlighter);
-      TerminalOutput.setLineReader(this.lineReader);
-
-      this.logPatternLayout = this.createLogPattern();
-      this.socketClient.sendMessage(Message.unsolicited(MessageType.CLIENT_READY, new Payloads.ClientReady()));
-
-      return this.acceptInput(this.lineReader);
-    } catch (final ProtocolMismatchException e) {
-      LOGGER.error(protocolMismatchMessage(e));
-      return true;
-    } catch (final Exception e) {
-      LOGGER.debug("Connection failure", e);
-      LOGGER.error("Connection failed: {}", e.getMessage());
-      return false;
-    } finally {
-      this.cleanupSession();
-    }
-  }
-
-  private void registerSignalHandlers() {
-    final Terminal term = this.terminal;
-    if (term == null) {
-      return;
-    }
-    term.handle(Terminal.Signal.INT, signal -> {
-      if (this.connectedClient() == null) {
-        this.exitReason = ExitReason.USER_INTERRUPT_WHILE_WAITING;
-        this.shutdownRequested = true;
-      }
-    });
-  }
-
-  private static String protocolMismatchMessage(final ProtocolMismatchException e) {
-    final StringBuilder message = new StringBuilder();
-    message.append("Protocol mismatch: server expects v");
-    message.append(e.expectedVersion());
-    message.append(", client is v");
-    message.append(e.actualVersion());
-    final String reason = e.reason();
-    if (reason != null && !reason.isBlank()) {
-      message.append(". Reason: ");
-      message.append(reason);
-    }
-    message.append(". Please update client/server to matching versions.");
-    return message.toString();
-  }
-
   private long retryBackoffMs(final int attempt) {
     return switch (attempt) {
       case 1 -> 0L;
@@ -303,28 +222,10 @@ public final class EndermuxClient {
 
   private static String formatBackoff(final long backoffMs) {
     if (backoffMs % 1000L == 0) {
-      return Long.toString(backoffMs / 1000L) + "s";
+      return backoffMs / 1000L + "s";
     }
     final double seconds = backoffMs / 1000.0;
     return String.format(Locale.ROOT, "%.1fs", seconds);
-  }
-
-  private void cleanupSession() {
-    final SocketTransport client = this.socketClient;
-    if (client != null) {
-      client.disconnect();
-      this.socketClient = null;
-    }
-    this.lineReader = null;
-    TerminalOutput.setLineReader(null);
-    this.logPatternLayout = null;
-  }
-
-  private void printFarewellIfNeeded() {
-    if (this.exitReason == null) {
-      return;
-    }
-    LOGGER.info("Goodbye!");
   }
 
   private void shutdown() {
@@ -338,221 +239,21 @@ public final class EndermuxClient {
       Thread.currentThread().interrupt();
     }
 
-    final SocketTransport client = this.socketClient;
-    if (client != null) {
-      client.disconnect();
+    final RemoteConsoleSession session = this.activeSession;
+    if (session != null) {
+      session.disconnect();
     }
   }
 
-  private boolean acceptInput(final LineReader lineReader) {
-    while (true) {
-      try {
-        final SocketTransport client = this.connectedClient();
-        if (client == null) {
-          return false;
-        }
-
-        if (!this.interactiveAvailable) {
-          if (!this.waitForInteractivity()) {
-            return false;
-          }
-          continue;
-        }
-
-        final String input = lineReader.readLine(TERMINAL_PROMPT);
-        if (input == null) {
-          this.exitReason = ExitReason.USER_EOF;
-          LOGGER.info("Disconnecting...");
-          return true;
-        }
-
-        final String trimmedInput = input.trim();
-        if (trimmedInput.isEmpty()) {
-          continue;
-        }
-
-        this.sendCommand(client, trimmedInput);
-
-      } catch (final EndOfFileException e) {
-        this.exitReason = ExitReason.USER_EOF;
-        LOGGER.info("Disconnecting...");
-        return true;
-      } catch (final UserInterruptException e) {
-        if (this.connectedClient() == null) {
-          Thread.interrupted();
-          return false;
-        }
-        if (!this.interactiveAvailable) {
-          continue;
-        }
-        LOGGER.info("Press Ctrl+D to disconnect from console.");
-      } catch (final IOError e) {
-        Thread.interrupted();
-        if (this.connectedClient() == null || this.shutdownRequested) {
-          return false;
-        }
-        LOGGER.debug("Ignoring terminal IO error while reading input", e);
-        LOGGER.info("Press Ctrl+D to disconnect from console.");
-      }
+  private void printFarewellIfNeeded() {
+    if (this.exitReason == null) {
+      return;
     }
-  }
-
-  private boolean waitForInteractivity() {
-    synchronized (this.interactivityLock) {
-      try {
-        this.interactivityLock.wait(SOCKET_POLL_INTERVAL_MS);
-        return !this.shutdownRequested;
-      } catch (final InterruptedException e) {
-        if (this.shutdownRequested) {
-          return false;
-        }
-        LOGGER.debug("Interrupted while waiting for interactivity update", e);
-        return true;
-      }
-    }
+    LOGGER.info("Goodbye!");
   }
 
   private enum ExitReason {
     USER_EOF,
     USER_INTERRUPT_WHILE_WAITING
-  }
-
-  private void handleMessage(final Message<? extends MessagePayload> message) {
-    if (this.connectedClient() == null) {
-      LOGGER.warn("Not connected to server");
-      return;
-    }
-
-    final MessageType type = message.type();
-    if (type == MessageType.LOG_FORWARD && message.payload() instanceof Payloads.LogForward logForward) {
-      this.logExecutor.execute(() -> this.processLogMessage(logForward));
-      return;
-    }
-
-    if (type == MessageType.ERROR && message.payload() instanceof Payloads.Error(String message1, String details)) {
-      this.printError(message1, details);
-      return;
-    }
-
-    if (type == MessageType.CONNECTION_STATUS
-      && message.payload() instanceof Payloads.ConnectionStatus(Payloads.ConnectionStatus.Status status)) {
-      if (status == Payloads.ConnectionStatus.Status.DISCONNECTED) {
-        LOGGER.info("Disconnected from server.");
-      }
-      return;
-    }
-
-    if (type == MessageType.INTERACTIVITY_STATUS
-      && message.payload() instanceof Payloads.InteractivityStatus(boolean available)) {
-      this.interactiveAvailable = available;
-
-      final LineReader reader = this.lineReader;
-      final Terminal term = this.terminal;
-      if (!available && reader != null && reader.isReading() && term != null) {
-        term.raise(Terminal.Signal.INT);
-      }
-
-      synchronized (this.interactivityLock) {
-        this.interactivityLock.notifyAll();
-      }
-    }
-  }
-
-  private void processLogMessage(final Payloads.LogForward logForward) {
-    final String logger = logForward.logger();
-    final String level = logForward.level();
-    String logMessage = logForward.message();
-    if (logForward.componentMessageJson() != null) {
-      logMessage = ANSIComponentSerializer.ansi().serialize(
-        GsonComponentSerializer.gson().deserialize(logForward.componentMessageJson())
-      );
-    }
-    final long timestamp = logForward.timestamp();
-    final String threadName = logForward.thread();
-
-    this.printLogMessage(this.formatLogMessage(
-      logger,
-      level,
-      logMessage,
-      timestamp,
-      threadName,
-      logForward.throwable()
-    ));
-  }
-
-  private String formatLogMessage(
-    final String logger,
-    final String level,
-    final String logMessage,
-    final long timestamp,
-    final String threadName,
-    final Payloads.@Nullable ThrowableInfo throwable
-  ) {
-    final PatternLayout layout = this.logPatternLayout;
-    if (layout == null) {
-      throw new IllegalStateException("Log pattern layout not initialized");
-    }
-    final LogEvent logEvent = new SimpleLogEvent(
-      logger,
-      Level.valueOf(level),
-      logMessage,
-      timestamp,
-      threadName,
-      ThrowableInfoUtil.toThrowable(throwable)
-    );
-    return layout.toSerializable(logEvent);
-  }
-
-  private void printLogMessage(final String formattedMessage) {
-    TerminalOutput.write(formattedMessage);
-  }
-
-  private Terminal createTerminal() throws IOException {
-    return TerminalBuilder.builder()
-      .system(true)
-      .build();
-  }
-
-  private LineReader createLineReader(final @Nullable Terminal term, final Highlighter highlighter) {
-    return LineReaderBuilder.builder()
-      .appName("Endermux Client")
-      .terminal(term)
-      .completer(new RemoteCommandCompleter(this.socketClient))
-      .highlighter(highlighter)
-      .parser(new RemoteParser(this.socketClient))
-      .completionMatcher(new MinecraftCompletionMatcher())
-      .option(LineReader.Option.INSERT_TAB, false)
-      .option(LineReader.Option.DISABLE_EVENT_EXPANSION, true)
-      .option(LineReader.Option.COMPLETE_IN_WORD, true)
-      .build();
-  }
-
-  private PatternLayout createLogPattern() {
-    final LayoutConfig layoutConfig = this.socketClient != null ? this.socketClient.serverLogLayout() : null;
-    if (layoutConfig == null) {
-      throw new IllegalStateException("No log layout available from server and no override provided");
-    }
-    return LayoutConfigLayoutBuilder.toPatternLayout(layoutConfig);
-  }
-
-  private void sendCommand(final SocketTransport client, final String input) {
-    final Payloads.CommandExecute payload = new Payloads.CommandExecute(input);
-    final Message<Payloads.CommandExecute> commandMessage = client.createRequest(MessageType.COMMAND_EXECUTE, payload);
-    client.sendMessage(commandMessage);
-  }
-
-  private @Nullable SocketTransport connectedClient() {
-    final SocketTransport client = this.socketClient;
-    if (client == null || !client.isConnected()) {
-      return null;
-    }
-    return client;
-  }
-
-  private void printError(final String message, final @Nullable String details) {
-    LOGGER.error("Error: {}", message);
-    if (details != null) {
-      LOGGER.error("Details: {}", details);
-    }
   }
 }
