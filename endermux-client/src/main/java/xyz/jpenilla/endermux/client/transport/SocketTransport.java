@@ -51,6 +51,7 @@ public final class SocketTransport {
   private volatile @Nullable TransportMessageHandler messageHandler;
   private volatile @Nullable Runnable disconnectCallback;
   private volatile @Nullable LayoutConfig serverLogLayout;
+  private volatile boolean interactivityAvailable;
 
   public SocketTransport(final String socketPath) {
     this.socketPath = socketPath;
@@ -123,6 +124,10 @@ public final class SocketTransport {
     final MessageType expectedResponseType,
     final long timeoutMs
   ) throws IOException, InterruptedException {
+    if (requiresInteractivity(message.type()) && !this.interactivityAvailable) {
+      throw new IOException("Interactivity is currently unavailable");
+    }
+
     if (message.requestId() == null) {
       throw new IOException("Request message is missing requestId");
     }
@@ -181,6 +186,11 @@ public final class SocketTransport {
   }
 
   public void handleResponse(final Message<?> message) {
+    if (message.type() == MessageType.INTERACTIVITY_STATUS
+      && message.payload() instanceof Payloads.InteractivityStatus(boolean available)) {
+      this.interactivityAvailable = available;
+    }
+
     if (message.requestId() != null) {
       final CompletableFuture<Message<?>> future = this.pendingRequests.remove(message.requestId());
       if (future != null) {
@@ -204,6 +214,10 @@ public final class SocketTransport {
 
   public @Nullable LayoutConfig serverLogLayout() {
     return this.serverLogLayout;
+  }
+
+  public boolean isInteractivityAvailable() {
+    return this.interactivityAvailable;
   }
 
   private void performHandshake() throws IOException, ProtocolMismatchException {
@@ -369,6 +383,14 @@ public final class SocketTransport {
       }
       this.socketChannel = null;
     }
+    this.interactivityAvailable = false;
+  }
+
+  private static boolean requiresInteractivity(final MessageType type) {
+    return switch (type) {
+      case COMPLETION_REQUEST, SYNTAX_HIGHLIGHT_REQUEST, PARSE_REQUEST, COMMAND_EXECUTE -> true;
+      default -> false;
+    };
   }
 
 }

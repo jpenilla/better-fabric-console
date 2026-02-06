@@ -36,7 +36,7 @@ public final class RemoteHighlighter implements Highlighter {
 
   @Override
   public AttributedString highlight(final LineReader reader, final String buffer) {
-    if (!this.socketClient.isConnected()) {
+    if (!this.socketClient.isConnected() || !this.socketClient.isInteractivityAvailable()) {
       return createUnhighlighted(buffer);
     }
 

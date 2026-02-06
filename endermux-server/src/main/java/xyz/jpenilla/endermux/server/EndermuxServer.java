@@ -12,17 +12,20 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.Objects;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import xyz.jpenilla.endermux.protocol.LayoutConfig;
 import xyz.jpenilla.endermux.protocol.Message;
 import xyz.jpenilla.endermux.protocol.MessagePayload;
 import xyz.jpenilla.endermux.protocol.MessageSerializer;
 import xyz.jpenilla.endermux.protocol.MessageType;
 import xyz.jpenilla.endermux.protocol.Payloads;
 import xyz.jpenilla.endermux.protocol.SocketProtocolConstants;
-import xyz.jpenilla.endermux.server.api.ConsoleHooks;
+import xyz.jpenilla.endermux.server.api.InteractiveConsoleHooks;
 import xyz.jpenilla.endermux.server.handlers.CommandHandler;
 import xyz.jpenilla.endermux.server.handlers.CompletionHandler;
 import xyz.jpenilla.endermux.server.handlers.HandlerRegistry;
@@ -30,32 +33,32 @@ import xyz.jpenilla.endermux.server.handlers.ParseHandler;
 import xyz.jpenilla.endermux.server.handlers.SyntaxHighlightHandler;
 
 @NullMarked
-public final class SocketServerManager {
-  private static final Logger LOGGER = LoggerFactory.getLogger(SocketServerManager.class);
+public final class EndermuxServer {
+  private static final Logger LOGGER = LoggerFactory.getLogger(EndermuxServer.class);
 
   private final Set<ClientEndpoint> connections = ConcurrentHashMap.newKeySet();
   private final ConcurrentHashMap<ClientEndpoint, ClientSession> sessions = new ConcurrentHashMap<>();
   private final ExecutorService executor;
-  private final ConsoleHooks hooks;
   private final HandlerRegistry handlerRegistry;
   private final MessageSerializer serializer;
   private final Path socketPath;
   private final int maxConnections;
-  private final ConsoleHooks.Metadata metadata;
+  private final LayoutConfig logLayout;
+  private final AtomicReference<@Nullable InteractiveConsoleHooks> interactiveHooks = new AtomicReference<>();
 
   private final AtomicBoolean running = new AtomicBoolean(false);
+  private final AtomicBoolean interactivityAvailable = new AtomicBoolean(false);
   private ServerSocketChannel serverChannel;
   private Thread acceptorThread;
 
-  public SocketServerManager(
-    final ConsoleHooks hooks,
+  public EndermuxServer(
+    final LayoutConfig logLayout,
     final Path socketPath,
     final int maxConnections
   ) {
-    this.hooks = hooks;
+    this.logLayout = logLayout;
     this.socketPath = socketPath;
     this.maxConnections = maxConnections;
-    this.metadata = hooks.metadata();
     this.executor = Executors.newThreadPerTaskExecutor(
       Thread.ofVirtual()
         .name("SocketWorker-", 0)
@@ -68,10 +71,10 @@ public final class SocketServerManager {
   }
 
   private void registerHandlers() {
-    this.handlerRegistry.register(new CompletionHandler(this.hooks));
-    this.handlerRegistry.register(new SyntaxHighlightHandler(this.hooks));
-    this.handlerRegistry.register(new ParseHandler(this.hooks));
-    this.handlerRegistry.register(new CommandHandler(this.hooks));
+    this.handlerRegistry.register(new CompletionHandler(this.interactiveHooks::get));
+    this.handlerRegistry.register(new SyntaxHighlightHandler(this.interactiveHooks::get));
+    this.handlerRegistry.register(new ParseHandler(this.interactiveHooks::get));
+    this.handlerRegistry.register(new CommandHandler(this.interactiveHooks::get));
   }
 
   public void start() {
@@ -132,7 +135,7 @@ public final class SocketServerManager {
   private void handleNewConnection(final SocketChannel clientChannel) {
     try {
       final ClientEndpoint connection = new ClientEndpoint(clientChannel, this.serializer);
-      final ClientSession session = new ClientSession(connection, this.handlerRegistry);
+      final ClientSession session = new ClientSession(connection, this.handlerRegistry, this.interactivityAvailable.get());
       this.sessions.put(connection, session);
       connection.start(session, () -> this.removeConnection(connection));
       this.executor.submit(() -> this.runConnection(connection, session));
@@ -205,7 +208,7 @@ public final class SocketServerManager {
   private Payloads.Welcome welcomePayload() {
     return new Payloads.Welcome(
       SocketProtocolConstants.PROTOCOL_VERSION,
-      this.metadata.logLayout()
+      this.logLayout
     );
   }
 
@@ -274,5 +277,37 @@ public final class SocketServerManager {
 
   public boolean isRunning() {
     return this.running.get();
+  }
+
+  public boolean isInteractivityAvailable() {
+    return this.interactivityAvailable.get();
+  }
+
+  public void enableInteractivity(final InteractiveConsoleHooks hooks) {
+    Objects.requireNonNull(hooks, "hooks");
+    if (!this.interactiveHooks.compareAndSet(null, hooks)) {
+      throw new IllegalStateException("Interactivity is already enabled");
+    }
+    if (!this.interactivityAvailable.compareAndSet(false, true)) {
+      this.interactiveHooks.set(null);
+      throw new IllegalStateException("Interactivity is already enabled");
+    }
+    this.broadcastInteractivityState(true);
+  }
+
+  public void disableInteractivity() {
+    if (!this.interactivityAvailable.compareAndSet(true, false)) {
+      return;
+    }
+    this.interactiveHooks.set(null);
+    this.broadcastInteractivityState(false);
+  }
+
+  private void broadcastInteractivityState(final boolean available) {
+    this.sessions.forEach((connection, session) -> {
+      if (connection.isOpen()) {
+        session.setInteractivityAvailable(available);
+      }
+    });
   }
 }

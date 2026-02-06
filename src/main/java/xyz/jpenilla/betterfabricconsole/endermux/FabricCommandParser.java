@@ -28,10 +28,10 @@ import org.jline.reader.ParsedLine;
 import org.jspecify.annotations.NullMarked;
 import xyz.jpenilla.betterfabricconsole.console.ConsoleState;
 import xyz.jpenilla.endermux.protocol.Payloads;
-import xyz.jpenilla.endermux.server.api.ConsoleHooks;
+import xyz.jpenilla.endermux.server.api.InteractiveConsoleHooks;
 
 @NullMarked
-public final class FabricCommandParser implements ConsoleHooks.CommandParser {
+public final class FabricCommandParser implements InteractiveConsoleHooks.CommandParser {
   private final ConsoleState consoleState;
 
   public FabricCommandParser(final ConsoleState consoleState) {
