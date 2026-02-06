@@ -36,7 +36,8 @@ public final class MessageSerializer {
     Map.entry(MessageType.LOG_FORWARD, Payloads.LogForward.class),
     Map.entry(MessageType.PONG, Payloads.Pong.class),
     Map.entry(MessageType.ERROR, Payloads.Error.class),
-    Map.entry(MessageType.CONNECTION_STATUS, Payloads.ConnectionStatus.class)
+    Map.entry(MessageType.CONNECTION_STATUS, Payloads.ConnectionStatus.class),
+    Map.entry(MessageType.INTERACTIVITY_STATUS, Payloads.InteractivityStatus.class)
   );
 
   public static MessageSerializer createStandard() {

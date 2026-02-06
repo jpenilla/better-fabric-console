@@ -1,20 +1,22 @@
 package xyz.jpenilla.endermux.server.handlers;
 
 import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import xyz.jpenilla.endermux.server.api.InteractiveConsoleHooks;
 import xyz.jpenilla.endermux.protocol.MessageType;
 import xyz.jpenilla.endermux.protocol.Payloads;
-import xyz.jpenilla.endermux.server.api.ConsoleHooks;
+import java.util.function.Supplier;
 
 @NullMarked
 public final class SyntaxHighlightHandler implements MessageHandler<Payloads.SyntaxHighlightRequest> {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(SyntaxHighlightHandler.class);
 
-  private final ConsoleHooks hooks;
+  private final Supplier<@Nullable InteractiveConsoleHooks> hooks;
 
-  public SyntaxHighlightHandler(final ConsoleHooks hooks) {
+  public SyntaxHighlightHandler(final Supplier<@Nullable InteractiveConsoleHooks> hooks) {
     this.hooks = hooks;
   }
 
@@ -36,7 +38,12 @@ public final class SyntaxHighlightHandler implements MessageHandler<Payloads.Syn
     }
 
     try {
-      final ConsoleHooks.CommandHighlighter highlighter = this.hooks.highlighter();
+      final InteractiveConsoleHooks currentHooks = this.hooks.get();
+      if (currentHooks == null) {
+        ctx.error("Interactivity is currently unavailable");
+        return;
+      }
+      final InteractiveConsoleHooks.CommandHighlighter highlighter = currentHooks.highlighter();
       if (highlighter == null) {
         ctx.error("Syntax highlighting is not supported");
         return;

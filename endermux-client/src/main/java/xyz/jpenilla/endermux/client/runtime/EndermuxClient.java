@@ -52,8 +52,10 @@ public final class EndermuxClient {
   private @Nullable SocketTransport socketClient;
   private @Nullable Terminal terminal;
   private boolean lastSessionConnected;
+  private volatile boolean interactiveAvailable;
   private @Nullable ExitReason exitReason;
   private volatile boolean shutdownRequested;
+  private final Object interactivityLock = new Object();
 
   private final ExecutorService logExecutor = Executors.newSingleThreadExecutor(r -> {
     final Thread thread = new Thread(r, "LogOutput");
@@ -166,19 +168,20 @@ public final class EndermuxClient {
     this.lastSessionConnected = false;
     try {
       this.socketClient = new SocketTransport(socketPath);
+      this.interactiveAvailable = false;
 
       final Terminal term = this.terminal;
       this.socketClient.setDisconnectCallback(() -> {
-        if (term != null) {
+        final LineReader reader = this.lineReader;
+        if (term != null && reader != null && reader.isReading()) {
           term.raise(Terminal.Signal.INT);
         }
       });
+      this.socketClient.setMessageHandler(this::handleMessage);
 
       this.socketClient.connect();
       this.lastSessionConnected = true;
       System.out.println("Connected to Endermux server via socket: " + socketPath);
-
-      this.socketClient.setMessageHandler(this::handleMessage);
 
       final Highlighter highlighter = new RemoteHighlighter(this.socketClient);
 
@@ -290,6 +293,11 @@ public final class EndermuxClient {
           return false;
         }
 
+        if (!this.interactiveAvailable) {
+          this.waitForInteractivity();
+          continue;
+        }
+
         final String input = lineReader.readLine(TERMINAL_PROMPT);
         if (input == null) {
           this.exitReason = ExitReason.USER_EOF;
@@ -312,7 +320,20 @@ public final class EndermuxClient {
         if (this.connectedClient() == null) {
           return false;
         }
+        if (!this.interactiveAvailable) {
+          continue;
+        }
         System.out.println("Press Ctrl+D to disconnect from console.");
+      }
+    }
+  }
+
+  private void waitForInteractivity() {
+    synchronized (this.interactivityLock) {
+      try {
+        this.interactivityLock.wait(SOCKET_POLL_INTERVAL_MS);
+      } catch (final InterruptedException e) {
+        Thread.currentThread().interrupt();
       }
     }
   }
@@ -343,6 +364,22 @@ public final class EndermuxClient {
       && message.payload() instanceof Payloads.ConnectionStatus(Payloads.ConnectionStatus.Status status)) {
       if (status == Payloads.ConnectionStatus.Status.DISCONNECTED) {
         System.out.println("Disconnected from server.");
+      }
+      return;
+    }
+
+    if (type == MessageType.INTERACTIVITY_STATUS
+      && message.payload() instanceof Payloads.InteractivityStatus(boolean available)) {
+      this.interactiveAvailable = available;
+
+      final LineReader reader = this.lineReader;
+      final Terminal term = this.terminal;
+      if (!available && reader != null && reader.isReading() && term != null) {
+        term.raise(Terminal.Signal.INT);
+      }
+
+      synchronized (this.interactivityLock) {
+        this.interactivityLock.notifyAll();
       }
     }
   }

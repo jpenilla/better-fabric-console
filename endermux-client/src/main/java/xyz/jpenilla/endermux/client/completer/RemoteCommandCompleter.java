@@ -29,7 +29,7 @@ public final class RemoteCommandCompleter implements Completer {
 
   @Override
   public void complete(final LineReader reader, final ParsedLine line, final List<Candidate> candidates) {
-    if (!this.socketClient.isConnected()) {
+    if (!this.socketClient.isConnected() || !this.socketClient.isInteractivityAvailable()) {
       return;
     }
 

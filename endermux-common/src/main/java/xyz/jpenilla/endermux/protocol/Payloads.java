@@ -105,8 +105,10 @@ public final class Payloads {
 
   public record ConnectionStatus(Status status) implements MessagePayload {
     public enum Status {
-      CONNECTED,
       DISCONNECTED
     }
+  }
+
+  public record InteractivityStatus(boolean available) implements MessagePayload {
   }
 }

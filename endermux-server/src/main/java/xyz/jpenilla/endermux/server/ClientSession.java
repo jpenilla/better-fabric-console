@@ -21,19 +21,22 @@ public final class ClientSession implements Consumer<Message<?>> {
   private final HandlerRegistry handlerRegistry;
   private volatile boolean disconnecting = false;
   private volatile boolean logReady = false;
+  private volatile boolean interactivityAvailable;
 
   public ClientSession(
     final ClientEndpoint connection,
-    final HandlerRegistry handlerRegistry
+    final HandlerRegistry handlerRegistry,
+    final boolean interactivityAvailable
   ) {
     this.connection = connection;
     this.handlerRegistry = handlerRegistry;
+    this.interactivityAvailable = interactivityAvailable;
   }
 
   public void initialize() {
     this.send(Message.unsolicited(
-      MessageType.CONNECTION_STATUS,
-      new Payloads.ConnectionStatus(Payloads.ConnectionStatus.Status.CONNECTED)
+      MessageType.INTERACTIVITY_STATUS,
+      new Payloads.InteractivityStatus(this.interactivityAvailable)
     ));
   }
 
@@ -70,6 +73,11 @@ public final class ClientSession implements Consumer<Message<?>> {
       return;
     }
 
+    if (!this.interactivityAvailable && this.requiresInteractivity(message.type())) {
+      ctx.error("Interactivity is currently unavailable");
+      return;
+    }
+
     final boolean handled = this.handlerRegistry.handle(
       message.type(),
       message.payload(),
@@ -83,6 +91,21 @@ public final class ClientSession implements Consumer<Message<?>> {
 
   public boolean isLogReady() {
     return this.logReady;
+  }
+
+  void setInteractivityAvailable(final boolean available) {
+    this.interactivityAvailable = available;
+    this.send(Message.unsolicited(
+      MessageType.INTERACTIVITY_STATUS,
+      new Payloads.InteractivityStatus(available)
+    ));
+  }
+
+  private boolean requiresInteractivity(final MessageType type) {
+    return switch (type) {
+      case COMPLETION_REQUEST, SYNTAX_HIGHLIGHT_REQUEST, PARSE_REQUEST, COMMAND_EXECUTE -> true;
+      default -> false;
+    };
   }
 
   private void handlePing(final ResponseContext ctx) {

@@ -34,7 +34,7 @@ import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 import xyz.jpenilla.endermux.log4j.EndermuxForwardingAppender;
 import xyz.jpenilla.endermux.protocol.Payloads;
-import xyz.jpenilla.endermux.server.SocketServerManager;
+import xyz.jpenilla.endermux.server.EndermuxServer;
 
 @NullMarked
 public final class RemoteLogForwarder implements EndermuxForwardingAppender.LogForwardingTarget {
@@ -45,17 +45,17 @@ public final class RemoteLogForwarder implements EndermuxForwardingAppender.LogF
 
   private static final long ERROR_LOG_INTERVAL_MS = 60_000;
 
-  private final SocketServerManager socketServerManager;
+  private final EndermuxServer endermuxServer;
   private final AtomicLong failureCount = new AtomicLong(0);
   private volatile long lastErrorLogTime = 0;
 
-  public RemoteLogForwarder(final SocketServerManager socketServerManager) {
-    this.socketServerManager = socketServerManager;
+  public RemoteLogForwarder(final EndermuxServer endermuxServer) {
+    this.endermuxServer = endermuxServer;
   }
 
   @Override
   public void forward(final LogEvent event) {
-    final SocketServerManager manager = this.socketServerManager;
+    final EndermuxServer manager = this.endermuxServer;
     if (!manager.isRunning()) {
       return;
     }
