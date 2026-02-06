@@ -212,6 +212,10 @@ final class RemoteConsoleSession {
         if (this.connectedClient() == null || this.shutdownRequested.getAsBoolean()) {
           return false;
         }
+        if (!this.terminalContext.hasConsoleInput()) {
+          this.sleepForInput();
+          continue;
+        }
         LOGGER.info("Disconnecting...");
         return true;
       }
@@ -224,6 +228,16 @@ final class RemoteConsoleSession {
     }
   }
 
+  private void sleepForInput() {
+    try {
+      Thread.sleep(SOCKET_POLL_INTERVAL_MS);
+    } catch (final InterruptedException e) {
+      if (!this.shutdownRequested.getAsBoolean()) {
+        LOGGER.debug("Interrupted while waiting for stdin input", e);
+      }
+    }
+  }
+
   private @Nullable String readInputLine(final BufferedReader reader) throws IOException {
     while (true) {
       if (this.shutdownRequested.getAsBoolean() || this.connectedClient() == null) {
@@ -232,13 +246,9 @@ final class RemoteConsoleSession {
       if (reader.ready()) {
         return reader.readLine();
       }
-      try {
-        Thread.sleep(SOCKET_POLL_INTERVAL_MS);
-      } catch (final InterruptedException e) {
-        if (this.shutdownRequested.getAsBoolean()) {
-          return null;
-        }
-        LOGGER.debug("Interrupted while waiting for stdin input", e);
+      this.sleepForInput();
+      if (this.shutdownRequested.getAsBoolean()) {
+        return null;
       }
     }
   }

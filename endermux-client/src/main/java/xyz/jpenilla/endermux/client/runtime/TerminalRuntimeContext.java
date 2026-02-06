@@ -15,35 +15,54 @@ import xyz.jpenilla.endermux.client.completer.RemoteCommandCompleter;
 import xyz.jpenilla.endermux.client.parser.RemoteParser;
 import xyz.jpenilla.endermux.client.transport.SocketTransport;
 import xyz.jpenilla.endermux.jline.MinecraftCompletionMatcher;
-import xyz.jpenilla.endermux.jline.TerminalDetection;
+import xyz.jpenilla.endermux.jline.TerminalMode;
+import xyz.jpenilla.endermux.jline.TerminalModeDetection;
 
 @NullMarked
 final class TerminalRuntimeContext implements AutoCloseable {
   private static final Logger LOGGER = LoggerFactory.getLogger(TerminalRuntimeContext.class);
-  private final boolean dumbTerminal;
+  private final TerminalMode mode;
+  private final boolean consoleInputAvailable;
   private final @Nullable Terminal terminal;
 
-  private TerminalRuntimeContext(final boolean dumbTerminal, final @Nullable Terminal terminal) {
-    this.dumbTerminal = dumbTerminal;
+  private TerminalRuntimeContext(
+    final TerminalMode mode,
+    final boolean consoleInputAvailable,
+    final @Nullable Terminal terminal
+  ) {
+    this.mode = mode;
+    this.consoleInputAvailable = consoleInputAvailable;
     this.terminal = terminal;
   }
 
-  static TerminalRuntimeContext create() throws IOException {
-    final boolean dumb = TerminalDetection.isDumb();
-    final @Nullable Terminal terminal;
-    if (dumb) {
-      terminal = null;
-    } else {
-      terminal = TerminalBuilder.builder()
-        .system(true)
-        .build();
+  static TerminalRuntimeContext create() {
+    final boolean consoleInputAvailable = TerminalModeDetection.hasConsoleInput();
+    final TerminalMode detectedMode = TerminalModeDetection.mode();
+    if (detectedMode == TerminalMode.DUMB) {
+      TerminalOutput.setTerminal(null);
+      return new TerminalRuntimeContext(TerminalMode.DUMB, consoleInputAvailable, null);
     }
-    TerminalOutput.setTerminal(terminal);
-    return new TerminalRuntimeContext(dumb, terminal);
+
+    try {
+      final Terminal terminal = TerminalBuilder.builder()
+        .system(true)
+        .dumb(false)
+        .build();
+      TerminalOutput.setTerminal(terminal);
+      return new TerminalRuntimeContext(TerminalMode.INTERACTIVE, consoleInputAvailable, terminal);
+    } catch (final IOException | IllegalStateException e) {
+      LOGGER.debug("Falling back to dumb mode after interactive terminal setup failure", e);
+      TerminalOutput.setTerminal(null);
+      return new TerminalRuntimeContext(TerminalMode.DUMB, consoleInputAvailable, null);
+    }
   }
 
   boolean isDumbTerminal() {
-    return this.dumbTerminal;
+    return this.mode == TerminalMode.DUMB;
+  }
+
+  boolean hasConsoleInput() {
+    return this.consoleInputAvailable;
   }
 
   void registerInterruptHandler(final Runnable handler) {
@@ -55,7 +74,7 @@ final class TerminalRuntimeContext implements AutoCloseable {
   }
 
   @Nullable LineReader createLineReader(final SocketTransport socketClient, final Highlighter highlighter) {
-    if (this.dumbTerminal) {
+    if (this.mode == TerminalMode.DUMB) {
       return null;
     }
     return LineReaderBuilder.builder()
