@@ -21,25 +21,35 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package xyz.jpenilla.betterfabricconsole.util;
+package xyz.jpenilla.betterfabricconsole.endermux;
 
-import org.checkerframework.checker.nullness.qual.Nullable;
-import org.jline.terminal.Terminal;
-import org.jline.terminal.TerminalBuilder;
-import java.io.IOException;
+import org.jline.reader.LineReader;
+import org.jline.reader.ParsedLine;
+import org.jspecify.annotations.NullMarked;
+import xyz.jpenilla.betterfabricconsole.console.ConsoleState;
+import xyz.jpenilla.endermux.protocol.Payloads;
+import xyz.jpenilla.endermux.server.api.InteractiveConsoleHooks;
 
-public final class TerminalDetection {
-  private static final @Nullable Terminal TERMINAL = detectTerminal();
+@NullMarked
+public final class FabricCommandParser implements InteractiveConsoleHooks.CommandParser {
+  private final ConsoleState consoleState;
 
-  private static @Nullable Terminal detectTerminal() {
-    try {
-      return TerminalBuilder.builder().dumb(false).build();
-    } catch (final IOException | IllegalStateException e) {
-      return null;
-    }
+  public FabricCommandParser(final ConsoleState consoleState) {
+    this.consoleState = consoleState;
   }
 
-  public static boolean isDumb() {
-    return TERMINAL == null;
+  @Override
+  public Payloads.ParseResponse parse(final String command, final int cursor) {
+    final LineReader dummyReader = this.consoleState.lineReader();
+    final ParsedLine parsedLine = dummyReader.getParser().parse(command, cursor);
+
+    return new Payloads.ParseResponse(
+      parsedLine.word(),
+      parsedLine.wordCursor(),
+      parsedLine.wordIndex(),
+      parsedLine.words(),
+      parsedLine.line(),
+      parsedLine.cursor()
+    );
   }
 }
