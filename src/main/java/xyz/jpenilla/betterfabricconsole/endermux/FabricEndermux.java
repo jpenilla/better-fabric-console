@@ -35,49 +35,57 @@ import org.jspecify.annotations.Nullable;
 import xyz.jpenilla.betterfabricconsole.configuration.Config;
 import xyz.jpenilla.betterfabricconsole.console.ConsoleState;
 import xyz.jpenilla.endermux.log4j.EndermuxForwardingAppender;
-import xyz.jpenilla.endermux.protocol.LayoutConfig;
-import xyz.jpenilla.endermux.server.SocketServerManager;
-import xyz.jpenilla.endermux.server.api.ConsoleHooks;
+import xyz.jpenilla.endermux.server.EndermuxServer;
+import xyz.jpenilla.endermux.server.api.InteractiveConsoleHooks;
 import xyz.jpenilla.endermux.server.log.RemoteLogForwarder;
 
 @NullMarked
 public final class FabricEndermux {
   private static final String LOG_FORWARDER_NAME = "RemoteLogForwarder";
 
-  private @Nullable SocketServerManager socketServerManager;
+  private @Nullable EndermuxServer endermuxServer;
   private @Nullable EndermuxForwardingAppender forwardingAppender;
 
   public void start(final DedicatedServer server, final ConsoleState consoleState, final Config config) {
     final Path socketPath = server.getServerDirectory().toFile().toPath().resolve(config.consoleSocket().socketPath());
-    final ConsoleHooks hooks = ConsoleHooks.builder()
-      .completer(new FabricCommandCompleter(consoleState))
-      .parser(new FabricCommandParser(consoleState))
-      .executor(new FabricCommandExecutor(server))
-      .highlighter(new FabricCommandHighlighter(server, config.highlightColors()))
-      .metadata(new ConsoleHooks.Metadata(this.logLayout()))
-      .build();
-    this.socketServerManager = new SocketServerManager(hooks, socketPath, config.consoleSocket().maxConnections());
-    this.socketServerManager.start();
 
-    final Logger rootLogger = (Logger) LogManager.getRootLogger();
-    final LoggerContext loggerContext = (LoggerContext) LogManager.getContext(false);
-    final LoggerConfig loggerConfig = loggerContext.getConfiguration().getLoggerConfig(rootLogger.getName());
-
-    EndermuxForwardingAppender.TARGET = new RemoteLogForwarder(this.socketServerManager);
     this.forwardingAppender = new EndermuxForwardingAppender(
       LOG_FORWARDER_NAME,
       null,
       PatternLayout.newBuilder().withPattern(config.logPattern()).build()
     );
+
+    this.endermuxServer = new EndermuxServer(
+      this.forwardingAppender.logLayout(),
+      socketPath,
+      config.consoleSocket().maxConnections()
+    );
+
+    this.endermuxServer.start();
+    EndermuxForwardingAppender.TARGET = new RemoteLogForwarder(this.endermuxServer);
+
+    final Logger rootLogger = (Logger) LogManager.getRootLogger();
+    final LoggerContext loggerContext = (LoggerContext) LogManager.getContext(false);
+    final LoggerConfig loggerConfig = loggerContext.getConfiguration().getLoggerConfig(rootLogger.getName());
+
     this.forwardingAppender.start();
     loggerConfig.addAppender(this.forwardingAppender, loggerConfig.getLevel(), null);
     loggerContext.updateLoggers();
+
+    this.endermuxServer.enableInteractivity(
+      InteractiveConsoleHooks.builder()
+        .completer(new FabricCommandCompleter(consoleState))
+        .parser(new FabricCommandParser(consoleState))
+        .executor(new FabricCommandExecutor(server))
+        .highlighter(new FabricCommandHighlighter(server, config.highlightColors()))
+        .build()
+    );
   }
 
   public void close() {
-    if (this.socketServerManager != null) {
-      this.socketServerManager.stop();
-      this.socketServerManager = null;
+    if (this.endermuxServer != null) {
+      this.endermuxServer.stop();
+      this.endermuxServer = null;
     }
 
     if (this.forwardingAppender != null) {
@@ -93,11 +101,9 @@ public final class FabricEndermux {
     EndermuxForwardingAppender.TARGET = null;
   }
 
-  private LayoutConfig logLayout() {
-    final EndermuxForwardingAppender appender = this.forwardingAppender;
-    if (appender != null) {
-      return appender.logLayout();
+  public void disableInteractivity() {
+    if (this.endermuxServer != null) {
+      this.endermuxServer.disableInteractivity();
     }
-    throw new IllegalStateException("No forwarding appender available to provide log layout");
   }
 }

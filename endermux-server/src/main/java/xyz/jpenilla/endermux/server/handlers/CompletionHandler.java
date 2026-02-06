@@ -1,20 +1,22 @@
 package xyz.jpenilla.endermux.server.handlers;
 
 import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import xyz.jpenilla.endermux.server.api.InteractiveConsoleHooks;
 import xyz.jpenilla.endermux.protocol.MessageType;
 import xyz.jpenilla.endermux.protocol.Payloads;
-import xyz.jpenilla.endermux.server.api.ConsoleHooks;
+import java.util.function.Supplier;
 
 @NullMarked
 public final class CompletionHandler implements MessageHandler<Payloads.CompletionRequest> {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(CompletionHandler.class);
 
-  private final ConsoleHooks hooks;
+  private final Supplier<@Nullable InteractiveConsoleHooks> hooks;
 
-  public CompletionHandler(final ConsoleHooks hooks) {
+  public CompletionHandler(final Supplier<@Nullable InteractiveConsoleHooks> hooks) {
     this.hooks = hooks;
   }
 
@@ -36,7 +38,12 @@ public final class CompletionHandler implements MessageHandler<Payloads.Completi
     }
 
     try {
-      final ConsoleHooks.CommandCompleter completer = this.hooks.completer();
+      final InteractiveConsoleHooks currentHooks = this.hooks.get();
+      if (currentHooks == null) {
+        ctx.error("Interactivity is currently unavailable");
+        return;
+      }
+      final InteractiveConsoleHooks.CommandCompleter completer = currentHooks.completer();
       if (completer == null) {
         ctx.error("Completions are not supported");
         return;
