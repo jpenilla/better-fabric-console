@@ -75,7 +75,15 @@ public final class EndermuxClient {
           break;
         }
         final Path path = Paths.get(socketPath);
-        this.waitForSocket(path);
+        try {
+          this.waitForSocket(path);
+        } catch (final InterruptedException e) {
+          if (this.shutdownRequested) {
+            break;
+          }
+          LOGGER.debug("Interrupted while waiting for socket, continuing reconnect loop", e);
+          continue;
+        }
 
         if (this.shutdownRequested) {
           break;
@@ -96,7 +104,14 @@ public final class EndermuxClient {
         LOGGER.info("Disconnected from server. Waiting for reconnection...");
         if (backoffMs > 0) {
           LOGGER.info("Reconnecting in {}...", formatBackoff(backoffMs));
-          Thread.sleep(backoffMs);
+          try {
+            Thread.sleep(backoffMs);
+          } catch (final InterruptedException e) {
+            if (this.shutdownRequested) {
+              break;
+            }
+            LOGGER.debug("Interrupted during reconnect backoff, continuing reconnect loop", e);
+          }
         }
       }
     } finally {
@@ -338,7 +353,10 @@ public final class EndermuxClient {
       try {
         this.interactivityLock.wait(SOCKET_POLL_INTERVAL_MS);
       } catch (final InterruptedException e) {
-        Thread.currentThread().interrupt();
+        if (this.shutdownRequested) {
+          return;
+        }
+        LOGGER.debug("Interrupted while waiting for interactivity update", e);
       }
     }
   }
