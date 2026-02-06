@@ -1,10 +1,10 @@
 package xyz.jpenilla.endermux.client.parser;
 
 import java.io.IOException;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.jline.reader.ParsedLine;
 import org.jline.reader.Parser;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import xyz.jpenilla.endermux.client.transport.SocketTransport;
 import xyz.jpenilla.endermux.protocol.Message;
 import xyz.jpenilla.endermux.protocol.MessageType;
@@ -12,7 +12,7 @@ import xyz.jpenilla.endermux.protocol.Payloads;
 import xyz.jpenilla.endermux.protocol.SocketProtocolConstants;
 
 public final class RemoteParser implements Parser {
-  private static final Logger LOGGER = LogManager.getLogger();
+  private static final Logger LOGGER = LoggerFactory.getLogger(RemoteParser.class);
   private final SocketTransport socketClient;
 
   public RemoteParser(final SocketTransport socketClient) {

@@ -18,10 +18,10 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicReference;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import xyz.jpenilla.endermux.protocol.ConnectionState;
 import xyz.jpenilla.endermux.protocol.FrameCodec;
 import xyz.jpenilla.endermux.protocol.LayoutConfig;
@@ -36,7 +36,7 @@ import xyz.jpenilla.endermux.protocol.TimedRead;
 @NullMarked
 public final class SocketTransport {
 
-  private static final Logger LOGGER = LogManager.getLogger();
+  private static final Logger LOGGER = LoggerFactory.getLogger(SocketTransport.class);
 
   private final String socketPath;
   private final MessageSerializer serializer;

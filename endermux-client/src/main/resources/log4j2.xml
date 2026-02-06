@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Configuration status="WARN">
+  <Appenders>
+    <InteractiveConsoleAppender name="Interactive">
+      <PatternLayout>
+        <EndermuxLoggerNamePatternSelector defaultPattern="%EndermuxHighlightError{endermux-client| [%d{HH:mm:ss} %level] [%logger{1}]: %msg%n%xEx}">
+          <!-- Don't duplicate prefix -->
+          <PatternMatch key="xyz.jpenilla.endermux.client.runtime.EndermuxClient"
+                        pattern="%EndermuxHighlightError{endermux-client| [%d{HH:mm:ss} %level]: %msg%n%xEx}" />
+        </EndermuxLoggerNamePatternSelector>
+      </PatternLayout>
+    </InteractiveConsoleAppender>
+  </Appenders>
+  <Loggers>
+    <Logger name="STDOUT" level="info" additivity="true"/>
+    <Logger name="STDERR" level="error" additivity="true"/>
+    <Root level="info">
+      <AppenderRef ref="Interactive"/>
+    </Root>
+  </Loggers>
+</Configuration>

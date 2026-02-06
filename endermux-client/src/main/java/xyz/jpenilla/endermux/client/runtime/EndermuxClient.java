@@ -16,8 +16,6 @@ import java.util.concurrent.TimeUnit;
 import net.kyori.adventure.text.serializer.ansi.ANSIComponentSerializer;
 import net.kyori.adventure.text.serializer.gson.GsonComponentSerializer;
 import org.apache.logging.log4j.Level;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.core.LogEvent;
 import org.apache.logging.log4j.core.layout.PatternLayout;
 import org.jline.reader.EndOfFileException;
@@ -29,6 +27,8 @@ import org.jline.terminal.Terminal;
 import org.jline.terminal.TerminalBuilder;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import xyz.jpenilla.endermux.client.completer.RemoteCommandCompleter;
 import xyz.jpenilla.endermux.client.parser.RemoteParser;
 import xyz.jpenilla.endermux.client.transport.ProtocolMismatchException;
@@ -45,7 +45,7 @@ public final class EndermuxClient {
 
   private static final String TERMINAL_PROMPT = "> ";
   private static final long SOCKET_POLL_INTERVAL_MS = 500;
-  private static final Logger LOGGER = LogManager.getLogger();
+  private static final Logger LOGGER = LoggerFactory.getLogger(EndermuxClient.class);
 
   private @Nullable LineReader lineReader;
   private @Nullable PatternLayout logPatternLayout;
@@ -65,6 +65,7 @@ public final class EndermuxClient {
 
   public void run(final String socketPath) throws Exception {
     this.terminal = this.createTerminal();
+    TerminalOutput.setTerminal(this.terminal);
 
     try {
       this.registerSignalHandlers();
@@ -92,9 +93,9 @@ public final class EndermuxClient {
         retryCount++;
         final long backoffMs = this.retryBackoffMs(retryCount);
 
-        System.out.println("Disconnected from server. Waiting for reconnection...");
+        LOGGER.info("Disconnected from server. Waiting for reconnection...");
         if (backoffMs > 0) {
-          System.out.println("Reconnecting in " + formatBackoff(backoffMs) + "...");
+          LOGGER.info("Reconnecting in {}...", formatBackoff(backoffMs));
           Thread.sleep(backoffMs);
         }
       }
@@ -104,6 +105,8 @@ public final class EndermuxClient {
       if (this.terminal != null) {
         this.terminal.close();
       }
+      TerminalOutput.setLineReader(null);
+      TerminalOutput.setTerminal(null);
     }
   }
 
@@ -120,7 +123,7 @@ public final class EndermuxClient {
         (parentDir != null ? parentDir : resolvedSocketPath));
     }
 
-    System.out.println("Waiting for socket to exist: " + displayPath);
+    LOGGER.info("Waiting for socket to exist: {}", displayPath);
 
     try (WatchService watchService = FileSystems.getDefault().newWatchService()) {
       parentDir.register(watchService, StandardWatchEventKinds.ENTRY_CREATE);
@@ -148,12 +151,12 @@ public final class EndermuxClient {
         }
 
         if (!key.reset()) {
-          System.err.println("Warning: File watching failed, falling back to polling");
+          LOGGER.warn("File watching failed, falling back to polling");
           break;
         }
       }
     } catch (final IOException e) {
-      System.err.println("Warning: File watching unavailable (" + e.getMessage() + "), falling back to polling");
+      LOGGER.warn("File watching unavailable ({}), falling back to polling", e.getMessage());
     }
 
     while (!Files.exists(resolvedSocketPath)) {
@@ -181,22 +184,23 @@ public final class EndermuxClient {
 
       this.socketClient.connect();
       this.lastSessionConnected = true;
-      System.out.println("Connected to Endermux server via socket: " + socketPath);
+      LOGGER.info("Connected to Endermux server via socket: {}", socketPath);
 
       final Highlighter highlighter = new RemoteHighlighter(this.socketClient);
 
       this.lineReader = this.createLineReader(term, highlighter);
+      TerminalOutput.setLineReader(this.lineReader);
 
       this.logPatternLayout = this.createLogPattern();
       this.socketClient.sendMessage(Message.unsolicited(MessageType.CLIENT_READY, new Payloads.ClientReady()));
 
       return this.acceptInput(this.lineReader);
     } catch (final ProtocolMismatchException e) {
-      System.err.println(protocolMismatchMessage(e));
+      LOGGER.error(protocolMismatchMessage(e));
       return true;
     } catch (final Exception e) {
       LOGGER.debug("Connection failure", e);
-      System.err.println("Connection failed: " + e.getMessage());
+      LOGGER.error("Connection failed: {}", e.getMessage());
       return false;
     } finally {
       this.cleanupSession();
@@ -258,6 +262,7 @@ public final class EndermuxClient {
       this.socketClient = null;
     }
     this.lineReader = null;
+    TerminalOutput.setLineReader(null);
     this.logPatternLayout = null;
   }
 
@@ -265,7 +270,7 @@ public final class EndermuxClient {
     if (this.exitReason == null) {
       return;
     }
-    System.out.println("Goodbye!");
+    LOGGER.info("Goodbye!");
   }
 
   private void shutdown() {
@@ -301,7 +306,7 @@ public final class EndermuxClient {
         final String input = lineReader.readLine(TERMINAL_PROMPT);
         if (input == null) {
           this.exitReason = ExitReason.USER_EOF;
-          System.out.println("Disconnecting...");
+          LOGGER.info("Disconnecting...");
           return true;
         }
 
@@ -314,7 +319,7 @@ public final class EndermuxClient {
 
       } catch (final EndOfFileException e) {
         this.exitReason = ExitReason.USER_EOF;
-        System.out.println("Disconnecting...");
+        LOGGER.info("Disconnecting...");
         return true;
       } catch (final UserInterruptException e) {
         if (this.connectedClient() == null) {
@@ -323,7 +328,7 @@ public final class EndermuxClient {
         if (!this.interactiveAvailable) {
           continue;
         }
-        System.out.println("Press Ctrl+D to disconnect from console.");
+        LOGGER.info("Press Ctrl+D to disconnect and quit the client.");
       }
     }
   }
@@ -345,7 +350,7 @@ public final class EndermuxClient {
 
   private void handleMessage(final Message<? extends MessagePayload> message) {
     if (this.connectedClient() == null) {
-      System.err.println("Not connected to server");
+      LOGGER.warn("Not connected to server");
       return;
     }
 
@@ -363,7 +368,7 @@ public final class EndermuxClient {
     if (type == MessageType.CONNECTION_STATUS
       && message.payload() instanceof Payloads.ConnectionStatus(Payloads.ConnectionStatus.Status status)) {
       if (status == Payloads.ConnectionStatus.Status.DISCONNECTED) {
-        System.out.println("Disconnected from server.");
+        LOGGER.info("Disconnected from server.");
       }
       return;
     }
@@ -430,26 +435,7 @@ public final class EndermuxClient {
   }
 
   private void printLogMessage(final String formattedMessage) {
-    final LineReader reader = this.lineReader;
-
-    if (reader != null && reader.isReading()) {
-      reader.callWidget(LineReader.CLEAR);
-    }
-
-    if (reader != null) {
-      reader.getTerminal().writer().print(formattedMessage);
-    } else {
-      System.out.print(formattedMessage);
-    }
-
-    if (reader != null && reader.isReading()) {
-      reader.callWidget(LineReader.REDRAW_LINE);
-      reader.callWidget(LineReader.REDISPLAY);
-    }
-
-    if (reader != null) {
-      reader.getTerminal().writer().flush();
-    }
+    TerminalOutput.write(formattedMessage);
   }
 
   private Terminal createTerminal() throws IOException {
@@ -495,9 +481,9 @@ public final class EndermuxClient {
   }
 
   private void printError(final String message, final @Nullable String details) {
-    System.err.println("Error: " + message);
+    LOGGER.error("Error: {}", message);
     if (details != null) {
-      System.err.println("Details: " + details);
+      LOGGER.error("Details: {}", details);
     }
   }
 }
