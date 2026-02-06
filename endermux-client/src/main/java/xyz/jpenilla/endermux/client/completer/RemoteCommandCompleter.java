@@ -2,13 +2,13 @@ package xyz.jpenilla.endermux.client.completer;
 
 import java.io.IOException;
 import java.util.List;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.jline.reader.Candidate;
 import org.jline.reader.Completer;
 import org.jline.reader.LineReader;
 import org.jline.reader.ParsedLine;
 import org.jspecify.annotations.NullMarked;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import xyz.jpenilla.endermux.client.transport.SocketTransport;
 import xyz.jpenilla.endermux.protocol.Message;
 import xyz.jpenilla.endermux.protocol.MessageType;
@@ -19,7 +19,7 @@ import xyz.jpenilla.endermux.jline.MinecraftCandidate;
 @NullMarked
 public final class RemoteCommandCompleter implements Completer {
 
-  private static final Logger LOGGER = LogManager.getLogger();
+  private static final Logger LOGGER = LoggerFactory.getLogger(RemoteCommandCompleter.class);
 
   private final SocketTransport socketClient;
 

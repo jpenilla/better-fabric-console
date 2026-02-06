@@ -33,6 +33,8 @@ fabricApi = { module = "net.fabricmc.fabric-api:fabric-api", version.ref = "fabr
 log4jBom = { module = "org.apache.logging.log4j:log4j-bom", version.ref = "log4j" }
 log4jCore = { module = "org.apache.logging.log4j:log4j-core", version.ref = "log4j" }
 log4jApi = { module = "org.apache.logging.log4j:log4j-api", version.ref = "log4j" }
+log4jIostreams = { module = "org.apache.logging.log4j:log4j-iostreams", version.ref = "log4j" }
+log4jSlf4j2Impl = { module = "org.apache.logging.log4j:log4j-slf4j2-impl", version.ref = "log4j" }
 slf4jApi = { module = "org.slf4j:slf4j-api", version.ref = "slf4j" }
 
 jline = { module = "org.jline:jline", version.ref = "jline" }

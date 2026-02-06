@@ -14,9 +14,16 @@ dependencies {
   api(project(":endermux-common"))
   implementation(libs.picocli)
   annotationProcessor(libs.picocliCodegen)
+
   implementation(platform(libs.log4jBom))
-  implementation(libs.log4jCore)
+  annotationProcessor(platform(libs.log4jBom))
   implementation(libs.log4jApi)
+  implementation(libs.log4jCore)
+  implementation(libs.log4jIostreams)
+  implementation(libs.log4jSlf4j2Impl)
+  implementation(libs.slf4jApi)
+  annotationProcessor(libs.log4jCore)
+
   implementation(libs.bundles.jline)
   implementation(libs.jansi)
   implementation(libs.adventureTextSerializerAnsi)
