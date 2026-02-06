@@ -44,8 +44,8 @@ public final class TerminalOutput {
         terminal.writer().print(message);
         terminal.writer().flush();
       } else {
-        originalErr().print(message);
-        originalErr().flush();
+        originalOut().print(message);
+        originalOut().flush();
       }
 
       if (reading) {
