@@ -44,7 +44,7 @@ public final class CommandHandler implements MessageHandler<Payloads.CommandExec
         return;
       }
 
-      ctx.reply(executor.execute(payload.command()));
+      executor.execute(payload.command());
     } catch (final Exception e) {
       LOGGER.warn("Failed to execute command: {}", payload.command(), e);
       ctx.error("Failed to execute command", e.getMessage());

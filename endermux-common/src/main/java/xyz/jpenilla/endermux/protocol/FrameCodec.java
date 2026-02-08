@@ -2,6 +2,7 @@ package xyz.jpenilla.endermux.protocol;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
+import java.io.EOFException;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
@@ -18,7 +19,7 @@ public final class FrameCodec {
     final int length;
     try {
       length = in.readInt();
-    } catch (final IOException e) {
+    } catch (final EOFException e) {
       return null;
     }
 

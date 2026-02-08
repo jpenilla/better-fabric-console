@@ -59,13 +59,6 @@ public final class Payloads {
   ) implements MessagePayload {
   }
 
-  public record CommandResponse(Status status, String command) implements MessagePayload {
-    public enum Status {
-      EXECUTED,
-      FAILED
-    }
-  }
-
   public record LogForward(
     String logger,
     String level,

@@ -16,7 +16,6 @@ public sealed interface MessagePayload permits
   Payloads.CompletionResponse,
   Payloads.SyntaxHighlightResponse,
   Payloads.ParseResponse,
-  Payloads.CommandResponse,
   Payloads.LogForward,
   Payloads.Pong,
   Payloads.Error,

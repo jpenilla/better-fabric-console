@@ -25,7 +25,6 @@ package xyz.jpenilla.betterfabricconsole.endermux;
 
 import net.minecraft.server.dedicated.DedicatedServer;
 import org.jspecify.annotations.NullMarked;
-import xyz.jpenilla.endermux.protocol.Payloads;
 import xyz.jpenilla.endermux.server.api.InteractiveConsoleHooks;
 
 @NullMarked
@@ -37,8 +36,7 @@ public final class FabricCommandExecutor implements InteractiveConsoleHooks.Comm
   }
 
   @Override
-  public Payloads.CommandResponse execute(final String command) {
+  public void execute(final String command) {
     this.server.handleConsoleInput(command, this.server.createCommandSourceStack());
-    return new Payloads.CommandResponse(Payloads.CommandResponse.Status.EXECUTED, command);
   }
 }
