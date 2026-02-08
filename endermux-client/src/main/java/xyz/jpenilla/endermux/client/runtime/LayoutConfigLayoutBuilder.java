@@ -2,10 +2,10 @@ package xyz.jpenilla.endermux.client.runtime;
 
 import java.nio.charset.Charset;
 import java.util.List;
-import xyz.jpenilla.endermux.log4j.LoggerNamePatternSelector;
 import org.apache.logging.log4j.core.layout.PatternLayout;
 import org.apache.logging.log4j.core.layout.PatternMatch;
 import org.jspecify.annotations.NullMarked;
+import xyz.jpenilla.endermux.log4j.LoggerNamePatternSelector;
 import xyz.jpenilla.endermux.protocol.LayoutConfig;
 
 @NullMarked

@@ -1,14 +1,14 @@
 package xyz.jpenilla.endermux.client.runtime;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-
 import java.util.List;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.core.impl.ExtendedStackTraceElement;
 import org.apache.logging.log4j.core.impl.ThrowableProxy;
 import org.junit.jupiter.api.Test;
 import xyz.jpenilla.endermux.protocol.Payloads;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 class SimpleLogEventThrowableMetadataTest {
   @Test

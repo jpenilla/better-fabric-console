@@ -1,13 +1,13 @@
 package xyz.jpenilla.endermux.server.handlers;
 
+import java.util.function.Supplier;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import xyz.jpenilla.endermux.server.api.InteractiveConsoleHooks;
 import xyz.jpenilla.endermux.protocol.MessageType;
 import xyz.jpenilla.endermux.protocol.Payloads;
-import java.util.function.Supplier;
+import xyz.jpenilla.endermux.server.api.InteractiveConsoleHooks;
 
 @NullMarked
 public final class CommandHandler implements MessageHandler<Payloads.CommandExecute> {

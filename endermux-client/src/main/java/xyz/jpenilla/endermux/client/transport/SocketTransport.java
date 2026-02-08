@@ -8,9 +8,9 @@ import java.io.IOException;
 import java.net.StandardProtocolFamily;
 import java.net.UnixDomainSocketAddress;
 import java.nio.channels.Channels;
+import java.nio.channels.ClosedChannelException;
 import java.nio.channels.SocketChannel;
 import java.nio.charset.StandardCharsets;
-import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
@@ -171,7 +171,9 @@ public final class SocketTransport {
         this.handleResponse(message);
       }
     } catch (final IOException e) {
-      LOGGER.debug("Socket client read error", e);
+      if (this.shouldLogReadError(e)) {
+        LOGGER.debug("Socket client read error", e);
+      }
     } finally {
       this.disconnect();
 
@@ -378,6 +380,13 @@ public final class SocketTransport {
       case COMPLETION_REQUEST, SYNTAX_HIGHLIGHT_REQUEST, PARSE_REQUEST, COMMAND_EXECUTE -> true;
       default -> false;
     };
+  }
+
+  private boolean shouldLogReadError(final IOException error) {
+    if (this.state.get() != ConnectionState.CONNECTED) {
+      return false;
+    }
+    return !(error instanceof ClosedChannelException);
   }
 
 }
