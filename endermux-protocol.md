@@ -1,7 +1,7 @@
 # Endermux Protocol Specification
 
 Status: Active  
-Protocol version: `9`
+Protocol version: `10`
 
 This document defines the wire protocol implemented by `endermux-client` and `endermux-server`.
 
@@ -11,7 +11,7 @@ The key words `MUST`, `MUST NOT`, `SHOULD`, `SHOULD NOT`, and `MAY` are to be in
 
 ## 2. Versioning
 
-1. The protocol version constant is `SocketProtocolConstants.PROTOCOL_VERSION` (`9`).
+1. The protocol version constant is `SocketProtocolConstants.PROTOCOL_VERSION` (`10`).
 2. The client MUST send its version in `HELLO.data.protocolVersion`.
 3. The server MUST compare the received version to its own version.
 4. If versions match, the server MUST reply `WELCOME`.
@@ -24,7 +24,7 @@ The key words `MUST`, `MUST NOT`, `SHOULD`, `SHOULD NOT`, and `MAY` are to be in
 2. Each protocol message is one frame:
    1. 4-byte signed big-endian length prefix.
    2. UTF-8 JSON payload bytes.
-3. Frame length MUST be `> 0` and `<= 262144` bytes (`256 KiB`).
+3. Frame length MUST be `> 0` and `<= 1048576` bytes (`1 MiB`).
 4. EOF while reading the length prefix is treated as a clean close.
 5. Invalid frame length is a protocol error.
 
@@ -231,7 +231,7 @@ Handshake constraints:
 | Handshake timeout join grace | `100ms` |
 | Completion timeout | `5000ms` |
 | Syntax highlight timeout | `200ms` |
-| Max frame size | `256 KiB` |
+| Max frame size | `1 MiB` |
 
 ## 12. Compatibility Policy
 
