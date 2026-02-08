@@ -147,7 +147,6 @@ public final class EndermuxServer {
     try {
       final ClientEndpoint connection = new ClientEndpoint(clientChannel, this.serializer);
       final ClientSession session = new ClientSession(connection, this.handlerRegistry, this.interactivityAvailable.get());
-      this.sessions.put(connection, session);
       connection.start(session, () -> this.removeConnection(connection));
       this.executor.submit(() -> this.runConnection(connection, session));
 
@@ -167,6 +166,7 @@ public final class EndermuxServer {
         return;
       }
 
+      this.sessions.put(connection, session);
       this.connections.add(connection);
       LOGGER.info("Console socket connection established ({} active)", this.connections.size());
 
@@ -181,10 +181,6 @@ public final class EndermuxServer {
 
   private boolean performHandshake(final ClientEndpoint connection) throws IOException {
     final Message<?> message = connection.readInitialMessage(SocketProtocolConstants.HANDSHAKE_TIMEOUT_MS);
-    if (message == null) {
-      this.sendHandshakeResponse(connection, null, new Payloads.Reject("Handshake timeout", SocketProtocolConstants.PROTOCOL_VERSION));
-      return false;
-    }
     final @Nullable String requestId = message.requestId();
     if (requestId == null) {
       this.sendHandshakeResponse(connection, null, new Payloads.Reject("Missing requestId", SocketProtocolConstants.PROTOCOL_VERSION));
