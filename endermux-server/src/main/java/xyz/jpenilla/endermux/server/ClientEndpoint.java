@@ -82,6 +82,19 @@ public final class ClientEndpoint implements AutoCloseable {
     return this.outboundQueue.offer(message);
   }
 
+  public boolean sendNow(final Message<?> message) {
+    if (!this.running || !this.connection.isOpen()) {
+      return false;
+    }
+    try {
+      return this.connection.writeMessage(message);
+    } catch (final IOException e) {
+      LOGGER.debug("Failed to send message to client", e);
+      this.shutdown();
+      return false;
+    }
+  }
+
   public @Nullable Message<?> readInitialMessage(final long timeoutMs) throws IOException {
     final Message<?> message = this.readWithTimeout(timeoutMs);
     if (message == null) {

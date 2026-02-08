@@ -213,7 +213,9 @@ public final class EndermuxServer {
     final Message<?> message = requestId == null
       ? Message.unsolicited(type, payload)
       : Message.response(requestId, type, payload);
-    connection.send(message);
+    if (!connection.sendNow(message)) {
+      LOGGER.debug("Failed to send handshake response to client");
+    }
   }
 
   private Payloads.Welcome welcomePayload() {
