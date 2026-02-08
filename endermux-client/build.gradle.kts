@@ -27,6 +27,7 @@ dependencies {
   implementation(libs.bundles.jline)
   implementation(libs.adventureTextSerializerAnsi)
   implementation(libs.adventureTextSerializerGson)
+  implementation(libs.adventureTextLoggerSlf4j)
 }
 
 application {
