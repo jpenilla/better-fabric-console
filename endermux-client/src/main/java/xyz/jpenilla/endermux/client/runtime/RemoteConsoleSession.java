@@ -291,14 +291,6 @@ final class RemoteConsoleSession {
       return;
     }
 
-    if (type == MessageType.CONNECTION_STATUS
-      && message.payload() instanceof Payloads.ConnectionStatus(Payloads.ConnectionStatus.Status status)) {
-      if (status == Payloads.ConnectionStatus.Status.DISCONNECTED) {
-        LOGGER.info("Disconnected from server.");
-      }
-      return;
-    }
-
     if (type == MessageType.INTERACTIVITY_STATUS
       && message.payload() instanceof Payloads.InteractivityStatus(boolean available)) {
       this.interactiveAvailable = available;

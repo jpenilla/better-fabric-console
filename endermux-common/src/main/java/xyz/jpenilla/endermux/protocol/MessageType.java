@@ -24,7 +24,6 @@ public enum MessageType {
   LOG_FORWARD(Direction.SERVER_TO_CLIENT, false),
   PONG(Direction.SERVER_TO_CLIENT, false),
   ERROR(Direction.SERVER_TO_CLIENT, false),
-  CONNECTION_STATUS(Direction.SERVER_TO_CLIENT, false),
   INTERACTIVITY_STATUS(Direction.SERVER_TO_CLIENT, false);
 
   private final Direction direction;
@@ -62,7 +61,6 @@ public enum MessageType {
       case Payloads.LogForward ignored -> MessageType.LOG_FORWARD;
       case Payloads.Pong ignored -> MessageType.PONG;
       case Payloads.Error ignored -> MessageType.ERROR;
-      case Payloads.ConnectionStatus ignored -> MessageType.CONNECTION_STATUS;
       case Payloads.InteractivityStatus ignored -> MessageType.INTERACTIVITY_STATUS;
       case Payloads.ParseResponse ignored -> MessageType.PARSE_RESPONSE;
       // Client -> Server request payloads should never be sent as responses
