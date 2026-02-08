@@ -114,6 +114,9 @@ final class ThrowableInfoUtil {
     for (int i = 0; i < frames.size(); i++) {
       final Payloads.StackFrame frame = frames.get(i);
       elements[i] = new StackTraceElement(
+        frame.classLoaderName(),
+        frame.moduleName(),
+        frame.moduleVersion(),
         frame.className(),
         frame.methodName(),
         frame.fileName(),

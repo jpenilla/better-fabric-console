@@ -7,6 +7,8 @@ import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.Marker;
 import org.apache.logging.log4j.ThreadContext;
 import org.apache.logging.log4j.core.LogEvent;
+import org.apache.logging.log4j.core.impl.ExtendedClassInfo;
+import org.apache.logging.log4j.core.impl.ExtendedStackTraceElement;
 import org.apache.logging.log4j.core.impl.ThrowableProxy;
 import org.apache.logging.log4j.core.time.Instant;
 import org.apache.logging.log4j.core.time.MutableInstant;
@@ -15,6 +17,7 @@ import org.apache.logging.log4j.message.SimpleMessage;
 import org.apache.logging.log4j.util.ReadOnlyStringMap;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
+import xyz.jpenilla.endermux.protocol.Payloads;
 
 @NullMarked
 final class SimpleLogEvent implements LogEvent {
@@ -27,7 +30,9 @@ final class SimpleLogEvent implements LogEvent {
   private final long timestamp;
   private final String threadName;
   private final @Nullable Throwable thrown;
+  private final transient Payloads.@Nullable ThrowableInfo throwableInfo;
   private final long threadId;
+  private transient @Nullable ThrowableProxy thrownProxy;
 
   SimpleLogEvent(
     final String loggerName,
@@ -35,7 +40,8 @@ final class SimpleLogEvent implements LogEvent {
     final String message,
     final long timestamp,
     final String threadName,
-    final @Nullable Throwable thrown
+    final @Nullable Throwable thrown,
+    final Payloads.@Nullable ThrowableInfo throwableInfo
   ) {
     this.loggerName = loggerName;
     this.level = level;
@@ -43,6 +49,7 @@ final class SimpleLogEvent implements LogEvent {
     this.timestamp = timestamp;
     this.threadName = threadName;
     this.thrown = thrown;
+    this.throwableInfo = throwableInfo;
     this.threadId = Thread.currentThread().getId();
   }
 
@@ -100,7 +107,64 @@ final class SimpleLogEvent implements LogEvent {
 
   @Override
   public @Nullable ThrowableProxy getThrownProxy() {
-    return this.thrown == null ? null : new ThrowableProxy(this.thrown);
+    if (this.thrown == null) {
+      return null;
+    }
+    ThrowableProxy proxy = this.thrownProxy;
+    if (proxy != null) {
+      return proxy;
+    }
+    proxy = new ThrowableProxy(this.thrown);
+    if (this.throwableInfo != null) {
+      rewriteStackTrace(proxy, this.throwableInfo);
+    }
+    this.thrownProxy = proxy;
+    return proxy;
+  }
+
+  private static void rewriteStackTrace(final ThrowableProxy proxy, final Payloads.ThrowableInfo info) {
+    final ExtendedStackTraceElement[] stackTrace = proxy.getExtendedStackTrace();
+    final int frameCount = Math.min(stackTrace.length, info.frames().size());
+    for (int i = 0; i < frameCount; i++) {
+      final ExtendedStackTraceElement extendedElement = stackTrace[i];
+      final Payloads.StackFrame frame = info.frames().get(i);
+      final Payloads.StackFrameClassInfo incomingClassInfo = frame.classInfo();
+      final ExtendedClassInfo existingClassInfo = extendedElement.getExtraClassInfo();
+
+      final ExtendedClassInfo rewrittenClassInfo;
+      if (incomingClassInfo != null) {
+        rewrittenClassInfo = new ExtendedClassInfo(
+          incomingClassInfo.exact(),
+          incomingClassInfo.location(),
+          incomingClassInfo.version()
+        );
+      } else if (existingClassInfo.getLocation().equals("?") && frame.classLoaderName() != null) {
+        rewrittenClassInfo = new ExtendedClassInfo(
+          existingClassInfo.getExact(),
+          frame.classLoaderName(),
+          existingClassInfo.getVersion()
+        );
+      } else {
+        continue;
+      }
+
+      stackTrace[i] = new ExtendedStackTraceElement(extendedElement.getStackTraceElement(), rewrittenClassInfo);
+    }
+
+    final ThrowableProxy causeProxy = proxy.getCauseProxy();
+    final Payloads.ThrowableInfo causeInfo = info.cause();
+    if (causeProxy != null && causeInfo != null) {
+      rewriteStackTrace(causeProxy, causeInfo);
+    }
+
+    final ThrowableProxy[] suppressedProxies = proxy.getSuppressedProxies();
+    if (suppressedProxies == null || suppressedProxies.length == 0 || info.suppressed().isEmpty()) {
+      return;
+    }
+    final int suppressedCount = Math.min(suppressedProxies.length, info.suppressed().size());
+    for (int i = 0; i < suppressedCount; i++) {
+      rewriteStackTrace(suppressedProxies[i], info.suppressed().get(i));
+    }
   }
 
   @Override

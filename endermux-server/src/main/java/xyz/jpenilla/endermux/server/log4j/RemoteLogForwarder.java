@@ -28,6 +28,7 @@ import java.util.concurrent.atomic.AtomicLong;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.core.LogEvent;
+import org.apache.logging.log4j.core.impl.ExtendedClassInfo;
 import org.apache.logging.log4j.core.impl.ExtendedStackTraceElement;
 import org.apache.logging.log4j.core.impl.ThrowableProxy;
 import org.jspecify.annotations.NullMarked;
@@ -112,7 +113,11 @@ public final class RemoteLogForwarder implements EndermuxForwardingAppender.LogF
         element.getClassName(),
         element.getMethodName(),
         element.getFileName(),
-        element.getLineNumber()
+        element.getLineNumber(),
+        element.getClassLoaderName(),
+        element.getModuleName(),
+        element.getModuleVersion(),
+        null
       );
     }
     final Throwable[] suppressed = throwable.getSuppressed();
@@ -133,12 +138,22 @@ public final class RemoteLogForwarder implements EndermuxForwardingAppender.LogF
     final ExtendedStackTraceElement[] stackTrace = proxy.getExtendedStackTrace();
     final Payloads.StackFrame[] frames = new Payloads.StackFrame[stackTrace.length];
     for (int i = 0; i < stackTrace.length; i++) {
-      final StackTraceElement element = stackTrace[i].getStackTraceElement();
+      final ExtendedStackTraceElement extendedElement = stackTrace[i];
+      final StackTraceElement element = extendedElement.getStackTraceElement();
+      final ExtendedClassInfo classInfo = extendedElement.getExtraClassInfo();
       frames[i] = new Payloads.StackFrame(
         element.getClassName(),
         element.getMethodName(),
         element.getFileName(),
-        element.getLineNumber()
+        element.getLineNumber(),
+        element.getClassLoaderName(),
+        element.getModuleName(),
+        element.getModuleVersion(),
+        classInfo == null ? null : new Payloads.StackFrameClassInfo(
+          classInfo.getExact(),
+          classInfo.getLocation(),
+          classInfo.getVersion()
+        )
       );
     }
     final ThrowableProxy[] suppressed = proxy.getSuppressedProxies();
