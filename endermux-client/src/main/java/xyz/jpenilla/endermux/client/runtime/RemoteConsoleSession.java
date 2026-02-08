@@ -361,7 +361,7 @@ final class RemoteConsoleSession {
 
   private void sendCommand(final SocketTransport client, final String input) {
     final Payloads.CommandExecute payload = new Payloads.CommandExecute(input);
-    final Message<Payloads.CommandExecute> commandMessage = client.createRequest(MessageType.COMMAND_EXECUTE, payload);
+    final Message<Payloads.CommandExecute> commandMessage = Message.unsolicited(MessageType.COMMAND_EXECUTE, payload);
     client.sendMessage(commandMessage);
   }
 
