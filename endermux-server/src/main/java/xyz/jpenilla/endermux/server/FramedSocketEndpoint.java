@@ -85,7 +85,7 @@ public final class FramedSocketEndpoint implements SocketEndpoint {
         this.reader.close();
         this.socketChannel.close();
       } catch (final IOException e) {
-        LOGGER.debug("Error closing socket connection", e);
+        LOGGER.debug("Failed to close console socket connection", e);
       } finally {
         this.state.set(ConnectionState.DISCONNECTED);
       }

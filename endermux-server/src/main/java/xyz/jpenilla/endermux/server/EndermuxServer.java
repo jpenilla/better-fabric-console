@@ -101,7 +101,7 @@ public final class EndermuxServer {
         this.acceptorThread.start();
         this.publishSocketPath(this.socketStartupPath);
 
-        LOGGER.info("Listening for console socket connections at: {}", this.socketPath);
+        LOGGER.info("Console socket server listening at {}", this.socketPath);
       } catch (final IOException e) {
         LOGGER.error("Failed to start console socket server", e);
         this.running.set(false);
@@ -112,7 +112,7 @@ public final class EndermuxServer {
 
   public void stop() {
     if (this.running.compareAndSet(true, false)) {
-      LOGGER.info("Stopping console socket server...");
+      LOGGER.info("Stopping console socket server");
       this.closeServerChannel();
       this.closeConnections();
       this.shutdownExecutor();
@@ -128,7 +128,7 @@ public final class EndermuxServer {
         final SocketChannel clientChannel = this.serverChannel.accept();
         if (clientChannel != null) {
           if (this.connections.size() >= this.maxConnections) {
-            LOGGER.warn("Maximum socket connections ({}) reached, rejecting new connection", this.maxConnections);
+            LOGGER.warn("Rejected console socket connection: maximum connections ({}) reached", this.maxConnections);
             clientChannel.close();
             continue;
           }
@@ -137,7 +137,7 @@ public final class EndermuxServer {
         }
       } catch (final IOException e) {
         if (this.running.get()) {
-          LOGGER.error("Error accepting socket connection", e);
+          LOGGER.error("Failed to accept console socket connection", e);
         }
       }
     }
@@ -152,7 +152,7 @@ public final class EndermuxServer {
       this.executor.submit(() -> this.runConnection(connection, session));
 
     } catch (final IOException e) {
-      LOGGER.error("Failed to setup client connection", e);
+      LOGGER.error("Failed to set up console socket connection", e);
       try {
         clientChannel.close();
       } catch (final IOException ignored) {
@@ -168,13 +168,13 @@ public final class EndermuxServer {
       }
 
       this.connections.add(connection);
-      LOGGER.info("New console socket connection established ({} total connections)", this.connections.size());
+      LOGGER.info("Console socket connection established ({} active)", this.connections.size());
 
       session.initialize();
 
       connection.run();
     } catch (final IOException e) {
-      LOGGER.debug("Connection setup failed", e);
+      LOGGER.debug("Console socket connection setup failed", e);
       connection.close();
     }
   }
@@ -291,7 +291,7 @@ public final class EndermuxServer {
   void removeConnection(final ClientEndpoint connection) {
     this.sessions.remove(connection);
     if (this.connections.remove(connection)) {
-      LOGGER.info("Console socket connection closed ({} total connections)", this.connections.size());
+      LOGGER.info("Console socket connection closed ({} active)", this.connections.size());
     }
   }
 
