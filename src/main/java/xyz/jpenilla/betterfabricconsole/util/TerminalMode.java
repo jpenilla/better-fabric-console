@@ -23,23 +23,10 @@
  */
 package xyz.jpenilla.betterfabricconsole.util;
 
-import org.checkerframework.checker.nullness.qual.Nullable;
-import org.jline.terminal.Terminal;
-import org.jline.terminal.TerminalBuilder;
-import java.io.IOException;
+import org.jspecify.annotations.NullMarked;
 
-public final class TerminalDetection {
-  private static final @Nullable Terminal TERMINAL = detectTerminal();
-
-  private static @Nullable Terminal detectTerminal() {
-    try {
-      return TerminalBuilder.builder().dumb(false).build();
-    } catch (final IOException | IllegalStateException e) {
-      return null;
-    }
-  }
-
-  public static boolean isDumb() {
-    return TERMINAL == null;
-  }
+@NullMarked
+public enum TerminalMode {
+  DUMB,
+  INTERACTIVE
 }
