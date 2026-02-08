@@ -67,6 +67,9 @@ public final class EndermuxClient {
           this.exitReason = ExitReason.USER_EOF;
         }
         if (sessionOutcome.stopClient()) {
+          if (sessionOutcome.connected()) {
+            this.logDisconnectedFromServer();
+          }
           break;
         }
 
@@ -77,7 +80,7 @@ public final class EndermuxClient {
         retryCount++;
         final long backoffMs = this.retryBackoffMs(retryCount);
 
-        LOGGER.info(text("Disconnected from server.", NamedTextColor.RED, TextDecoration.BOLD));
+        this.logDisconnectedFromServer();
         if (!this.waitForBackoff(backoffMs)) {
           break;
         }
@@ -262,6 +265,10 @@ public final class EndermuxClient {
       return;
     }
     LOGGER.info("Goodbye!");
+  }
+
+  private void logDisconnectedFromServer() {
+    LOGGER.info(text("Disconnected from server.", NamedTextColor.RED, TextDecoration.BOLD));
   }
 
   private enum ExitReason {

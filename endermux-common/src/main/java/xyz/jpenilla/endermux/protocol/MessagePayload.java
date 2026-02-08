@@ -11,7 +11,6 @@ public sealed interface MessagePayload permits
   Payloads.CommandExecute,
   Payloads.Ping,
   Payloads.ClientReady,
-  Payloads.Disconnect,
   Payloads.Welcome,
   Payloads.Reject,
   Payloads.CompletionResponse,

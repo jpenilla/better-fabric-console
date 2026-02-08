@@ -12,7 +12,6 @@ public enum MessageType {
   COMMAND_EXECUTE(Direction.CLIENT_TO_SERVER, false),
   PING(Direction.CLIENT_TO_SERVER, true),
   CLIENT_READY(Direction.CLIENT_TO_SERVER, false),
-  DISCONNECT(Direction.CLIENT_TO_SERVER, false),
 
   // Server -> Client
   WELCOME(Direction.SERVER_TO_CLIENT, false),
@@ -70,8 +69,7 @@ public enum MessageType {
            Payloads.CommandExecute _,
            Payloads.Ping _,
            Payloads.ClientReady _,
-           Payloads.ParseRequest _,
-           Payloads.Disconnect _ -> throw new IllegalArgumentException("Cannot send request payload as response: " + payload.getClass().getSimpleName());
+           Payloads.ParseRequest _ -> throw new IllegalArgumentException("Cannot send request payload as response: " + payload.getClass().getSimpleName());
       default -> throw new IllegalArgumentException("Unknown payload type: " + payload.getClass().getSimpleName());
     };
   }

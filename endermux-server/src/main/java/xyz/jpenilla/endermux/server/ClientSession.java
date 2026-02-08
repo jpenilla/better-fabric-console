@@ -19,7 +19,6 @@ public final class ClientSession implements Consumer<Message<?>> {
 
   private final ClientEndpoint connection;
   private final HandlerRegistry handlerRegistry;
-  private volatile boolean disconnecting = false;
   private volatile boolean logReady = false;
   private volatile boolean interactivityAvailable;
 
@@ -42,10 +41,6 @@ public final class ClientSession implements Consumer<Message<?>> {
 
   @Override
   public void accept(final Message<?> message) {
-    if (this.disconnecting) {
-      return;
-    }
-
     final ResponseContext ctx = new ImmutableResponseContext(message.requestId());
 
     if (message.requestId() == null && message.type().requiresResponse()) {
@@ -60,11 +55,6 @@ public final class ClientSession implements Consumer<Message<?>> {
 
     if (message.type() == MessageType.CLIENT_READY) {
       this.logReady = true;
-      return;
-    }
-
-    if (message.type() == MessageType.DISCONNECT) {
-      this.handleDisconnect();
       return;
     }
 
@@ -112,11 +102,6 @@ public final class ClientSession implements Consumer<Message<?>> {
     ctx.reply(new Payloads.Pong());
   }
 
-  private void handleDisconnect() {
-    this.disconnecting = true;
-    this.connection.close();
-  }
-
   private void send(final Message<?> message) {
     if (!this.connection.send(message)) {
       LOGGER.debug("Failed to send message to client");
@@ -137,10 +122,6 @@ public final class ClientSession implements Consumer<Message<?>> {
 
     @Override
     public void reply(final MessagePayload payload) {
-      if (ClientSession.this.disconnecting) {
-        return;
-      }
-
       ClientSession.this.send(this.buildResponse(payload));
     }
 
