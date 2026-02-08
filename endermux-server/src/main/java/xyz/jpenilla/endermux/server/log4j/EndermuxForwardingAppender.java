@@ -1,5 +1,9 @@
 package xyz.jpenilla.endermux.server.log4j;
 
+import java.io.Serializable;
+import java.lang.reflect.Field;
+import java.util.Arrays;
+import java.util.List;
 import org.apache.logging.log4j.core.Appender;
 import org.apache.logging.log4j.core.Core;
 import org.apache.logging.log4j.core.Filter;
@@ -14,14 +18,10 @@ import org.apache.logging.log4j.core.config.plugins.PluginConfiguration;
 import org.apache.logging.log4j.core.config.plugins.PluginElement;
 import org.apache.logging.log4j.core.config.plugins.PluginFactory;
 import org.apache.logging.log4j.core.layout.PatternLayout;
-import org.jspecify.annotations.Nullable;
-import java.io.Serializable;
-import java.lang.reflect.Field;
-import java.util.Arrays;
-import java.util.List;
-import xyz.jpenilla.endermux.log4j.LoggerNamePatternSelector;
 import org.apache.logging.log4j.core.layout.PatternMatch;
 import org.apache.logging.log4j.core.layout.PatternSelector;
+import org.jspecify.annotations.Nullable;
+import xyz.jpenilla.endermux.log4j.LoggerNamePatternSelector;
 import xyz.jpenilla.endermux.protocol.LayoutConfig;
 
 @Plugin(

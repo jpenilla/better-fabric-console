@@ -10,11 +10,11 @@ import org.jspecify.annotations.NullMarked;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import xyz.jpenilla.endermux.client.transport.SocketTransport;
+import xyz.jpenilla.endermux.jline.MinecraftCandidate;
 import xyz.jpenilla.endermux.protocol.Message;
 import xyz.jpenilla.endermux.protocol.MessageType;
 import xyz.jpenilla.endermux.protocol.Payloads;
 import xyz.jpenilla.endermux.protocol.SocketProtocolConstants;
-import xyz.jpenilla.endermux.jline.MinecraftCandidate;
 
 @NullMarked
 public final class RemoteCommandCompleter implements Completer {

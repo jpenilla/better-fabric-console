@@ -24,6 +24,7 @@
 
 package xyz.jpenilla.endermux.log4j;
 
+import java.util.List;
 import net.kyori.ansi.ColorLevel;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.core.LogEvent;
@@ -38,8 +39,6 @@ import org.apache.logging.log4j.core.pattern.PatternFormatter;
 import org.apache.logging.log4j.core.pattern.PatternParser;
 import org.apache.logging.log4j.util.PerformanceSensitive;
 import org.jspecify.annotations.Nullable;
-
-import java.util.List;
 
 /**
  * A simplified version of {@link HighlightConverter} that detects
