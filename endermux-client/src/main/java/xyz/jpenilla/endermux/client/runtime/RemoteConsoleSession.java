@@ -6,6 +6,9 @@ import java.io.IOError;
 import java.io.InputStreamReader;
 import java.util.concurrent.ExecutorService;
 import java.util.function.BooleanSupplier;
+import net.kyori.adventure.text.format.NamedTextColor;
+import net.kyori.adventure.text.format.TextDecoration;
+import net.kyori.adventure.text.logger.slf4j.ComponentLogger;
 import net.kyori.adventure.text.serializer.ansi.ANSIComponentSerializer;
 import net.kyori.adventure.text.serializer.gson.GsonComponentSerializer;
 import org.apache.logging.log4j.Level;
@@ -17,8 +20,6 @@ import org.jline.reader.LineReader;
 import org.jline.reader.UserInterruptException;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import xyz.jpenilla.endermux.client.transport.ProtocolMismatchException;
 import xyz.jpenilla.endermux.client.transport.SocketTransport;
 import xyz.jpenilla.endermux.protocol.LayoutConfig;
@@ -27,11 +28,13 @@ import xyz.jpenilla.endermux.protocol.MessagePayload;
 import xyz.jpenilla.endermux.protocol.MessageType;
 import xyz.jpenilla.endermux.protocol.Payloads;
 
+import static net.kyori.adventure.text.Component.text;
+
 @NullMarked
 final class RemoteConsoleSession {
   private static final String TERMINAL_PROMPT = "> ";
   private static final long SOCKET_POLL_INTERVAL_MS = 500;
-  private static final Logger LOGGER = LoggerFactory.getLogger(RemoteConsoleSession.class);
+  private static final ComponentLogger LOGGER = ComponentLogger.logger(RemoteConsoleSession.class);
 
   private final String socketPath;
   private final TerminalRuntimeContext terminalContext;
@@ -68,7 +71,10 @@ final class RemoteConsoleSession {
       client.connect();
       connected = true;
 
-      LOGGER.info("Connected to Endermux server via socket: {}", this.socketPath);
+      LOGGER.info(text()
+        .append(text("Connected to Endermux server via socket: ", NamedTextColor.DARK_GREEN, TextDecoration.BOLD))
+        .append(text(this.socketPath))
+        .build());
 
       final Highlighter highlighter = new RemoteHighlighter(client);
       this.lineReader = this.terminalContext.createLineReader(client, highlighter);

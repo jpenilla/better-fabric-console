@@ -47,6 +47,7 @@ gson = "com.google.code.gson:gson:2.10.1"
 adventureApi = { module = "net.kyori:adventure-api", version.ref = "adventure" }
 adventureTextSerializerAnsi = { module = "net.kyori:adventure-text-serializer-ansi", version.ref = "adventure" }
 adventureTextSerializerGson = { module = "net.kyori:adventure-text-serializer-gson", version.ref = "adventure" }
+adventureTextLoggerSlf4j = { module = "net.kyori:adventure-text-logger-slf4j", version.ref = "adventure" }
 adventurePlatformFabric = { module = "net.kyori:adventure-platform-fabric", version.ref = "adventure-platform-fabric" }
 
 configurateHocon = { module = "org.spongepowered:configurate-hocon", version.ref = "configurate-hocon" }

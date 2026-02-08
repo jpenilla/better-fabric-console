@@ -13,15 +13,18 @@ import java.util.Locale;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
+import net.kyori.adventure.text.format.NamedTextColor;
+import net.kyori.adventure.text.format.TextDecoration;
+import net.kyori.adventure.text.logger.slf4j.ComponentLogger;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+
+import static net.kyori.adventure.text.Component.text;
 
 @NullMarked
 public final class EndermuxClient {
   private static final long SOCKET_POLL_INTERVAL_MS = 500;
-  private static final Logger LOGGER = LoggerFactory.getLogger(EndermuxClient.class);
+  private static final ComponentLogger LOGGER = ComponentLogger.logger(EndermuxClient.class);
 
   private final ExecutorService logExecutor = Executors.newSingleThreadExecutor(r -> {
     final Thread thread = new Thread(r, "LogOutput");
@@ -36,6 +39,12 @@ public final class EndermuxClient {
 
   public void run(final String socketPath) throws Exception {
     this.terminalContext = TerminalRuntimeContext.create();
+
+    LOGGER.info(text()
+      .append(text("Endermux", NamedTextColor.DARK_PURPLE, TextDecoration.BOLD))
+      .append(text(" Client ").decorate(TextDecoration.BOLD))
+      .append(text("v" + getClass().getPackage().getImplementationVersion()))
+      .build());
 
     try {
       this.registerSignalHandlers();
@@ -68,7 +77,7 @@ public final class EndermuxClient {
         retryCount++;
         final long backoffMs = this.retryBackoffMs(retryCount);
 
-        LOGGER.info("Disconnected from server. Waiting for reconnection...");
+        LOGGER.info(text("Disconnected from server.", NamedTextColor.RED, TextDecoration.BOLD));
         if (!this.waitForBackoff(backoffMs)) {
           break;
         }
@@ -130,7 +139,10 @@ public final class EndermuxClient {
         (parentDir != null ? parentDir : resolvedSocketPath));
     }
 
-    LOGGER.info("Waiting for socket to exist: {}", displayPath);
+    LOGGER.info(text()
+      .content("Waiting for socket to exist: " + displayPath)
+      .decorate(TextDecoration.ITALIC)
+      .build());
 
     try (WatchService watchService = FileSystems.getDefault().newWatchService()) {
       parentDir.register(watchService, StandardWatchEventKinds.ENTRY_CREATE);
