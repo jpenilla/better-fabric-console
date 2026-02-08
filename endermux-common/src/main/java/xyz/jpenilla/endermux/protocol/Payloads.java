@@ -83,7 +83,18 @@ public final class Payloads {
     String className,
     String methodName,
     @Nullable String fileName,
-    int lineNumber
+    int lineNumber,
+    @Nullable String classLoaderName,
+    @Nullable String moduleName,
+    @Nullable String moduleVersion,
+    @Nullable StackFrameClassInfo classInfo
+  ) {
+  }
+
+  public record StackFrameClassInfo(
+    boolean exact,
+    String location,
+    String version
   ) {
   }
 

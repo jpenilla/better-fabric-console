@@ -1,7 +1,7 @@
 # Endermux Protocol Specification
 
 Status: Active  
-Protocol version: `8`
+Protocol version: `9`
 
 This document defines the wire protocol implemented by `endermux-client` and `endermux-server`.
 
@@ -11,7 +11,7 @@ The key words `MUST`, `MUST NOT`, `SHOULD`, `SHOULD NOT`, and `MAY` are to be in
 
 ## 2. Versioning
 
-1. The protocol version constant is `SocketProtocolConstants.PROTOCOL_VERSION` (`8`).
+1. The protocol version constant is `SocketProtocolConstants.PROTOCOL_VERSION` (`9`).
 2. The client MUST send its version in `HELLO.data.protocolVersion`.
 3. The server MUST compare the received version to its own version.
 4. If versions match, the server MUST reply `WELCOME`.
@@ -152,6 +152,18 @@ Handshake constraints:
 | `methodName` | string |
 | `fileName` | string? |
 | `lineNumber` | int |
+| `classLoaderName` | string? |
+| `moduleName` | string? |
+| `moduleVersion` | string? |
+| `classInfo` | `StackFrameClassInfo?` |
+
+`StackFrameClassInfo`:
+
+| Field | Type |
+|---|---|
+| `exact` | boolean |
+| `location` | string |
+| `version` | string |
 
 `LayoutConfig`:
 

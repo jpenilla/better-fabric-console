@@ -55,14 +55,14 @@ class MessageSerializerTest {
     final Payloads.ThrowableInfo cause = new Payloads.ThrowableInfo(
       "java.lang.IllegalArgumentException",
       "bad argument",
-      List.of(new Payloads.StackFrame("test.Cause", "run", "Cause.java", 9)),
+      List.of(new Payloads.StackFrame("test.Cause", "run", "Cause.java", 9, null, null, null, null)),
       null,
       List.of()
     );
     final Payloads.ThrowableInfo throwable = new Payloads.ThrowableInfo(
       "java.lang.RuntimeException",
       "root failure",
-      List.of(new Payloads.StackFrame("test.Main", "call", "Main.java", 42)),
+      List.of(new Payloads.StackFrame("test.Main", "call", "Main.java", 42, null, null, null, null)),
       cause,
       List.of()
     );

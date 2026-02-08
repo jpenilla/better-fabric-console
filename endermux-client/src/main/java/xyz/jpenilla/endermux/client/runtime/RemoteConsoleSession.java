@@ -342,7 +342,8 @@ final class RemoteConsoleSession {
       logMessage,
       timestamp,
       threadName,
-      ThrowableInfoUtil.toThrowable(throwable)
+      ThrowableInfoUtil.toThrowable(throwable),
+      throwable
     );
     return layout.toSerializable(logEvent);
   }
