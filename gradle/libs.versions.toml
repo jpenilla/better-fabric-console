@@ -16,6 +16,7 @@ adventure-platform-fabric = "6.9.0-SNAPSHOT"
 configurate-hocon = "4.2.0"
 jspecify = "1.0.0"
 picocli = "4.7.7"
+junit = "6.0.2"
 
 [plugins]
 indra = { id = "net.kyori.indra", version.ref = "indra" }
@@ -55,6 +56,9 @@ jspecify = { module = "org.jspecify:jspecify", version.ref = "jspecify" }
 
 picocli = { module = "info.picocli:picocli", version.ref = "picocli" }
 picocliCodegen = { module = "info.picocli:picocli-codegen", version.ref = "picocli" }
+junitBom = { module = "org.junit:junit-bom", version.ref = "junit" }
+junitJupiter = { module = "org.junit.jupiter:junit-jupiter" }
+junitPlatformLauncher = { module = "org.junit.platform:junit-platform-launcher" }
 
 [bundles]
 jline = ["jline", "jline-terminal-ffm"]

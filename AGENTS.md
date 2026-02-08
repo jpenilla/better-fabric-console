@@ -7,6 +7,7 @@
   - `endermux-server/`: server transport/session/handlers.
   - `endermux-client/`: client transport/runtime/parser/completer.
 - After protocol-related edits, run: `./gradlew :endermux-common:compileJava :endermux-server:compileJava :endermux-client:compileJava`.
+- For tests, run: `./gradlew test`.
 - If shared APIs or root module code changed, run: `./gradlew compileJava`.
 
 ## Documentation

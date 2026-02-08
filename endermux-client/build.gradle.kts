@@ -28,6 +28,10 @@ dependencies {
   implementation(libs.adventureTextSerializerAnsi)
   implementation(libs.adventureTextSerializerGson)
   implementation(libs.adventureTextLoggerSlf4j)
+
+  testImplementation(platform(libs.junitBom))
+  testImplementation(libs.junitJupiter)
+  testRuntimeOnly(libs.junitPlatformLauncher)
 }
 
 application {

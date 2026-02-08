@@ -22,4 +22,8 @@ dependencies {
   implementation(libs.slf4jApi)
   compileOnlyApi(libs.jspecify)
   compileOnly(libs.adventureApi)
+
+  testImplementation(platform(libs.junitBom))
+  testImplementation(libs.junitJupiter)
+  testRuntimeOnly(libs.junitPlatformLauncher)
 }
