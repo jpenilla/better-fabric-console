@@ -23,4 +23,8 @@ dependencies {
   implementation(libs.log4jApi)
   implementation(libs.log4jCore)
   annotationProcessor(libs.log4jCore)
+
+  testImplementation(platform(libs.junitBom))
+  testImplementation(libs.junitJupiter)
+  testRuntimeOnly(libs.junitPlatformLauncher)
 }
