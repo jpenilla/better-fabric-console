@@ -1,11 +1,14 @@
 package xyz.jpenilla.endermux.server;
 
 import java.io.IOException;
+import java.nio.file.AtomicMoveNotSupportedException;
+import java.nio.file.Files;
 import java.net.StandardProtocolFamily;
 import java.net.UnixDomainSocketAddress;
 import java.nio.channels.ServerSocketChannel;
 import java.nio.channels.SocketChannel;
 import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
@@ -42,12 +45,14 @@ public final class EndermuxServer {
   private final HandlerRegistry handlerRegistry;
   private final MessageSerializer serializer;
   private final Path socketPath;
+  private final Path socketStartupPath;
   private final int maxConnections;
   private final LayoutConfig logLayout;
   private final AtomicReference<@Nullable InteractiveConsoleHooks> interactiveHooks = new AtomicReference<>();
 
   private final AtomicBoolean running = new AtomicBoolean(false);
   private final AtomicBoolean interactivityAvailable = new AtomicBoolean(false);
+  private volatile Path boundSocketPath;
   private ServerSocketChannel serverChannel;
   private Thread acceptorThread;
 
@@ -58,10 +63,13 @@ public final class EndermuxServer {
   ) {
     this.logLayout = logLayout;
     this.socketPath = socketPath;
+    this.socketStartupPath = this.socketPath.resolveSibling(
+      "." + this.socketPath.getFileName() + ".starting." + ProcessHandle.current().pid()
+    );
     this.maxConnections = maxConnections;
     this.executor = Executors.newThreadPerTaskExecutor(
       Thread.ofVirtual()
-        .name("SocketWorker-", 0)
+        .name("EndermuxWorker-", 0)
         .factory()
     );
     this.handlerRegistry = new HandlerRegistry();
@@ -80,15 +88,18 @@ public final class EndermuxServer {
   public void start() {
     if (this.running.compareAndSet(false, true)) {
       try {
-        java.nio.file.Files.deleteIfExists(this.socketPath);
+       this.deleteSocketFile(this.socketPath);
+       this.deleteSocketFile(this.socketStartupPath);
 
-        final UnixDomainSocketAddress address = UnixDomainSocketAddress.of(this.socketPath);
+        final UnixDomainSocketAddress address = UnixDomainSocketAddress.of(this.socketStartupPath);
+        this.boundSocketPath = this.socketStartupPath;
 
         this.serverChannel = ServerSocketChannel.open(StandardProtocolFamily.UNIX);
         this.serverChannel.bind(address);
 
-        this.acceptorThread = Thread.ofVirtual().name("SocketAcceptor").unstarted(this::acceptConnections);
+        this.acceptorThread = Thread.ofVirtual().name("EndermuxSocketAcceptor").unstarted(this::acceptConnections);
         this.acceptorThread.start();
+        this.publishSocketPath(this.socketStartupPath);
 
         LOGGER.info("Listening for console socket connections at: {}", this.socketPath);
       } catch (final IOException e) {
@@ -106,7 +117,7 @@ public final class EndermuxServer {
       this.closeConnections();
       this.shutdownExecutor();
       this.joinAcceptor();
-      this.deleteSocketFile();
+      this.cleanupSocketFiles();
       LOGGER.info("Console socket server stopped");
     }
   }
@@ -250,12 +261,31 @@ public final class EndermuxServer {
     }
   }
 
-  private void deleteSocketFile() {
-    try {
-      java.nio.file.Files.deleteIfExists(this.socketPath);
-    } catch (final IOException e) {
-      LOGGER.error("Failed to delete socket file: {}", this.socketPath, e);
+  private void cleanupSocketFiles() {
+    this.deleteSocketFile(this.socketPath);
+    final Path boundPath = this.boundSocketPath;
+    if (boundPath != null && !boundPath.equals(this.socketPath)) {
+      this.deleteSocketFile(boundPath);
     }
+    this.boundSocketPath = null;
+  }
+
+  private void deleteSocketFile(final Path path) {
+    try {
+      Files.deleteIfExists(path);
+    } catch (final IOException e) {
+      LOGGER.error("Failed to delete socket file: {}", path, e);
+    }
+  }
+
+  private void publishSocketPath(final Path startupSocketPath) throws IOException {
+    try {
+      Files.move(startupSocketPath, this.socketPath, StandardCopyOption.ATOMIC_MOVE);
+    } catch (final AtomicMoveNotSupportedException e) {
+      LOGGER.debug("Atomic move unavailable for socket path publish, falling back to non-atomic move", e);
+      Files.move(startupSocketPath, this.socketPath);
+    }
+    this.boundSocketPath = this.socketPath;
   }
 
   void removeConnection(final ClientEndpoint connection) {
