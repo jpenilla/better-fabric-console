@@ -33,9 +33,6 @@ public final class Payloads {
   public record ClientReady() implements MessagePayload {
   }
 
-  public record Disconnect() implements MessagePayload {
-  }
-
   // Server -> Client payloads
 
   public record Welcome(int protocolVersion, LayoutConfig logLayout) implements MessagePayload {

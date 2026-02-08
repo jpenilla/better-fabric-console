@@ -89,15 +89,9 @@ public final class SocketTransport {
   public void disconnect() {
     if (this.state.compareAndSet(ConnectionState.CONNECTED, ConnectionState.DISCONNECTING)
       || this.state.compareAndSet(ConnectionState.CONNECTING, ConnectionState.DISCONNECTING)) {
-      try {
-        this.sendDisconnect();
-        this.failPendingRequests(new IOException("Connection closed"));
-        this.closeResources();
-      } catch (final IOException e) {
-        LOGGER.debug("Error while disconnecting", e);
-      } finally {
-        this.state.set(ConnectionState.DISCONNECTED);
-      }
+      this.failPendingRequests(new IOException("Connection closed"));
+      this.closeResources();
+      this.state.set(ConnectionState.DISCONNECTED);
     }
   }
 
@@ -341,16 +335,6 @@ public final class SocketTransport {
       return new IOException("Failed to get response", cause);
     }
     return new IOException("Timeout waiting for response of type '" + expectedResponseType + "' after " + timeoutMs + "ms", e);
-  }
-
-  private void sendDisconnect() throws IOException {
-    if (this.writer != null && this.isConnected()) {
-      final Message<Payloads.Disconnect> disconnectMsg = Message.unsolicited(
-        MessageType.DISCONNECT,
-        new Payloads.Disconnect()
-      );
-      this.writeMessage(disconnectMsg);
-    }
   }
 
   private void failPendingRequests(final IOException error) {

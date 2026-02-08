@@ -33,6 +33,8 @@ import static net.kyori.adventure.text.Component.text;
 @NullMarked
 final class RemoteConsoleSession {
   private static final String TERMINAL_PROMPT = "> ";
+  private static final String DISCONNECTING_MESSAGE = "Disconnecting...";
+  private static final String DISCONNECT_HINT_MESSAGE = "Press Ctrl+D to disconnect from console.";
   private static final long SOCKET_POLL_INTERVAL_MS = 500;
   private static final ComponentLogger LOGGER = ComponentLogger.logger(RemoteConsoleSession.class);
 
@@ -158,8 +160,7 @@ final class RemoteConsoleSession {
 
         final String input = sessionReader.readLine(TERMINAL_PROMPT);
         if (input == null) {
-          LOGGER.info("Disconnecting...");
-          return true;
+          return this.userRequestedDisconnect();
         }
 
         final String trimmedInput = input.trim();
@@ -168,8 +169,7 @@ final class RemoteConsoleSession {
         }
         this.sendCommand(client, trimmedInput);
       } catch (final EndOfFileException e) {
-        LOGGER.info("Disconnecting...");
-        return true;
+        return this.userRequestedDisconnect();
       } catch (final UserInterruptException e) {
         if (this.connectedClient() == null) {
           Thread.interrupted();
@@ -178,14 +178,14 @@ final class RemoteConsoleSession {
         if (!this.interactiveAvailable) {
           continue;
         }
-        LOGGER.info("Press Ctrl+D to disconnect from console.");
+        this.printDisconnectHint();
       } catch (final IOError e) {
         Thread.interrupted();
         if (this.connectedClient() == null || this.shutdownRequested.getAsBoolean()) {
           return false;
         }
         LOGGER.debug("Ignoring terminal IO error while reading input", e);
-        LOGGER.info("Press Ctrl+D to disconnect from console.");
+        this.printDisconnectHint();
       }
     }
   }
@@ -222,8 +222,7 @@ final class RemoteConsoleSession {
           this.sleepForInput();
           continue;
         }
-        LOGGER.info("Disconnecting...");
-        return true;
+        return this.userRequestedDisconnect();
       }
 
       final String trimmedInput = input.trim();
@@ -387,6 +386,15 @@ final class RemoteConsoleSession {
     }
     message.append(". Please update client/server to matching versions.");
     return message.toString();
+  }
+
+  private boolean userRequestedDisconnect() {
+    LOGGER.info(DISCONNECTING_MESSAGE);
+    return true;
+  }
+
+  private void printDisconnectHint() {
+    LOGGER.info(DISCONNECT_HINT_MESSAGE);
   }
 
   private void printError(final String message, final @Nullable String details) {

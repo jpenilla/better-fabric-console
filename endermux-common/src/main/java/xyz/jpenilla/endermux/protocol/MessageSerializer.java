@@ -25,7 +25,6 @@ public final class MessageSerializer {
     Map.entry(MessageType.COMMAND_EXECUTE, Payloads.CommandExecute.class),
     Map.entry(MessageType.PING, Payloads.Ping.class),
     Map.entry(MessageType.CLIENT_READY, Payloads.ClientReady.class),
-    Map.entry(MessageType.DISCONNECT, Payloads.Disconnect.class),
     // Server -> Client
     Map.entry(MessageType.WELCOME, Payloads.Welcome.class),
     Map.entry(MessageType.REJECT, Payloads.Reject.class),
