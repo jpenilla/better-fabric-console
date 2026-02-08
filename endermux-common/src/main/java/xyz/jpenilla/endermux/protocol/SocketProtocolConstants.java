@@ -8,9 +8,9 @@ public final class SocketProtocolConstants {
   private SocketProtocolConstants() {
   }
 
-  public static final int PROTOCOL_VERSION = 9;
+  public static final int PROTOCOL_VERSION = 10;
 
-  public static final int MAX_FRAME_SIZE_BYTES = 256 * 1024;
+  public static final int MAX_FRAME_SIZE_BYTES = 1024 * 1024;
 
   public static final long HANDSHAKE_TIMEOUT_MS = 2000L;
 
