@@ -21,6 +21,5 @@ public sealed interface MessagePayload permits
   Payloads.LogForward,
   Payloads.Pong,
   Payloads.Error,
-  Payloads.ConnectionStatus,
   Payloads.InteractivityStatus {
 }

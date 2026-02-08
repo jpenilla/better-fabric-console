@@ -114,10 +114,6 @@ public final class ClientSession implements Consumer<Message<?>> {
 
   private void handleDisconnect() {
     this.disconnecting = true;
-    this.send(Message.unsolicited(
-      MessageType.CONNECTION_STATUS,
-      new Payloads.ConnectionStatus(Payloads.ConnectionStatus.Status.DISCONNECTED)
-    ));
     this.connection.close();
   }
 

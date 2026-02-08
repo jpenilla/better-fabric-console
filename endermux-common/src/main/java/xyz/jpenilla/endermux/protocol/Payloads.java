@@ -103,12 +103,6 @@ public final class Payloads {
   public record Error(String message, @Nullable String details) implements MessagePayload {
   }
 
-  public record ConnectionStatus(Status status) implements MessagePayload {
-    public enum Status {
-      DISCONNECTED
-    }
-  }
-
   public record InteractivityStatus(boolean available) implements MessagePayload {
   }
 }
