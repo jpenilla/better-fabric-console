@@ -103,14 +103,16 @@ public final class SocketTransport {
     return this.state.get() == ConnectionState.CONNECTED;
   }
 
-  public void sendMessage(final Message<?> message) {
+  public boolean sendMessage(final Message<?> message) {
     if (this.writer != null && this.isConnected()) {
       try {
         this.writeMessage(message);
+        return true;
       } catch (final IOException e) {
         this.disconnect();
       }
     }
+    return false;
   }
 
   public Message<?> sendMessageAndWaitForResponse(
@@ -130,9 +132,10 @@ public final class SocketTransport {
     final CompletableFuture<Message<?>> future = new CompletableFuture<>();
     this.pendingRequests.put(requestId, future);
 
-    this.sendMessage(message);
-
     try {
+      if (!this.sendMessage(message)) {
+        throw new IOException("Not connected");
+      }
       return this.awaitResponse(future, expectedResponseType, timeoutMs);
     } catch (final ExecutionException | TimeoutException e) {
       throw this.wrapResponseException(expectedResponseType, timeoutMs, e);

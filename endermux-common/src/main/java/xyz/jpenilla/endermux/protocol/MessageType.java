@@ -19,7 +19,6 @@ public enum MessageType {
   COMPLETION_RESPONSE(Direction.SERVER_TO_CLIENT, false),
   SYNTAX_HIGHLIGHT_RESPONSE(Direction.SERVER_TO_CLIENT, false),
   PARSE_RESPONSE(Direction.SERVER_TO_CLIENT, false),
-  COMMAND_RESPONSE(Direction.SERVER_TO_CLIENT, false),
   LOG_FORWARD(Direction.SERVER_TO_CLIENT, false),
   PONG(Direction.SERVER_TO_CLIENT, false),
   ERROR(Direction.SERVER_TO_CLIENT, false),
@@ -56,7 +55,6 @@ public enum MessageType {
       // Server -> Client response payloads
       case Payloads.CompletionResponse ignored -> MessageType.COMPLETION_RESPONSE;
       case Payloads.SyntaxHighlightResponse ignored -> MessageType.SYNTAX_HIGHLIGHT_RESPONSE;
-      case Payloads.CommandResponse ignored -> MessageType.COMMAND_RESPONSE;
       case Payloads.LogForward ignored -> MessageType.LOG_FORWARD;
       case Payloads.Pong ignored -> MessageType.PONG;
       case Payloads.Error ignored -> MessageType.ERROR;

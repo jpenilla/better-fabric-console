@@ -52,7 +52,7 @@ public final class InteractiveConsoleHooks {
   }
 
   public interface CommandExecutor {
-    Payloads.CommandResponse execute(String command) throws Exception;
+    void execute(String command) throws Exception;
   }
 
   public interface CommandHighlighter {

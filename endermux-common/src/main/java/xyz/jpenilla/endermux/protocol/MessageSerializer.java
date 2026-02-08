@@ -31,7 +31,6 @@ public final class MessageSerializer {
     Map.entry(MessageType.COMPLETION_RESPONSE, Payloads.CompletionResponse.class),
     Map.entry(MessageType.SYNTAX_HIGHLIGHT_RESPONSE, Payloads.SyntaxHighlightResponse.class),
     Map.entry(MessageType.PARSE_RESPONSE, Payloads.ParseResponse.class),
-    Map.entry(MessageType.COMMAND_RESPONSE, Payloads.CommandResponse.class),
     Map.entry(MessageType.LOG_FORWARD, Payloads.LogForward.class),
     Map.entry(MessageType.PONG, Payloads.Pong.class),
     Map.entry(MessageType.ERROR, Payloads.Error.class),
