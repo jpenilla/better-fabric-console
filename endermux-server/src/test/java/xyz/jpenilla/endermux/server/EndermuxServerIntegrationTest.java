@@ -23,6 +23,7 @@ import xyz.jpenilla.endermux.protocol.MessageSerializer;
 import xyz.jpenilla.endermux.protocol.MessageType;
 import xyz.jpenilla.endermux.protocol.Payloads;
 import xyz.jpenilla.endermux.protocol.SocketProtocolConstants;
+import xyz.jpenilla.endermux.protocol.TimedRead;
 import xyz.jpenilla.endermux.server.api.InteractiveConsoleHooks;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -143,7 +144,9 @@ class EndermuxServerIntegrationTest {
         new Payloads.Hello(SocketProtocolConstants.PROTOCOL_VERSION)
       ));
       assertEquals(MessageType.WELCOME, client.readMessageWithTimeout(Duration.ofSeconds(2)).type());
-      assertFalse(((Payloads.InteractivityStatus) client.readMessageWithTimeout(Duration.ofSeconds(2)).payload()).available());
+      final Message<?> initialStatus = client.readMessageWithTimeout(Duration.ofSeconds(2));
+      assertNotNull(initialStatus);
+      assertFalse(((Payloads.InteractivityStatus) initialStatus.payload()).available());
 
       final String completionRequestId = UUID.randomUUID().toString();
       client.send(Message.response(
@@ -246,20 +249,18 @@ class EndermuxServerIntegrationTest {
     }
 
     Message<?> readMessageWithTimeout(final Duration timeout) throws IOException {
-      final boolean originalBlocking = this.channel.isBlocking();
-      try {
-        this.channel.configureBlocking(false);
-        try (java.nio.channels.Selector selector = java.nio.channels.Selector.open()) {
-          this.channel.register(selector, java.nio.channels.SelectionKey.OP_READ);
-          if (selector.select(timeout.toMillis()) == 0) {
-            return null;
+      final byte[] data = TimedRead.read(
+        () -> FrameCodec.readFrame(this.input),
+        timeout.toMillis(),
+        "Timed out waiting for test client read",
+        () -> {
+          try {
+            this.close();
+          } catch (final IOException ignored) {
           }
-        }
-      } finally {
-        this.channel.configureBlocking(originalBlocking);
-      }
-
-      final byte[] data = FrameCodec.readFrame(this.input);
+        },
+        200L
+      );
       if (data == null) {
         return null;
       }
