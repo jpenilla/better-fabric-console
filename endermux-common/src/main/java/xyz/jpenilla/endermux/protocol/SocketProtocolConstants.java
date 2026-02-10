@@ -14,9 +14,9 @@ public final class SocketProtocolConstants {
 
   public static final long HANDSHAKE_TIMEOUT_MS = 2000L;
 
-  public static final long HANDSHAKE_TIMEOUT_JOIN_MS = 100L;
+  public static final long HANDSHAKE_TIMEOUT_JOIN_MS = 1000L;
 
-  public static final long SYNTAX_HIGHLIGHT_TIMEOUT_MS = 200L;
+  public static final long SYNTAX_HIGHLIGHT_TIMEOUT_MS = 1000L;
 
   public static final long COMPLETION_TIMEOUT_MS = 5000L;
 }

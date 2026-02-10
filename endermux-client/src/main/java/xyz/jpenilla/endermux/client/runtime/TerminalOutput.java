@@ -33,13 +33,13 @@ public final class TerminalOutput {
 
   public static void write(final String message) {
     synchronized (LOCK) {
-      final @Nullable LineReader lineReader = LINE_READER.get();
+      final LineReader lineReader = LINE_READER.get();
       final boolean reading = lineReader != null && lineReader.isReading();
       if (reading) {
         lineReader.callWidget(LineReader.CLEAR);
       }
 
-      final @Nullable Terminal terminal = lineReader != null ? lineReader.getTerminal() : TERMINAL.get();
+      final Terminal terminal = lineReader != null ? lineReader.getTerminal() : TERMINAL.get();
       if (terminal != null) {
         terminal.writer().print(message);
         terminal.writer().flush();
@@ -55,13 +55,25 @@ public final class TerminalOutput {
     }
   }
 
+  public static void redrawLineIfReading() {
+    synchronized (LOCK) {
+      final LineReader lineReader = LINE_READER.get();
+      final boolean reading = lineReader != null && lineReader.isReading();
+      if (!reading) {
+        return;
+      }
+      lineReader.callWidget(LineReader.REDRAW_LINE);
+      lineReader.callWidget(LineReader.REDISPLAY);
+    }
+  }
+
   public static PrintStream originalOut() {
-    final @Nullable PrintStream out = ORIGINAL_OUT.get();
+    final PrintStream out = ORIGINAL_OUT.get();
     return out != null ? out : System.out;
   }
 
   public static PrintStream originalErr() {
-    final @Nullable PrintStream err = ORIGINAL_ERR.get();
+    final PrintStream err = ORIGINAL_ERR.get();
     return err != null ? err : System.err;
   }
 }

@@ -21,6 +21,9 @@ public final class RemoteParser implements Parser {
 
   @Override
   public ParsedLine parse(final String line, final int cursor, final ParseContext context) {
+    if (context == ParseContext.ACCEPT_LINE) {
+      return new RemoteParsedLine("", 0, 0, java.util.List.of(), line, cursor);
+    }
     if (!this.socketClient.isConnected() || !this.socketClient.isInteractivityAvailable()) {
       return new RemoteParsedLine("", 0, 0, java.util.List.of(), line, cursor);
     }

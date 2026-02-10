@@ -40,6 +40,7 @@ public final class SocketTransport {
 
   private final String socketPath;
   private final MessageSerializer serializer;
+  private final TransportDelaySimulator delaySimulator;
   private final ConcurrentHashMap<String, CompletableFuture<Message<?>>> pendingRequests = new ConcurrentHashMap<>();
   private final AtomicReference<ConnectionState> state =
     new AtomicReference<>(ConnectionState.DISCONNECTED);
@@ -56,6 +57,7 @@ public final class SocketTransport {
   public SocketTransport(final String socketPath) {
     this.socketPath = socketPath;
     this.serializer = MessageSerializer.createStandard();
+    this.delaySimulator = TransportDelaySimulator.fromSystemProperties(LOGGER);
   }
 
   public void connect() throws IOException, ProtocolMismatchException {
@@ -75,6 +77,12 @@ public final class SocketTransport {
       this.performHandshake();
 
       this.state.set(ConnectionState.CONNECTED);
+      this.delaySimulator.start(
+        this::writeMessageNow,
+        this::handleResponse,
+        () -> this.socketChannel != null && this.socketChannel.isOpen(),
+        this::disconnect
+      );
 
       final Thread receiverThread = new Thread(this::receiveMessages, "SocketTransport-Receiver");
       receiverThread.setDaemon(true);
@@ -90,6 +98,7 @@ public final class SocketTransport {
     if (this.state.compareAndSet(ConnectionState.CONNECTED, ConnectionState.DISCONNECTING)
       || this.state.compareAndSet(ConnectionState.CONNECTING, ConnectionState.DISCONNECTING)) {
       this.failPendingRequests(new IOException("Connection closed"));
+      this.delaySimulator.stop();
       this.closeResources();
       this.state.set(ConnectionState.DISCONNECTED);
     }
@@ -106,7 +115,11 @@ public final class SocketTransport {
   public boolean sendMessage(final Message<?> message) {
     if (this.writer != null && this.isConnected()) {
       try {
-        this.writeMessage(message);
+        if (this.delaySimulator.enabled()) {
+          this.delaySimulator.enqueueOutbound(message);
+        } else {
+          this.writeMessageNow(message);
+        }
         return true;
       } catch (final IOException e) {
         this.disconnect();
@@ -168,7 +181,11 @@ public final class SocketTransport {
           break;
         }
 
-        this.handleResponse(message);
+        if (this.delaySimulator.enabled()) {
+          this.delaySimulator.enqueueInbound(message);
+        } else {
+          this.handleResponse(message);
+        }
       }
     } catch (final IOException e) {
       if (this.shouldLogReadError(e)) {
@@ -225,7 +242,7 @@ public final class SocketTransport {
       .requestId(UUID.randomUUID())
       .payload(hello)
       .build();
-    this.writeMessage(helloMessage);
+    this.writeMessageNow(helloMessage);
 
     final Message<?> response = this.readMessageWithTimeout(SocketProtocolConstants.HANDSHAKE_TIMEOUT_MS);
     if (response == null) {
@@ -287,7 +304,7 @@ public final class SocketTransport {
     return message;
   }
 
-  private void writeMessage(final Message<?> message) throws IOException {
+  private void writeMessageNow(final Message<?> message) throws IOException {
     final DataOutputStream out = this.writer;
     if (out == null) {
       return;
@@ -348,6 +365,7 @@ public final class SocketTransport {
   }
 
   private void closeResources() {
+    this.delaySimulator.stop();
     if (this.writer != null) {
       try {
         this.writer.close();

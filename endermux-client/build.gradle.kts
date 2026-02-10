@@ -38,7 +38,9 @@ application {
   mainClass = "xyz.jpenilla.endermux.client.EndermuxCli"
   applicationDefaultJvmArgs = listOf(
     //"--enable-native-access=org.jline.terminal.ffm", // For jline 4
-    "--enable-native-access=ALL-UNNAMED"
+    "--enable-native-access=ALL-UNNAMED",
+    //"-Dendermux.client.testTransportDelayBaseMs=80",
+    //"-Dendermux.client.testTransportDelayJitterMs=120"
   )
 }
 
