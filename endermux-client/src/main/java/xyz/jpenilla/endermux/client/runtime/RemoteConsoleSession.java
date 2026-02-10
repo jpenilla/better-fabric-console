@@ -205,7 +205,7 @@ final class RemoteConsoleSession {
         continue;
       }
 
-      final @Nullable String input;
+      final String input;
       try {
         input = this.readInputLine(reader);
       } catch (final IOException e) {
