@@ -46,7 +46,6 @@ import xyz.jpenilla.betterfabricconsole.console.ConsoleThread;
 import xyz.jpenilla.betterfabricconsole.console.MinecraftCommandCompleter;
 import xyz.jpenilla.betterfabricconsole.console.MinecraftCommandHighlighter;
 import xyz.jpenilla.betterfabricconsole.console.MinecraftConsoleParser;
-import xyz.jpenilla.betterfabricconsole.endermux.FabricEndermux;
 
 import static net.kyori.adventure.text.Component.text;
 import static net.kyori.adventure.text.format.NamedTextColor.GRAY;
@@ -60,7 +59,6 @@ public final class BetterFabricConsole implements ModInitializer {
   public static final Logger LOGGER = LogUtils.getLogger();
   private static final TextColor PINK = color(0xFF79C6);
   private static @Nullable BetterFabricConsole INSTANCE;
-  private @Nullable FabricEndermux endermux;
 
   @Override
   public void onInitialize() {
@@ -81,22 +79,20 @@ public final class BetterFabricConsole implements ModInitializer {
     consoleThread.setUncaughtExceptionHandler(new DefaultUncaughtExceptionHandler(LOGGER));
     consoleThread.start();
 
-    if (this.config().consoleSocket().enabled()) {
-      this.endermux = new FabricEndermux();
-      this.endermux.start(server, consoleState, this.config());
+    if (this.config().endermux().enabled()) {
+      consoleState.endermux().enableInteractivity(server, consoleState, this.config());
     }
   }
 
   private void notifyShuttingDown() {
-    if (this.endermux != null) {
-      this.endermux.disableInteractivity();
+    if (this.config().endermux().enabled()) {
+      BetterFabricConsolePreLaunch.instance().consoleState().endermux().disableInteractivity();
     }
   }
 
   private void closeSocketConsole() {
-    if (this.endermux != null) {
-      this.endermux.close();
-      this.endermux = null;
+    if (this.config().endermux().enabled()) {
+      BetterFabricConsolePreLaunch.instance().consoleState().endermux().close();
     }
   }
 

@@ -24,12 +24,13 @@
 package xyz.jpenilla.betterfabricconsole.endermux;
 
 import java.nio.file.Path;
+import java.util.Objects;
+import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.server.dedicated.DedicatedServer;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.core.Logger;
 import org.apache.logging.log4j.core.LoggerContext;
 import org.apache.logging.log4j.core.config.LoggerConfig;
-import org.apache.logging.log4j.core.layout.PatternLayout;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 import xyz.jpenilla.betterfabricconsole.configuration.Config;
@@ -46,32 +47,24 @@ public final class FabricEndermux {
   private @Nullable EndermuxServer endermuxServer;
   private @Nullable EndermuxForwardingAppender forwardingAppender;
 
-  public void start(final DedicatedServer server, final ConsoleState consoleState, final Config config) {
-    final Path socketPath = server.getServerDirectory().toFile().toPath().resolve(config.consoleSocket().socketPath());
+  public void start(final Config config) {
+    final Path socketPath = FabricLoader.getInstance().getGameDir().resolve(config.endermux().socketPath());
 
-    this.forwardingAppender = new EndermuxForwardingAppender(
-      LOG_FORWARDER_NAME,
-      null,
-      PatternLayout.newBuilder().withPattern(config.logPattern()).build()
-    );
-
+    Objects.requireNonNull(EndermuxForwardingAppender.INSTANCE);
     this.endermuxServer = new EndermuxServer(
-      this.forwardingAppender.logLayout(),
+      EndermuxForwardingAppender.INSTANCE.logLayout(),
       socketPath,
-      config.consoleSocket().maxConnections()
+      config.endermux().maxConnections()
     );
 
-    this.endermuxServer.start();
     EndermuxForwardingAppender.TARGET = new RemoteLogForwarder(this.endermuxServer);
+    this.endermuxServer.start();
+  }
 
-    final Logger rootLogger = (Logger) LogManager.getRootLogger();
-    final LoggerContext loggerContext = (LoggerContext) LogManager.getContext(false);
-    final LoggerConfig loggerConfig = loggerContext.getConfiguration().getLoggerConfig(rootLogger.getName());
-
-    this.forwardingAppender.start();
-    loggerConfig.addAppender(this.forwardingAppender, loggerConfig.getLevel(), null);
-    loggerContext.updateLoggers();
-
+  public void enableInteractivity(final DedicatedServer server, final ConsoleState consoleState, final Config config) {
+    if (this.endermuxServer == null) {
+      throw new IllegalStateException("Endermux server not started");
+    }
     this.endermuxServer.enableInteractivity(
       InteractiveConsoleHooks.builder()
         .completer(new FabricCommandCompleter(consoleState))

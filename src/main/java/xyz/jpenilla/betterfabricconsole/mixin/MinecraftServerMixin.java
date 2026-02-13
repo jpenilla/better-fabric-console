@@ -55,7 +55,7 @@ abstract class MinecraftServerMixin {
       final MinecraftServerAudiences audiences = MinecraftServerAudiences.of(dedicated);
       final net.kyori.adventure.text.Component adventureMessage = audiences.asAdventure(message);
 
-      if (BetterFabricConsole.instance().config().consoleSocket().enabled()) {
+      if (BetterFabricConsole.instance().config().endermux().enabled()) {
         final ComponentRenderer<Locale> renderer = new LanguageRenderer(new LanguageRenderer.LanguageProxy() {
           @Override
           public boolean has(final String key) {

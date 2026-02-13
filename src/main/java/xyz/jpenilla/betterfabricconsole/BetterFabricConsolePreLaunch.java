@@ -25,14 +25,17 @@ package xyz.jpenilla.betterfabricconsole;
 
 import com.mojang.logging.LogUtils;
 import java.io.IOException;
+import java.io.InputStream;
 import java.lang.reflect.Method;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
 import java.util.List;
 import java.util.Map;
 import net.fabricmc.loader.api.FabricLoader;
 import net.fabricmc.loader.api.ModContainer;
 import net.fabricmc.loader.api.entrypoint.PreLaunchEntrypoint;
+import org.apache.logging.log4j.core.config.Configurator;
 import org.apache.logging.log4j.core.config.plugins.util.PluginRegistry;
 import org.apache.logging.log4j.core.config.plugins.util.PluginType;
 import org.jspecify.annotations.NullMarked;
@@ -58,6 +61,7 @@ public final class BetterFabricConsolePreLaunch implements PreLaunchEntrypoint {
 
   @Override
   public void onPreLaunch() {
+    INSTANCE = this;
     try {
       loadPluginsFromClassLoader(HexFormattingConverter.class.getClassLoader());
     } catch (final ReflectiveOperationException e) {
@@ -67,25 +71,79 @@ public final class BetterFabricConsolePreLaunch implements PreLaunchEntrypoint {
     this.modContainer = FabricLoader.getInstance().getModContainer("better-fabric-console")
       .orElseThrow(() -> new IllegalStateException("Could not find mod container for better-fabric-console"));
     this.loadModConfig();
-    INSTANCE = this;
+    this.extractLog4jConfig();
     this.initConsole();
+    Configurator.reconfigure(this.log4jConfigPath().toUri());
+    if (this.config().endermux().enabled()) {
+      this.consoleState().endermux().start(this.config());
+    }
+  }
+
+  private Path configDir() {
+    final Path dir = FabricLoader.getInstance().getConfigDir()
+      .resolve(this.modContainer().getMetadata().getId());
+    if (!Files.exists(dir)) {
+      try {
+        Files.createDirectories(dir);
+      } catch (final IOException ex) {
+        throw new RuntimeException("Failed to create config directory", ex);
+      }
+    }
+    if (!Files.isDirectory(dir)) {
+      throw new IllegalStateException("Config directory is not a directory!");
+    }
+    return dir;
+  }
+
+  private Path log4jConfigPath() {
+    return this.configDir().resolve("log4j2.xml");
   }
 
   private void loadModConfig() {
-    final Path configFile = FabricLoader.getInstance().getConfigDir()
+    final Path oldConfigFile = FabricLoader.getInstance().getConfigDir()
       .resolve(this.modContainer().getMetadata().getId() + ".conf");
+
+    final Path configFile = this.configDir()
+      .resolve(this.modContainer().getMetadata().getId() + ".conf");
+
+    if (Files.exists(oldConfigFile)) {
+      if (Files.exists(configFile)) {
+        LOGGER.warn("Both {} and {} exist, using {}", oldConfigFile, configFile, configFile);
+      } else {
+        try {
+          Files.move(oldConfigFile, configFile);
+        } catch (final IOException ex) {
+          throw new RuntimeException("Failed to migrate old config file", ex);
+        }
+      }
+    }
+
     final HoconConfigurationLoader loader = HoconConfigurationLoader.builder()
       .path(configFile)
       .build();
     try {
-      if (!Files.exists(configFile.getParent())) {
-        Files.createDirectories(configFile.getParent());
-      }
       final CommentedConfigurationNode load = loader.load();
       this.config = load.get(Config.class);
       loader.save(loader.createNode(node -> node.set(this.config)));
     } catch (final IOException ex) {
       throw new RuntimeException("Failed to load config", ex);
+    }
+  }
+
+  private void extractLog4jConfig() {
+    final Path targetPath = this.log4jConfigPath();
+    if (Files.isRegularFile(targetPath)) {
+      // Already extracted
+      return;
+    }
+
+    final Path log4jConfigPath = this.modContainer().findPath("better-fabric-console-default-log4j2.xml")
+      .orElseThrow(() -> new IllegalStateException("Could not find better-fabric-console-default-log4j2.xml in mod container"));
+
+    try (final InputStream inputStream = Files.newInputStream(log4jConfigPath)) {
+      Files.copy(inputStream, targetPath, StandardCopyOption.REPLACE_EXISTING);
+    } catch (final IOException ex) {
+      throw new RuntimeException("Failed to extract better-fabric-console-default-log4j2.xml", ex);
     }
   }
 
@@ -106,7 +164,7 @@ public final class BetterFabricConsolePreLaunch implements PreLaunchEntrypoint {
 
   private void initConsole() {
     LOGGER.info("Initializing Better Fabric Console...");
-    this.consoleState = ConsoleSetup.init(this.config());
+    this.consoleState = ConsoleSetup.init();
   }
 
   @SuppressWarnings("unchecked")
@@ -132,10 +190,6 @@ public final class BetterFabricConsolePreLaunch implements PreLaunchEntrypoint {
         }
       }
     });
-  }
-
-  public static @Nullable BetterFabricConsolePreLaunch instanceOrNull() {
-    return INSTANCE;
   }
 
   public static BetterFabricConsolePreLaunch instance() {
