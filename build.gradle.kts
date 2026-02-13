@@ -35,6 +35,9 @@ dependencies {
   implementation(libs.jline.terminal.jansi)
   include(libs.jline.terminal.jansi)
 
+  annotationProcessor(platform(libs.log4jBom))
+  annotationProcessor(libs.log4jCore)
+
   implementation(libs.adventurePlatformFabric)
 
   transitiveInclude(libs.configurateHocon) {
@@ -81,6 +84,8 @@ tasks {
   }
   runServer {
     // jvmArgs("-Dmixin.debug=true")
+
+    // systemProperty("better-fabric-console.log.level", "debug")
   }
 }
 

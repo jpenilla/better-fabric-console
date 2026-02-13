@@ -63,7 +63,7 @@ public final class BetterFabricConsolePreLaunch implements PreLaunchEntrypoint {
   public void onPreLaunch() {
     INSTANCE = this;
     try {
-      loadPluginsFromClassLoader(BetterFabricConsolePreLaunch.class.getClassLoader());
+      loadPluginsFromClassLoader(HexFormattingConverter.class.getClassLoader());
     } catch (final ReflectiveOperationException e) {
       LOGGER.error("Failed to load extra Log4j2 plugins", e);
     }
@@ -74,6 +74,9 @@ public final class BetterFabricConsolePreLaunch implements PreLaunchEntrypoint {
     this.extractLog4jConfig();
     this.initConsole();
     Configurator.reconfigure(this.log4jConfigPath().toUri());
+    if (this.config().endermux().enabled()) {
+      this.consoleState().endermux().start(this.config());
+    }
   }
 
   private Path configDir() {
@@ -130,13 +133,14 @@ public final class BetterFabricConsolePreLaunch implements PreLaunchEntrypoint {
   private void extractLog4jConfig() {
     final Path targetPath = this.log4jConfigPath();
     if (Files.isRegularFile(targetPath)) {
+      // Already extracted
       return;
     }
 
-    final Path bundledConfigPath = this.modContainer().findPath("better-fabric-console-default-log4j2.xml")
+    final Path log4jConfigPath = this.modContainer().findPath("better-fabric-console-default-log4j2.xml")
       .orElseThrow(() -> new IllegalStateException("Could not find better-fabric-console-default-log4j2.xml in mod container"));
 
-    try (final InputStream inputStream = Files.newInputStream(bundledConfigPath)) {
+    try (final InputStream inputStream = Files.newInputStream(log4jConfigPath)) {
       Files.copy(inputStream, targetPath, StandardCopyOption.REPLACE_EXISTING);
     } catch (final IOException ex) {
       throw new RuntimeException("Failed to extract better-fabric-console-default-log4j2.xml", ex);
@@ -174,10 +178,12 @@ public final class BetterFabricConsolePreLaunch implements PreLaunchEntrypoint {
     newPlugins.forEach((category, discoveredPlugins) -> {
       final List<PluginType<?>> forCategory = pluginsByCategory.computeIfAbsent(category, c -> discoveredPlugins);
 
+      // New category
       if (forCategory == discoveredPlugins) {
         return;
       }
 
+      // Existing category
       for (final PluginType<?> pluginType : discoveredPlugins) {
         if (!forCategory.contains(pluginType)) {
           forCategory.add(pluginType);
