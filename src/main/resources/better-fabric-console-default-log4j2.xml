@@ -41,6 +41,7 @@
   </Appenders>
 
   <Loggers>
+    <!-- Log level is configured by `better-fabric-console.log.level` system property, defaulting to info -->
     <Root level="${sys:better-fabric-console.log.level:-info}">
       <filters>
         <MarkerFilter marker="NETWORK_PACKETS" onMatch="DENY" onMismatch="NEUTRAL"/>
