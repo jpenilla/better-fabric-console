@@ -48,8 +48,6 @@ dependencies {
   }
 
   compileOnly(libs.jspecify)
-  
-  implementation("com.google.code.gson:gson:2.10.1")
 }
 
 indra {
