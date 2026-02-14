@@ -3,22 +3,22 @@
   <Appenders>
     <!-- Console output -->
     <BetterFabricConsoleAppender name="Console">
-      <PatternLayout pattern="%highlight{[%d{HH:mm:ss} %level] [%t]: [%logger{1}]}{FATAL=red, ERROR=red, WARN=yellow, INFO=default, DEBUG=yellow, TRACE=blue} %legacyMinecraftFormatting{%msg{nolookups}}%n"/>
+      <PatternLayout pattern="%highlight{[%d{HH:mm:ss} %level] [%t]: [%logger{1}]}{FATAL=red, ERROR=red, WARN=yellow, INFO=default, DEBUG=yellow, TRACE=blue} %legacyMinecraftFormatting{%msg{nolookups}}%n%xEx{full}"/>
     </BetterFabricConsoleAppender>
 
     <!-- Endermux log forwarding (only used if enabled) -->
     <EndermuxForwardingAppender name="Endermux">
-      <PatternLayout pattern="%highlight{[%d{HH:mm:ss} %level] [%t]: [%logger{1}]}{FATAL=red, ERROR=red, WARN=yellow, INFO=default, DEBUG=yellow, TRACE=blue} %legacyMinecraftFormatting{%msg{nolookups}}%n"/>
+      <PatternLayout pattern="%highlight{[%d{HH:mm:ss} %level] [%t]: [%logger{1}]}{FATAL=red, ERROR=red, WARN=yellow, INFO=default, DEBUG=yellow, TRACE=blue} %legacyMinecraftFormatting{%msg{nolookups}}%n%xEx{full}"/>
     </EndermuxForwardingAppender>
 
     <!-- Server GUI console output -->
     <Queue name="ServerGuiConsole">
-      <PatternLayout pattern="[%d{HH:mm:ss} %level]: [%logger{1}] %EndermuxStripAnsi{%msg{nolookups}}%n"/>
+      <PatternLayout pattern="[%d{HH:mm:ss} %level]: [%logger{1}] %EndermuxStripAnsi{%msg{nolookups}}%n%xEx{full}"/>
     </Queue>
 
     <!-- Default log file handling -->
     <RollingRandomAccessFile name="File" fileName="logs/latest.log" filePattern="logs/%d{yyyy-MM-dd}-%i.log.gz">
-      <PatternLayout pattern="[%d{HH:mm:ss}] [%t/%level]: [%logger{1}] %EndermuxStripAnsi{%msg{nolookups}}%n"/>
+      <PatternLayout pattern="[%d{HH:mm:ss}] [%t/%level]: [%logger{1}] %EndermuxStripAnsi{%msg{nolookups}}%n%xEx{full}"/>
       <Policies>
         <TimeBasedTriggeringPolicy/>
         <OnStartupTriggeringPolicy/>
@@ -27,7 +27,7 @@
 
     <!-- Tracy log forwarding (debugging tool added by Vanilla) -->
     <Listener name="Tracy">
-      <PatternLayout pattern="(%F:%L): %EndermuxStripAnsi{%msg{nolookups}}%n"/>
+      <PatternLayout pattern="(%F:%L): %EndermuxStripAnsi{%msg{nolookups}}%n%xEx{full}"/>
     </Listener>
 
     <!-- Async appender - Don't block logging thread on slow appenders -->
