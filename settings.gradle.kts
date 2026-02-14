@@ -32,6 +32,4 @@ plugins.apply(net.fabricmc.loom.LoomRepositoryPlugin::class.java)
 
 rootProject.name = "better-fabric-console"
 
-include("endermux-client")
-include("endermux-common")
-include("endermux-server")
+includeBuild("./endermux")
