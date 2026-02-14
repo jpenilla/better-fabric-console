@@ -76,6 +76,7 @@ fabricModJson {
   depends("minecraft", ">1.21.11", "<26.2") // TODO ">=$minecraftVersion")
   depends("adventure-platform-fabric", "*")
   breaks("better_log4j_config", "*")
+  breaks("jline4mcdsrv", "*")
 }
 
 tasks {
@@ -101,4 +102,5 @@ publishMods.modrinth {
   requires("fabric-api")
   requires("adventure-platform-mod")
   incompatible("better-log4j-config")
+  incompatible("jline4mcdsrv")
 }
