@@ -21,10 +21,10 @@ dependencies {
   implementation(libs.fabricLoader)
   implementation(libs.fabricApi)
 
-  implementation(project(":endermux-common"))
-  include(project(":endermux-common"))
-  implementation(project(":endermux-server"))
-  include(project(":endermux-server"))
+  implementation("xyz.jpenilla:endermux-common")
+  include("xyz.jpenilla:endermux-common")
+  implementation("xyz.jpenilla:endermux-server")
+  include("xyz.jpenilla:endermux-server")
 
   implementation(libs.bundles.jline)
   include(libs.bundles.jline)
