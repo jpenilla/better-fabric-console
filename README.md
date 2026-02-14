@@ -11,6 +11,7 @@ Better Fabric Console is a server-side Fabric mod that replaces the vanilla dedi
 - Colored log output in terminal consoles
 - Persistent command history in `.console_history`
 - Optional logging of player-executed commands
+- Optional Endermux remote console server
 
 ![Screenshot 1](docs/images/screenshot_1.png)
 
@@ -51,6 +52,15 @@ highlight-colors=[
 ]
 # Whether to log commands executed by players to console.
 log-player-executed-commands=true
+# Endermux remote console server configuration.
+endermux {
+    # Whether to enable the Endermux remote console server.
+    enabled=false
+    # Path to the socket file relative to the server directory.
+    socket-path="console.sock"
+    # Maximum number of concurrent socket connections.
+    max-connections=5
+}
 ```
 
 [Click here](src/main/resources/better-fabric-console-default-log4j2.xml) to see the default `log4j2.xml` configuration.
@@ -59,6 +69,14 @@ Better Fabric Console also respects the following system properties to override 
 - Adventure ANSI properties: https://docs.papermc.io/adventure/serializer/ansi/
 
 Changes require a server restart.
+
+## Endermux Remote Console Server
+
+Better Fabric Console also includes the Endermux remote console server (disabled by default, see configuration above).
+
+This allows for attaching to a fully-featured console session from a remote (over Unix domain socket) terminal using the Endermux client.
+
+An example use case for this would be running the server as a systemd service and using Endermux when an interactive console is needed.
 
 ## Command
 

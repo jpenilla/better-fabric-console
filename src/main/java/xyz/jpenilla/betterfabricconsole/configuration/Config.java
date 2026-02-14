@@ -68,7 +68,7 @@ public final class Config {
     return this.logPlayerExecutedCommands;
   }
 
-  @Comment("Endermux console socket server configuration.")
+  @Comment("Endermux remote console server configuration.")
   private EndermuxConfig endermux = new EndermuxConfig();
 
   public EndermuxConfig endermux() {
@@ -77,7 +77,7 @@ public final class Config {
 
   @ConfigSerializable
   public static final class EndermuxConfig {
-    @Comment("Whether to enable socket console connections.")
+    @Comment("Whether to enable the Endermux remote console server.")
     private boolean enabled = false;
 
     public boolean enabled() {
