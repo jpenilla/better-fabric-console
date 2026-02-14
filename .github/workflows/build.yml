@@ -17,3 +17,4 @@ jobs:
       artifacts-path: 'build/libs/better-fabric-console-mc*.jar'
       loom: true
       jdk-version: 21
+      init-submodules: true
