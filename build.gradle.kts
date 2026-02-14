@@ -10,7 +10,7 @@ plugins {
   alias(libs.plugins.resourceFactoryFabricConvention)
 }
 
-version = "1.3.0-SNAPSHOT"
+version = "2.0.0-SNAPSHOT"
 group = "xyz.jpenilla"
 description = "Server-side Fabric mod enhancing the console with tab completions, colored log output, command syntax highlighting, command history, and more."
 
