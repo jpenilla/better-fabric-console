@@ -8,21 +8,16 @@ fabric-loader = "0.18.4"
 fabric-api = "0.143.4+26.1"
 
 log4j = "2.25.3"
-slf4j = "2.0.16"
 jline = "3.30.6"
 jansi = "2.4.2"
-adventure = "4.26.1"
 adventure-platform-fabric = "6.9.0-SNAPSHOT"
 configurate-hocon = "4.2.0"
 jspecify = "1.0.0"
-picocli = "4.7.7"
-junit = "6.0.2"
 
 [plugins]
 indra = { id = "net.kyori.indra", version.ref = "indra" }
 indraCheckstyle = { id = "net.kyori.indra.checkstyle", version.ref = "indra" }
 indraLicenserSpotless = { id = "net.kyori.indra.licenser.spotless", version.ref = "indra" }
-indraPublishing = { id = "net.kyori.indra.publishing" }
 modPublishPlugin = { id = "me.modmuss50.mod-publish-plugin", version.ref = "mod-publish-plugin" }
 resourceFactoryFabricConvention = { id = "xyz.jpenilla.resource-factory-fabric-convention", version.ref = "resource-factory-fabric-convention" }
 
@@ -35,30 +30,16 @@ log4jBom = { module = "org.apache.logging.log4j:log4j-bom", version.ref = "log4j
 log4jCore = { module = "org.apache.logging.log4j:log4j-core", version.ref = "log4j" }
 log4jApi = { module = "org.apache.logging.log4j:log4j-api", version.ref = "log4j" }
 log4jIostreams = { module = "org.apache.logging.log4j:log4j-iostreams", version.ref = "log4j" }
-log4jSlf4j2Impl = { module = "org.apache.logging.log4j:log4j-slf4j2-impl", version.ref = "log4j" }
-slf4jApi = { module = "org.slf4j:slf4j-api", version.ref = "slf4j" }
 
 jline = { module = "org.jline:jline", version.ref = "jline" }
 jline-terminal-ffm = { module = "org.jline:jline-terminal-ffm", version.ref = "jline" }
 jline-terminal-jansi = { module = "org.jline:jline-terminal-jansi", version.ref = "jline" }
 jansi = { module = "org.fusesource.jansi:jansi", version.ref = "jansi" }
 
-gson = "com.google.code.gson:gson:2.10.1"
-
-adventureApi = { module = "net.kyori:adventure-api", version.ref = "adventure" }
-adventureTextSerializerAnsi = { module = "net.kyori:adventure-text-serializer-ansi", version.ref = "adventure" }
-adventureTextSerializerGson = { module = "net.kyori:adventure-text-serializer-gson", version.ref = "adventure" }
-adventureTextLoggerSlf4j = { module = "net.kyori:adventure-text-logger-slf4j", version.ref = "adventure" }
 adventurePlatformFabric = { module = "net.kyori:adventure-platform-fabric", version.ref = "adventure-platform-fabric" }
 
 configurateHocon = { module = "org.spongepowered:configurate-hocon", version.ref = "configurate-hocon" }
 jspecify = { module = "org.jspecify:jspecify", version.ref = "jspecify" }
-
-picocli = { module = "info.picocli:picocli", version.ref = "picocli" }
-picocliCodegen = { module = "info.picocli:picocli-codegen", version.ref = "picocli" }
-junitBom = { module = "org.junit:junit-bom", version.ref = "junit" }
-junitJupiter = { module = "org.junit.jupiter:junit-jupiter" }
-junitPlatformLauncher = { module = "org.junit.platform:junit-platform-launcher" }
 
 [bundles]
 jline = ["jline", "jline-terminal-ffm"]
