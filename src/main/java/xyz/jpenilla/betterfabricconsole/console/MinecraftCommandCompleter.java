@@ -32,7 +32,6 @@ import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import net.kyori.adventure.platform.modcommon.MinecraftServerAudiences;
-import net.kyori.adventure.text.serializer.ansi.ANSIComponentSerializer;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.ComponentUtils;
@@ -44,6 +43,7 @@ import org.jline.reader.ParsedLine;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 import xyz.jpenilla.betterfabricconsole.util.Util;
+import xyz.jpenilla.endermux.ansi.ColorLevelContext;
 import xyz.jpenilla.endermux.jline.MinecraftCandidate;
 
 @NullMarked
@@ -79,7 +79,7 @@ public record MinecraftCommandCompleter(MinecraftServer server, MinecraftServerA
         final Component tooltipComponent = ComponentUtils.fromMessage(tooltip);
         return tooltipComponent.equals(Component.empty()) ? null : this.audiences.asAdventure(tooltipComponent);
       })
-      .map(adventure -> ANSIComponentSerializer.ansi().serialize(adventure))
+      .map(adventure -> ColorLevelContext.currentSerializer().serialize(adventure))
       .orElse(null);
     //noinspection SpellCheckingInspection
     return new MinecraftCandidate(
