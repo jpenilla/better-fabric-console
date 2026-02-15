@@ -25,24 +25,16 @@ package xyz.jpenilla.betterfabricconsole.mixin;
 
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
-import java.util.Locale;
+import com.llamalad7.mixinextras.sugar.Share;
+import com.llamalad7.mixinextras.sugar.ref.LocalRef;
 import net.kyori.adventure.platform.modcommon.MinecraftServerAudiences;
-import net.kyori.adventure.text.renderer.ComponentRenderer;
-import net.kyori.adventure.text.serializer.ansi.ANSIComponentSerializer;
-import net.kyori.adventure.text.serializer.gson.GsonComponentSerializer;
-import net.kyori.adventure.translation.Translator;
-import net.minecraft.locale.Language;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.dedicated.DedicatedServer;
-import org.apache.logging.log4j.ThreadContext;
+import org.slf4j.Logger;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
-import org.spongepowered.asm.mixin.injection.Inject;
-import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
-import xyz.jpenilla.betterfabricconsole.BetterFabricConsole;
-import xyz.jpenilla.endermux.server.log4j.RemoteLogForwarder;
-import xyz.jpenilla.endermux.server.util.LanguageRenderer;
+import xyz.jpenilla.endermux.log4j.RichLogContext;
 
 @Mixin(MinecraftServer.class)
 abstract class MinecraftServerMixin {
@@ -50,45 +42,37 @@ abstract class MinecraftServerMixin {
     method = "sendSystemMessage",
     at = @At(value = "INVOKE", target = "Lnet/minecraft/network/chat/Component;getString()Ljava/lang/String;")
   )
-  private String wrapMessage(final Component message, final Operation<String> original) {
+  private String wrapMessage(
+    final Component message,
+    final Operation<String> original,
+    @Share("BFC_systemMessageScope") final LocalRef<RichLogContext.Scope> systemMessageScope
+  ) {
     if ((Object) this instanceof DedicatedServer dedicated) {
       final MinecraftServerAudiences audiences = MinecraftServerAudiences.of(dedicated);
       final net.kyori.adventure.text.Component adventureMessage = audiences.asAdventure(message);
-
-      if (BetterFabricConsole.instance().config().endermux().enabled()) {
-        final ComponentRenderer<Locale> renderer = new LanguageRenderer(new LanguageRenderer.LanguageProxy() {
-          @Override
-          public boolean has(final String key) {
-            return Language.getInstance().has(key);
-          }
-
-          @Override
-          public String getOrDefault(final String key, final String fallback) {
-            return Language.getInstance().getOrDefault(key, fallback);
-          }
-        });
-        ThreadContext.put(RemoteLogForwarder.COMPONENT_LOG_MESSAGE_KEY, GsonComponentSerializer.gson().serialize(
-          renderer.render(adventureMessage, Translator.parseLocale("en_us"))
-        ));
-      }
-
-      return ANSIComponentSerializer.ansi().serialize(adventureMessage);
-    } else {
-      return original.call(message);
+      systemMessageScope.set(RichLogContext.pushComponent(adventureMessage));
     }
+    return original.call(message);
   }
 
-  @Inject(
-    at = @At(
-      value = "INVOKE",
-      target = "Lorg/slf4j/Logger;info(Ljava/lang/String;)V",
-      shift = At.Shift.AFTER
-    ),
-    method = "sendSystemMessage"
+  @WrapOperation(
+    method = "sendSystemMessage",
+    at = @At(value = "INVOKE", target = "Lorg/slf4j/Logger;info(Ljava/lang/String;)V")
   )
-  private void afterLog(final Component message, final CallbackInfo ci) {
-    if ((Object) this instanceof DedicatedServer) {
-      ThreadContext.remove(RemoteLogForwarder.COMPONENT_LOG_MESSAGE_KEY);
+  private void wrapLogInfo(
+    final Logger logger,
+    final String message,
+    final Operation<Void> original,
+    @Share("BFC_systemMessageScope") final LocalRef<RichLogContext.Scope> systemMessageScope
+  ) {
+    try {
+      original.call(logger, message);
+    } finally {
+      final RichLogContext.Scope scope = systemMessageScope.get();
+      if (scope != null) {
+        systemMessageScope.set(null);
+        scope.close();
+      }
     }
   }
 }

@@ -3,12 +3,12 @@
   <Appenders>
     <!-- Console output -->
     <BetterFabricConsoleAppender name="Console">
-      <PatternLayout pattern="%highlight{[%d{HH:mm:ss} %level] [%t]: [%logger{1}]}{FATAL=red, ERROR=red, WARN=yellow, INFO=default, DEBUG=yellow, TRACE=blue} %legacyMinecraftFormatting{%msg{nolookups}}%n"/>
+      <PatternLayout pattern="%highlight{[%d{HH:mm:ss} %level] [%t]: [%logger{1}]}{FATAL=red, ERROR=red, WARN=yellow, INFO=default, DEBUG=yellow, TRACE=blue} %EndermuxRichMessage{%legacyMinecraftFormatting{%msg{nolookups}}}%n"/>
     </BetterFabricConsoleAppender>
 
     <!-- Endermux log forwarding (only used if enabled) -->
     <EndermuxForwardingAppender name="Endermux">
-      <PatternLayout pattern="%highlight{[%d{HH:mm:ss} %level] [%t]: [%logger{1}]}{FATAL=red, ERROR=red, WARN=yellow, INFO=default, DEBUG=yellow, TRACE=blue} %legacyMinecraftFormatting{%msg{nolookups}}%n"/>
+      <PatternLayout pattern="%EndermuxHighlightError{[%d{HH:mm:ss} %level] [%t]: [%logger{1}]} %EndermuxRichMessage{%legacyMinecraftFormatting{%msg{nolookups}}}%n"/>
     </EndermuxForwardingAppender>
 
     <!-- Server GUI console output -->
