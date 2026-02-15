@@ -50,14 +50,13 @@ public final class FabricEndermux {
   public void start(final Config config) {
     final Path socketPath = FabricLoader.getInstance().getGameDir().resolve(config.endermux().socketPath());
 
-    Objects.requireNonNull(EndermuxForwardingAppender.INSTANCE);
+    final EndermuxForwardingAppender appender = Objects.requireNonNull(EndermuxForwardingAppender.INSTANCE);
     this.endermuxServer = new EndermuxServer(
-      EndermuxForwardingAppender.INSTANCE.logLayout(),
       socketPath,
       config.endermux().maxConnections()
     );
 
-    EndermuxForwardingAppender.TARGET = new RemoteLogForwarder(this.endermuxServer);
+    EndermuxForwardingAppender.TARGET = new RemoteLogForwarder(this.endermuxServer, appender.getLayout());
     this.endermuxServer.start();
   }
 
