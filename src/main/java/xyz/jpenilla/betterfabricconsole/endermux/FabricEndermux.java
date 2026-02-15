@@ -24,13 +24,8 @@
 package xyz.jpenilla.betterfabricconsole.endermux;
 
 import java.nio.file.Path;
-import java.util.Objects;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.server.dedicated.DedicatedServer;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.core.Logger;
-import org.apache.logging.log4j.core.LoggerContext;
-import org.apache.logging.log4j.core.config.LoggerConfig;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 import xyz.jpenilla.betterfabricconsole.configuration.Config;
@@ -38,25 +33,20 @@ import xyz.jpenilla.betterfabricconsole.console.ConsoleState;
 import xyz.jpenilla.endermux.server.EndermuxServer;
 import xyz.jpenilla.endermux.server.api.InteractiveConsoleHooks;
 import xyz.jpenilla.endermux.server.log4j.EndermuxForwardingAppender;
-import xyz.jpenilla.endermux.server.log4j.RemoteLogForwarder;
 
 @NullMarked
 public final class FabricEndermux {
-  private static final String LOG_FORWARDER_NAME = "RemoteLogForwarder";
-
   private @Nullable EndermuxServer endermuxServer;
-  private @Nullable EndermuxForwardingAppender forwardingAppender;
 
   public void start(final Config config) {
     final Path socketPath = FabricLoader.getInstance().getGameDir().resolve(config.endermux().socketPath());
 
-    final EndermuxForwardingAppender appender = Objects.requireNonNull(EndermuxForwardingAppender.INSTANCE);
     this.endermuxServer = new EndermuxServer(
       socketPath,
       config.endermux().maxConnections()
     );
 
-    EndermuxForwardingAppender.TARGET = new RemoteLogForwarder(this.endermuxServer, appender.getLayout());
+    EndermuxForwardingAppender.attach(this.endermuxServer);
     this.endermuxServer.start();
   }
 
@@ -80,17 +70,7 @@ public final class FabricEndermux {
       this.endermuxServer = null;
     }
 
-    if (this.forwardingAppender != null) {
-      final Logger rootLogger = (Logger) LogManager.getRootLogger();
-      final LoggerContext loggerContext = (LoggerContext) LogManager.getContext(false);
-      final LoggerConfig loggerConfig = loggerContext.getConfiguration().getLoggerConfig(rootLogger.getName());
-
-      loggerConfig.removeAppender(LOG_FORWARDER_NAME);
-      loggerContext.updateLoggers();
-      this.forwardingAppender.stop();
-    }
-
-    EndermuxForwardingAppender.TARGET = null;
+    EndermuxForwardingAppender.detach();
   }
 
   public void disableInteractivity() {
