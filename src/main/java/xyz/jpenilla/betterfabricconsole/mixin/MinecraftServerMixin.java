@@ -25,13 +25,16 @@ package xyz.jpenilla.betterfabricconsole.mixin;
 
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
+import com.llamalad7.mixinextras.sugar.Share;
+import com.llamalad7.mixinextras.sugar.ref.LocalRef;
 import net.kyori.adventure.platform.modcommon.MinecraftServerAudiences;
-import net.kyori.adventure.text.serializer.ansi.ANSIComponentSerializer;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.dedicated.DedicatedServer;
+import org.slf4j.Logger;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
+import xyz.jpenilla.endermux.log4j.RichLogContext;
 
 @Mixin(MinecraftServer.class)
 abstract class MinecraftServerMixin {
@@ -39,12 +42,37 @@ abstract class MinecraftServerMixin {
     method = "sendSystemMessage",
     at = @At(value = "INVOKE", target = "Lnet/minecraft/network/chat/Component;getString()Ljava/lang/String;")
   )
-  private String wrapMessage(final Component instance, final Operation<String> original) {
+  private String wrapMessage(
+    final Component message,
+    final Operation<String> original,
+    @Share("BFC_systemMessageScope") final LocalRef<RichLogContext.Scope> systemMessageScope
+  ) {
     if ((Object) this instanceof DedicatedServer dedicated) {
       final MinecraftServerAudiences audiences = MinecraftServerAudiences.of(dedicated);
-      return ANSIComponentSerializer.ansi().serialize(audiences.asAdventure(instance));
-    } else {
-      return original.call(instance);
+      final net.kyori.adventure.text.Component adventureMessage = audiences.asAdventure(message);
+      systemMessageScope.set(RichLogContext.pushComponent(adventureMessage));
+    }
+    return original.call(message);
+  }
+
+  @WrapOperation(
+    method = "sendSystemMessage",
+    at = @At(value = "INVOKE", target = "Lorg/slf4j/Logger;info(Ljava/lang/String;)V")
+  )
+  private void wrapLogInfo(
+    final Logger logger,
+    final String message,
+    final Operation<Void> original,
+    @Share("BFC_systemMessageScope") final LocalRef<RichLogContext.Scope> systemMessageScope
+  ) {
+    try {
+      original.call(logger, message);
+    } finally {
+      final RichLogContext.Scope scope = systemMessageScope.get();
+      if (scope != null) {
+        systemMessageScope.set(null);
+        scope.close();
+      }
     }
   }
 }

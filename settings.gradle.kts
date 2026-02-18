@@ -24,10 +24,10 @@ pluginManagement {
 }
 
 plugins {
-  id("xyz.jpenilla.quiet-fabric-loom") version "1.15-SNAPSHOT" apply false
+  id("xyz.jpenilla.quiet-fabric-loom-repositories") version "1.15-SNAPSHOT"
   id("org.gradle.toolchains.foojay-resolver-convention") version "1.0.0"
 }
 
-plugins.apply(net.fabricmc.loom.LoomRepositoryPlugin::class.java)
-
 rootProject.name = "better-fabric-console"
+
+includeBuild("./endermux")

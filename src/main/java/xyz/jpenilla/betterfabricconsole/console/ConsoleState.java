@@ -24,11 +24,13 @@
 package xyz.jpenilla.betterfabricconsole.console;
 
 import org.jline.reader.LineReader;
+import xyz.jpenilla.betterfabricconsole.endermux.FabricEndermux;
 
 public record ConsoleState(
   LineReader lineReader,
   DelegatingCompleter completer,
   DelegatingHighlighter highlighter,
-  DelegatingParser parser
+  DelegatingParser parser,
+  FabricEndermux endermux
 ) {
 }

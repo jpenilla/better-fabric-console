@@ -23,38 +23,45 @@
  */
 package xyz.jpenilla.betterfabricconsole.console;
 
+import java.io.Serializable;
+import org.apache.logging.log4j.core.Appender;
+import org.apache.logging.log4j.core.Core;
+import org.apache.logging.log4j.core.Filter;
+import org.apache.logging.log4j.core.Layout;
 import org.apache.logging.log4j.core.LogEvent;
 import org.apache.logging.log4j.core.appender.AbstractAppender;
-import org.apache.logging.log4j.core.appender.rewrite.RewritePolicy;
 import org.apache.logging.log4j.core.config.Property;
+import org.apache.logging.log4j.core.config.plugins.Plugin;
+import org.apache.logging.log4j.core.config.plugins.PluginAttribute;
+import org.apache.logging.log4j.core.config.plugins.PluginElement;
+import org.apache.logging.log4j.core.config.plugins.PluginFactory;
+import org.apache.logging.log4j.core.config.plugins.validation.constraints.Required;
 import org.apache.logging.log4j.core.layout.PatternLayout;
 import org.jline.reader.LineReader;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
+import xyz.jpenilla.betterfabricconsole.BetterFabricConsolePreLaunch;
 
+@Plugin(name = BetterFabricConsoleAppender.PLUGIN_NAME, category = Core.CATEGORY_NAME, elementType = Appender.ELEMENT_TYPE, printObject = true)
 @NullMarked
-final class ConsoleAppender extends AbstractAppender {
-  private final LineReader lineReader;
-  private final @Nullable RewritePolicy rewriter;
+final class BetterFabricConsoleAppender extends AbstractAppender {
+  public static final String PLUGIN_NAME = "BetterFabricConsoleAppender";
 
-  ConsoleAppender(
-    final LineReader lineReader,
-    final String logPattern,
-    final @Nullable RewritePolicy rewritePolicy
+  private final LineReader lineReader;
+
+  BetterFabricConsoleAppender(
+    final String name,
+    final @Nullable Filter filter,
+    final Layout<? extends Serializable> layout
   ) {
     super(
-      "Console",
-      null,
-      PatternLayout.newBuilder().withPattern(logPattern).build(),
+      name,
+      filter,
+      layout,
       false,
       new Property[0]
     );
-    this.lineReader = lineReader;
-    this.rewriter = rewritePolicy;
-  }
-
-  private LogEvent rewrite(final LogEvent event) {
-    return this.rewriter == null ? event : this.rewriter.rewrite(event);
+    this.lineReader = BetterFabricConsolePreLaunch.instance().consoleState().lineReader();
   }
 
   @Override
@@ -63,12 +70,25 @@ final class ConsoleAppender extends AbstractAppender {
       this.lineReader.callWidget(LineReader.CLEAR);
     }
 
-    this.lineReader.getTerminal().writer().print(this.getLayout().toSerializable(this.rewrite(event)).toString());
+    this.lineReader.getTerminal().writer().print(this.getLayout().toSerializable(event).toString());
 
     if (this.lineReader.isReading()) {
       this.lineReader.callWidget(LineReader.REDRAW_LINE);
       this.lineReader.callWidget(LineReader.REDISPLAY);
     }
     this.lineReader.getTerminal().writer().flush();
+  }
+
+  @PluginFactory
+  public static BetterFabricConsoleAppender createAppender(
+    final @Required(message = "No name provided for BetterFabricConsoleAppender") @PluginAttribute("name") String name,
+    final @PluginElement("Filter") Filter filter,
+    @PluginElement("Layout") @Nullable Layout<? extends Serializable> layout
+  ) {
+    if (layout == null) {
+      layout = PatternLayout.createDefaultLayout();
+    }
+
+    return new BetterFabricConsoleAppender(name, filter, layout);
   }
 }
