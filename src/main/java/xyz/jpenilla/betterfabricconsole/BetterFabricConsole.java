@@ -37,7 +37,6 @@ import net.minecraft.commands.CommandBuildContext;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.server.dedicated.DedicatedServer;
-import net.minecraft.server.permissions.Permission;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
@@ -66,6 +65,8 @@ public final class BetterFabricConsole implements ModInitializer {
     INSTANCE = this;
     CommandRegistrationCallback.EVENT.register(this::registerCommands);
     ServerLifecycleEvents.SERVER_STARTING.register(server -> this.initConsoleThread((DedicatedServer) server));
+    ServerLifecycleEvents.SERVER_STOPPING.register(_ -> this.notifyShuttingDown());
+    ServerLifecycleEvents.SERVER_STOPPED.register(_ -> this.closeSocketConsole());
   }
 
   private void initConsoleThread(final DedicatedServer server) {
@@ -77,6 +78,22 @@ public final class BetterFabricConsole implements ModInitializer {
     consoleThread.setDaemon(true);
     consoleThread.setUncaughtExceptionHandler(new DefaultUncaughtExceptionHandler(LOGGER));
     consoleThread.start();
+
+    if (this.config().endermux().enabled()) {
+      consoleState.endermux().enableInteractivity(server, consoleState, this.config());
+    }
+  }
+
+  private void notifyShuttingDown() {
+    if (this.config().endermux().enabled()) {
+      BetterFabricConsolePreLaunch.instance().consoleState().endermux().disableInteractivity();
+    }
+  }
+
+  private void closeSocketConsole() {
+    if (this.config().endermux().enabled()) {
+      BetterFabricConsolePreLaunch.instance().consoleState().endermux().close();
+    }
   }
 
   private void registerCommands(
@@ -85,15 +102,7 @@ public final class BetterFabricConsole implements ModInitializer {
     final Commands.CommandSelection commandSelection
   ) {
     dispatcher.register(literal("better-fabric-console")
-      .requires(stack -> {
-        final var server = stack.getServer();
-        // noinspection ConstantConditions - Vanilla violates it's own contract
-        if (server == null) {
-          return false;
-        }
-        return stack.permissions().hasPermission(
-          new Permission.HasCommandLevel(server.operatorUserPermissions().level()));
-      })
+      .requires(Commands.hasPermission(Commands.LEVEL_OWNERS))
       .executes(this::executeCommand));
   }
 

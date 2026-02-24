@@ -1,0 +1,3 @@
+[submodule "endermux"]
+	path = endermux
+	url = https://github.com/jpenilla/endermux.git
