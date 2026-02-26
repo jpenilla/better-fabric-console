@@ -20,7 +20,7 @@ val minecraftVersion = "26.1-snapshot-4"
 dependencies {
   minecraft("com.mojang:minecraft:$minecraftVersion")
   implementation("net.fabricmc:fabric-loader:0.18.4")
-  implementation("net.fabricmc.fabric-api:fabric-api:0.142.1+26.1")
+  implementation("net.fabricmc.fabric-api:fabric-api:0.143.7+26.1")
 
   annotationProcessor("org.apache.logging.log4j:log4j-core:2.25.3")
 
