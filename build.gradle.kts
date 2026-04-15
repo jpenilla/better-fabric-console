@@ -33,7 +33,7 @@ dependencies {
   implementation("org.fusesource.jansi:jansi:2.4.2")
   include("org.fusesource.jansi:jansi:2.4.2")
 
-  implementation("net.kyori:adventure-platform-fabric:6.9.0-SNAPSHOT")
+  implementation("net.kyori:adventure-platform-fabric:6.9.0")
 
   implementation(transitiveInclude("org.spongepowered:configurate-hocon:4.2.0") {
     exclude("net.kyori", "option") // provided by adventure-platform-fabric
