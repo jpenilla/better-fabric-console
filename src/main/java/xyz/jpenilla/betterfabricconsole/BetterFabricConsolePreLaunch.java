@@ -75,6 +75,8 @@ public final class BetterFabricConsolePreLaunch implements PreLaunchEntrypoint {
     this.initConsole();
     Configurator.reconfigure(this.log4jConfigPath().toUri());
     if (this.config().endermux().enabled()) {
+      LOGGER.warn("Endermux is considered experimental and may still make protocol-incompatible changes. " +
+        "Therefore it is not yet advised to use in production workflows. Please report any feedback or issues to https://github.com/jpenilla/endermux/issues");
       this.consoleState().endermux().start(this.config());
     }
   }
