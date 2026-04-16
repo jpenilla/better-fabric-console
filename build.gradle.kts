@@ -71,7 +71,7 @@ fabricModJson {
   mixin("better-fabric-console.mixins.json")
   depends("fabricloader", ">=0.18.4")
   depends("fabric-api", "*")
-  depends("minecraft", ">1.21.11", "<26.2") // TODO ">=$minecraftVersion")
+  depends("minecraft", ">=$minecraftVersion", "<26.2")
   depends("adventure-platform-fabric", "*")
   breaks("better_log4j_config", "*")
   breaks("jline4mcdsrv", "*")
