@@ -30,8 +30,8 @@ dependencies {
   implementation("org.jline:jline-terminal-jansi:$jlineVersion")
   include("org.jline:jline-terminal-jansi:$jlineVersion")
 
-  implementation("org.fusesource.jansi:jansi:2.4.2")
-  include("org.fusesource.jansi:jansi:2.4.2")
+  implementation("org.fusesource.jansi:jansi:2.4.3")
+  include("org.fusesource.jansi:jansi:2.4.3")
 
   implementation("net.kyori:adventure-platform-fabric:6.9.0")
 
