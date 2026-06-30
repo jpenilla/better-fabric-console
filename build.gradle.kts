@@ -24,7 +24,7 @@ dependencies {
 
   annotationProcessor("org.apache.logging.log4j:log4j-core:2.25.3")
 
-  val jlineVersion = "3.30.6"
+  val jlineVersion = "4.3.1"
   implementation("org.jline:jline:$jlineVersion")
   include("org.jline:jline:$jlineVersion")
   implementation("org.jline:jline-terminal-jansi:$jlineVersion")
