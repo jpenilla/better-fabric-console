@@ -21,16 +21,22 @@ dependencies {
   implementation(libs.fabricLoader)
   implementation(libs.fabricApi)
 
-  annotationProcessor(platform(libs.log4jBom))
-  annotationProcessor(libs.log4jCore)
+  implementation("xyz.jpenilla:endermux-common")
+  include("xyz.jpenilla:endermux-common")
+  implementation("xyz.jpenilla:endermux-server")
+  include("xyz.jpenilla:endermux-server")
 
   implementation(libs.bundles.jline)
   include(libs.bundles.jline)
 
+  // Fallback in case native access flags not passed - TODO verify this works as intended
   implementation(libs.jansi)
   include(libs.jansi)
   implementation(libs.jline.terminal.jansi)
   include(libs.jline.terminal.jansi)
+
+  annotationProcessor(platform(libs.log4jBom))
+  annotationProcessor(libs.log4jCore)
 
   implementation(libs.adventurePlatformFabric)
 
@@ -63,7 +69,7 @@ fabricModJson {
   mainEntrypoint("xyz.jpenilla.betterfabricconsole.BetterFabricConsole")
   entrypoint("preLaunch", "xyz.jpenilla.betterfabricconsole.BetterFabricConsolePreLaunch")
   mixin("better-fabric-console.mixins.json")
-  depends("fabricloader", ">=${libs.versions.fabric.loader.get()}")
+  depends("fabricloader", ">=0.18.4")
   depends("fabric-api", "*")
   depends("minecraft", ">=$minecraftVersion", "<26.2")
   depends("adventure-platform-fabric", "*")
@@ -75,6 +81,11 @@ tasks {
   jar {
     from("LICENSE")
     archiveFileName.set("${project.name}-mc$minecraftVersion-${project.version}.jar")
+  }
+  runServer {
+    // jvmArgs("-Dmixin.debug=true")
+
+    // systemProperty("better-fabric-console.log.level", "debug")
   }
 }
 

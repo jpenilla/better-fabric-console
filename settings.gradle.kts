@@ -29,3 +29,5 @@ plugins {
 }
 
 rootProject.name = "better-fabric-console"
+
+includeBuild("./endermux")

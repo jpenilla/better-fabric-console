@@ -65,6 +65,8 @@ public final class BetterFabricConsole implements ModInitializer {
     INSTANCE = this;
     CommandRegistrationCallback.EVENT.register(this::registerCommands);
     ServerLifecycleEvents.SERVER_STARTING.register(server -> this.initConsoleThread((DedicatedServer) server));
+    ServerLifecycleEvents.SERVER_STOPPING.register(_ -> this.notifyShuttingDown());
+    ServerLifecycleEvents.SERVER_STOPPED.register(_ -> this.closeSocketConsole());
   }
 
   private void initConsoleThread(final DedicatedServer server) {
@@ -76,6 +78,22 @@ public final class BetterFabricConsole implements ModInitializer {
     consoleThread.setDaemon(true);
     consoleThread.setUncaughtExceptionHandler(new DefaultUncaughtExceptionHandler(LOGGER));
     consoleThread.start();
+
+    if (this.config().endermux().enabled()) {
+      consoleState.endermux().enableInteractivity(server, consoleState, this.config());
+    }
+  }
+
+  private void notifyShuttingDown() {
+    if (this.config().endermux().enabled()) {
+      BetterFabricConsolePreLaunch.instance().consoleState().endermux().disableInteractivity();
+    }
+  }
+
+  private void closeSocketConsole() {
+    if (this.config().endermux().enabled()) {
+      BetterFabricConsolePreLaunch.instance().consoleState().endermux().close();
+    }
   }
 
   private void registerCommands(

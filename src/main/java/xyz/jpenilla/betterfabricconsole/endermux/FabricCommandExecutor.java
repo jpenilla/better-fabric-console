@@ -21,12 +21,22 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package xyz.jpenilla.betterfabricconsole.util;
+package xyz.jpenilla.betterfabricconsole.endermux;
 
+import net.minecraft.server.dedicated.DedicatedServer;
 import org.jspecify.annotations.NullMarked;
+import xyz.jpenilla.endermux.server.api.InteractiveConsoleHooks;
 
 @NullMarked
-public enum TerminalMode {
-  DUMB,
-  INTERACTIVE
+public final class FabricCommandExecutor implements InteractiveConsoleHooks.CommandExecutor {
+  private final DedicatedServer server;
+
+  public FabricCommandExecutor(final DedicatedServer server) {
+    this.server = server;
+  }
+
+  @Override
+  public void execute(final String command) {
+    this.server.handleConsoleInput(command, this.server.createCommandSourceStack());
+  }
 }

@@ -30,6 +30,8 @@ import org.jline.reader.LineReader;
 import org.jline.reader.LineReaderBuilder;
 import org.jline.reader.Parser;
 import org.jspecify.annotations.NullMarked;
+import xyz.jpenilla.betterfabricconsole.endermux.FabricEndermux;
+import xyz.jpenilla.endermux.jline.MinecraftCompletionMatcher;
 
 @NullMarked
 public final class ConsoleSetup {
@@ -66,6 +68,8 @@ public final class ConsoleSetup {
       delegatingParser
     );
 
-    return new ConsoleState(lineReader, delegatingCompleter, delegatingHighlighter, delegatingParser);
+    final FabricEndermux endermux = new FabricEndermux();
+
+    return new ConsoleState(lineReader, delegatingCompleter, delegatingHighlighter, delegatingParser, endermux);
   }
 }

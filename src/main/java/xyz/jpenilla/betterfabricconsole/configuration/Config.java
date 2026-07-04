@@ -67,4 +67,35 @@ public final class Config {
   public boolean logPlayerExecutedCommands() {
     return this.logPlayerExecutedCommands;
   }
+
+  @Comment("Endermux remote console server configuration.")
+  private EndermuxConfig endermux = new EndermuxConfig();
+
+  public EndermuxConfig endermux() {
+    return this.endermux;
+  }
+
+  @ConfigSerializable
+  public static final class EndermuxConfig {
+    @Comment("Whether to enable the Endermux remote console server.")
+    private boolean enabled = false;
+
+    public boolean enabled() {
+      return this.enabled;
+    }
+
+    @Comment("Path to the socket file relative to the server directory.")
+    private String socketPath = "console.sock";
+
+    public String socketPath() {
+      return this.socketPath;
+    }
+
+    @Comment("Maximum number of concurrent socket connections.")
+    private int maxConnections = 5;
+
+    public int maxConnections() {
+      return this.maxConnections;
+    }
+  }
 }

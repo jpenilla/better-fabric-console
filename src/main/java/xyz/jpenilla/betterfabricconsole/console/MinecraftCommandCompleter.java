@@ -32,8 +32,6 @@ import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import net.kyori.adventure.platform.modcommon.MinecraftServerAudiences;
-import net.kyori.adventure.text.serializer.ansi.ANSIComponentSerializer;
-import net.kyori.ansi.ColorLevel;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.ComponentUtils;
@@ -45,13 +43,11 @@ import org.jline.reader.ParsedLine;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 import xyz.jpenilla.betterfabricconsole.util.Util;
+import xyz.jpenilla.endermux.ansi.ColorLevelContext;
+import xyz.jpenilla.endermux.jline.MinecraftCandidate;
 
 @NullMarked
 public record MinecraftCommandCompleter(MinecraftServer server, MinecraftServerAudiences audiences) implements Completer {
-  private static final ANSIComponentSerializer TOOLTIP_SERIALIZER = ANSIComponentSerializer.builder()
-    .colorLevel(ColorLevel.compute())
-    .build();
-
   @Override
   public void complete(final LineReader reader, final ParsedLine line, final List<Candidate> candidates) {
     final StringReader stringReader = Util.prepareStringReader(line.line());
@@ -83,7 +79,7 @@ public record MinecraftCommandCompleter(MinecraftServer server, MinecraftServerA
         final Component tooltipComponent = ComponentUtils.fromMessage(tooltip);
         return tooltipComponent.equals(Component.empty()) ? null : this.audiences.asAdventure(tooltipComponent);
       })
-      .map(adventure -> TOOLTIP_SERIALIZER.serialize(adventure))
+      .map(adventure -> ColorLevelContext.currentSerializer().serialize(adventure))
       .orElse(null);
     //noinspection SpellCheckingInspection
     return new MinecraftCandidate(
@@ -104,19 +100,5 @@ public record MinecraftCommandCompleter(MinecraftServer server, MinecraftServerA
   }
 
   private record ParseContext(String line, int suggestionStart) {
-  }
-
-  public static final class MinecraftCandidate extends Candidate {
-    public MinecraftCandidate(
-      final String value,
-      final String display,
-      final @Nullable String group,
-      final @Nullable String description,
-      final @Nullable String suffix,
-      final @Nullable String key,
-      final boolean complete
-    ) {
-      super(value, display, group, description, suffix, key, complete);
-    }
   }
 }
