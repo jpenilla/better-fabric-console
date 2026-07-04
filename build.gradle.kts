@@ -10,7 +10,7 @@ plugins {
   alias(libs.plugins.resourceFactoryFabricConvention)
 }
 
-version = "1.3.0-SNAPSHOT"
+version = "2.0.0-SNAPSHOT"
 group = "xyz.jpenilla"
 description = "Server-side Fabric mod enhancing the console with tab completions, colored log output, command syntax highlighting, command history, and more."
 
@@ -67,6 +67,8 @@ fabricModJson {
   depends("fabric-api", "*")
   depends("minecraft", ">=$minecraftVersion", "<26.2")
   depends("adventure-platform-fabric", "*")
+  breaks("better_log4j_config", "*")
+  breaks("jline4mcdsrv", "*")
 }
 
 tasks {
@@ -86,4 +88,6 @@ publishMods.modrinth {
   modLoaders.add("fabric")
   requires("fabric-api")
   requires("adventure-platform-mod")
+  incompatible("better-log4j-config")
+  incompatible("jline4mcdsrv")
 }
