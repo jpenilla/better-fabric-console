@@ -57,7 +57,6 @@ log-player-executed-commands=true
 
 Better Fabric Console also respects the following system properties to override terminal environment detection:
 - Adventure ANSI properties: https://docs.papermc.io/adventure/serializer/ansi/
-- Log level: `better-fabric-console.log.level` (defaults to `info`)
 
 Changes require a server restart.
 
