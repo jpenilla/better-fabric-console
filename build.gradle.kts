@@ -2,44 +2,46 @@ import me.modmuss50.mpp.ReleaseType
 import xyz.jpenilla.resourcefactory.fabric.Environment
 
 plugins {
-  val indraVersion = "4.0.0"
-  id("net.kyori.indra") version indraVersion
-  id("net.kyori.indra.checkstyle") version indraVersion
-  id("net.kyori.indra.licenser.spotless") version indraVersion
+  alias(libs.plugins.indra)
+  alias(libs.plugins.indraCheckstyle)
+  alias(libs.plugins.indraLicenserSpotless)
   id("xyz.jpenilla.quiet-fabric-loom")
-  id("me.modmuss50.mod-publish-plugin") version "1.1.0"
-  id("xyz.jpenilla.resource-factory-fabric-convention") version "1.3.1"
+  alias(libs.plugins.modPublishPlugin)
+  alias(libs.plugins.resourceFactoryFabricConvention)
 }
 
 version = "1.3.0-SNAPSHOT"
 group = "xyz.jpenilla"
 description = "Server-side Fabric mod enhancing the console with tab completions, colored log output, command syntax highlighting, command history, and more."
 
-val minecraftVersion = "26.1-snapshot-4"
+val minecraftVersion = libs.versions.minecraft.get()
 
 dependencies {
-  minecraft("com.mojang:minecraft:$minecraftVersion")
-  implementation("net.fabricmc:fabric-loader:0.18.4")
-  implementation("net.fabricmc.fabric-api:fabric-api:0.142.1+26.1")
+  minecraft(libs.minecraft)
+  implementation(libs.fabricLoader)
+  implementation(libs.fabricApi)
 
-  annotationProcessor("org.apache.logging.log4j:log4j-core:2.25.3")
+  annotationProcessor(platform(libs.log4jBom))
+  annotationProcessor(libs.log4jCore)
 
-  val jlineVersion = "3.30.6"
-  implementation("org.jline:jline:$jlineVersion")
-  include("org.jline:jline:$jlineVersion")
-  implementation("org.jline:jline-terminal-jansi:$jlineVersion")
-  include("org.jline:jline-terminal-jansi:$jlineVersion")
+  implementation(libs.bundles.jline)
+  include(libs.bundles.jline)
 
-  implementation("org.fusesource.jansi:jansi:2.4.2")
-  include("org.fusesource.jansi:jansi:2.4.2")
+  implementation(libs.jansi)
+  include(libs.jansi)
+  implementation(libs.jline.terminal.jansi)
+  include(libs.jline.terminal.jansi)
 
-  implementation("net.kyori:adventure-platform-fabric:6.9.0")
+  implementation(libs.adventurePlatformFabric)
 
-  implementation(transitiveInclude("org.spongepowered:configurate-hocon:4.2.0") {
+  transitiveInclude(libs.configurateHocon) {
     exclude("net.kyori", "option") // provided by adventure-platform-fabric
-  })
+  }
+  implementation(libs.configurateHocon) {
+    exclude("net.kyori", "option") // provided by adventure-platform-fabric
+  }
 
-  compileOnly("org.jspecify:jspecify:1.0.0")
+  compileOnly(libs.jspecify)
 }
 
 indra {
@@ -63,7 +65,7 @@ fabricModJson {
   mixin("better-fabric-console.mixins.json")
   depends("fabricloader", ">=0.18.4")
   depends("fabric-api", "*")
-  depends("minecraft", ">1.21.11", "<26.2") // TODO ">=$minecraftVersion")
+  depends("minecraft", ">=$minecraftVersion", "<26.2")
   depends("adventure-platform-fabric", "*")
 }
 
