@@ -33,6 +33,7 @@ import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import net.kyori.adventure.platform.modcommon.MinecraftServerAudiences;
 import net.kyori.adventure.text.serializer.ansi.ANSIComponentSerializer;
+import net.kyori.ansi.ColorLevel;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.ComponentUtils;
@@ -47,6 +48,10 @@ import xyz.jpenilla.betterfabricconsole.util.Util;
 
 @NullMarked
 public record MinecraftCommandCompleter(MinecraftServer server, MinecraftServerAudiences audiences) implements Completer {
+  private static final ANSIComponentSerializer TOOLTIP_SERIALIZER = ANSIComponentSerializer.builder()
+    .colorLevel(ColorLevel.compute())
+    .build();
+
   @Override
   public void complete(final LineReader reader, final ParsedLine line, final List<Candidate> candidates) {
     final StringReader stringReader = Util.prepareStringReader(line.line());
@@ -78,7 +83,7 @@ public record MinecraftCommandCompleter(MinecraftServer server, MinecraftServerA
         final Component tooltipComponent = ComponentUtils.fromMessage(tooltip);
         return tooltipComponent.equals(Component.empty()) ? null : this.audiences.asAdventure(tooltipComponent);
       })
-      .map(adventure -> ANSIComponentSerializer.ansi().serialize(adventure))
+      .map(adventure -> TOOLTIP_SERIALIZER.serialize(adventure))
       .orElse(null);
     //noinspection SpellCheckingInspection
     return new MinecraftCandidate(
