@@ -40,8 +40,6 @@ dependencies {
   implementation(libs.configurateHocon) {
     exclude("net.kyori", "option") // provided by adventure-platform-fabric
   }
-
-  compileOnly(libs.jspecify)
 }
 
 indra {

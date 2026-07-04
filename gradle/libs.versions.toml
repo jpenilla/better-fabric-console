@@ -12,7 +12,6 @@ jline = "3.30.6"
 jansi = "2.4.3"
 adventure-platform-fabric = "6.9.0"
 configurate-hocon = "4.2.0"
-jspecify = "1.0.0"
 
 [plugins]
 indra = { id = "net.kyori.indra", version.ref = "indra" }
@@ -37,7 +36,6 @@ jansi = { module = "org.fusesource.jansi:jansi", version.ref = "jansi" }
 adventurePlatformFabric = { module = "net.kyori:adventure-platform-fabric", version.ref = "adventure-platform-fabric" }
 
 configurateHocon = { module = "org.spongepowered:configurate-hocon", version.ref = "configurate-hocon" }
-jspecify = { module = "org.jspecify:jspecify", version.ref = "jspecify" }
 
 [bundles]
 jline = ["jline", "jline-terminal-ffm"]
