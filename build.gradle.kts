@@ -1,4 +1,5 @@
 import me.modmuss50.mpp.ReleaseType
+import me.modmuss50.mpp.platforms.modrinth.ModrinthEnvironment
 import xyz.jpenilla.resourcefactory.fabric.Environment
 
 plugins {
@@ -75,6 +76,7 @@ publishMods.modrinth {
   accessToken = providers.environmentVariable("MODRINTH_TOKEN")
   minecraftVersions.add(minecraftVersion)
   modLoaders.add("fabric")
+  environment = ModrinthEnvironment.DEDICATED_SERVER_ONLY
   requires("fabric-api")
   requires("adventure-platform-mod")
   incompatible("better-log4j-config")
