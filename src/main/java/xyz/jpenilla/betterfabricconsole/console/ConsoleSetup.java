@@ -24,17 +24,12 @@
 package xyz.jpenilla.betterfabricconsole.console;
 
 import java.nio.file.Paths;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.core.Logger;
-import org.apache.logging.log4j.core.LoggerContext;
-import org.apache.logging.log4j.core.config.LoggerConfig;
 import org.jline.reader.Completer;
 import org.jline.reader.Highlighter;
 import org.jline.reader.LineReader;
 import org.jline.reader.LineReaderBuilder;
 import org.jline.reader.Parser;
 import org.jspecify.annotations.NullMarked;
-import xyz.jpenilla.betterfabricconsole.configuration.Config;
 
 @NullMarked
 public final class ConsoleSetup {
@@ -61,9 +56,7 @@ public final class ConsoleSetup {
       .build();
   }
 
-  public static ConsoleState init(
-    final Config config
-  ) {
+  public static ConsoleState init() {
     final DelegatingCompleter delegatingCompleter = new DelegatingCompleter();
     final DelegatingHighlighter delegatingHighlighter = new DelegatingHighlighter();
     final DelegatingParser delegatingParser = new DelegatingParser();
@@ -72,22 +65,6 @@ public final class ConsoleSetup {
       delegatingHighlighter,
       delegatingParser
     );
-
-    final ConsoleAppender consoleAppender = new ConsoleAppender(
-      lineReader,
-      config.logPattern(),
-      null
-    );
-    consoleAppender.start();
-
-    final Logger logger = (Logger) LogManager.getRootLogger();
-    final LoggerContext loggerContext = (LoggerContext) LogManager.getContext(false);
-    final LoggerConfig loggerConfig = loggerContext.getConfiguration().getLoggerConfig(logger.getName());
-
-    // replace SysOut appender with ConsoleAppender
-    loggerConfig.removeAppender("SysOut");
-    loggerConfig.addAppender(consoleAppender, loggerConfig.getLevel(), null);
-    loggerContext.updateLoggers();
 
     return new ConsoleState(lineReader, delegatingCompleter, delegatingHighlighter, delegatingParser);
   }
