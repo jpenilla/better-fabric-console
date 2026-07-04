@@ -63,7 +63,7 @@ fabricModJson {
   mainEntrypoint("xyz.jpenilla.betterfabricconsole.BetterFabricConsole")
   entrypoint("preLaunch", "xyz.jpenilla.betterfabricconsole.BetterFabricConsolePreLaunch")
   mixin("better-fabric-console.mixins.json")
-  depends("fabricloader", ">=0.18.4")
+  depends("fabricloader", ">=${libs.versions.fabric.loader.get()}")
   depends("fabric-api", "*")
   depends("minecraft", ">=$minecraftVersion", "<26.2")
   depends("adventure-platform-fabric", "*")
