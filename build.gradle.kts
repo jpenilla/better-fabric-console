@@ -27,11 +27,6 @@ dependencies {
   implementation(libs.bundles.jline)
   include(libs.bundles.jline)
 
-  implementation(libs.jansi)
-  include(libs.jansi)
-  implementation(libs.jline.terminal.jansi)
-  include(libs.jline.terminal.jansi)
-
   implementation(libs.adventurePlatformFabric)
 
   transitiveInclude(libs.configurateHocon) {

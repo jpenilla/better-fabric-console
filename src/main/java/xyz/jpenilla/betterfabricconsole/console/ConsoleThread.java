@@ -33,9 +33,9 @@ import net.minecraft.server.dedicated.DedicatedServer;
 import org.jline.reader.EndOfFileException;
 import org.jline.reader.LineReader;
 import org.jline.reader.UserInterruptException;
+import org.jline.terminal.Terminal;
 import org.jspecify.annotations.NullMarked;
 import xyz.jpenilla.betterfabricconsole.BetterFabricConsole;
-import xyz.jpenilla.betterfabricconsole.util.TerminalModeDetection;
 
 @NullMarked
 public final class ConsoleThread extends Thread {
@@ -57,11 +57,16 @@ public final class ConsoleThread extends Thread {
   @Override
   public void run() {
     BetterFabricConsole.LOGGER.info("Initialized Better Fabric Console console thread.");
-    if (TerminalModeDetection.isDumb()) {
-      this.acceptInput(System.in);
-    } else {
+    if (this.isInteractiveTerminal()) {
       this.acceptTerminalInput();
+    } else {
+      this.acceptInput(System.in);
     }
+  }
+
+  private boolean isInteractiveTerminal() {
+    final String type = this.lineReader.getTerminal().getType();
+    return System.console() != null && !Terminal.TYPE_DUMB.equals(type) && !Terminal.TYPE_DUMB_COLOR.equals(type);
   }
 
   private static boolean isRunning(final MinecraftServer server) {
