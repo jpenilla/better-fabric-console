@@ -38,6 +38,15 @@ Better Fabric Console generates and reads:
 - `config/better-fabric-console/better-fabric-console.conf`
 - `config/better-fabric-console/log4j2.xml`
 
+The bundled default Log4j config is also written to `config/better-fabric-console/defaults/log4j2.xml` for reference.
+If you customize `log4j2.xml` and the bundled default changes, Better Fabric Console will warn on startup until you review/merge the change and run:
+
+```text
+/better-fabric-console dismiss-log4j-config-update
+```
+
+You can also start once with `-Dbetter-fabric-console.dismiss-log4j-config-update=true` to dismiss the warning.
+
 Default `better-fabric-console.conf` for reference:
 
 ```hocon
@@ -63,6 +72,7 @@ Changes require a server restart.
 ## Command
 
 - `/better-fabric-console` (operator-level): Prints mod version information.
+- `/better-fabric-console dismiss-log4j-config-update` (operator-level): Marks the current bundled Log4j default as reviewed.
 
 ## License
 

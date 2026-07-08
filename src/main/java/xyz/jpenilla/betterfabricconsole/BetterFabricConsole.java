@@ -23,23 +23,17 @@
  */
 package xyz.jpenilla.betterfabricconsole;
 
-import com.mojang.brigadier.Command;
-import com.mojang.brigadier.CommandDispatcher;
-import com.mojang.brigadier.context.CommandContext;
 import com.mojang.logging.LogUtils;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import net.kyori.adventure.platform.modcommon.MinecraftServerAudiences;
-import net.kyori.adventure.text.format.TextColor;
 import net.minecraft.DefaultUncaughtExceptionHandler;
-import net.minecraft.commands.CommandBuildContext;
-import net.minecraft.commands.CommandSourceStack;
-import net.minecraft.commands.Commands;
 import net.minecraft.server.dedicated.DedicatedServer;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
+import xyz.jpenilla.betterfabricconsole.command.ModCommands;
 import xyz.jpenilla.betterfabricconsole.configuration.Config;
 import xyz.jpenilla.betterfabricconsole.console.ConsoleState;
 import xyz.jpenilla.betterfabricconsole.console.ConsoleThread;
@@ -47,23 +41,15 @@ import xyz.jpenilla.betterfabricconsole.console.MinecraftCommandCompleter;
 import xyz.jpenilla.betterfabricconsole.console.MinecraftCommandHighlighter;
 import xyz.jpenilla.betterfabricconsole.console.MinecraftConsoleParser;
 
-import static net.kyori.adventure.text.Component.text;
-import static net.kyori.adventure.text.format.NamedTextColor.GRAY;
-import static net.kyori.adventure.text.format.TextColor.color;
-import static net.kyori.adventure.text.format.TextDecoration.BOLD;
-import static net.kyori.adventure.text.format.TextDecoration.ITALIC;
-import static net.minecraft.commands.Commands.literal;
-
 @NullMarked
 public final class BetterFabricConsole implements ModInitializer {
   public static final Logger LOGGER = LogUtils.getLogger();
-  private static final TextColor PINK = color(0xFF79C6);
   private static @Nullable BetterFabricConsole INSTANCE;
 
   @Override
   public void onInitialize() {
     INSTANCE = this;
-    CommandRegistrationCallback.EVENT.register(this::registerCommands);
+    CommandRegistrationCallback.EVENT.register(ModCommands::register);
     ServerLifecycleEvents.SERVER_STARTING.register(server -> this.initConsoleThread((DedicatedServer) server));
   }
 
@@ -76,25 +62,6 @@ public final class BetterFabricConsole implements ModInitializer {
     consoleThread.setDaemon(true);
     consoleThread.setUncaughtExceptionHandler(new DefaultUncaughtExceptionHandler(LOGGER));
     consoleThread.start();
-  }
-
-  private void registerCommands(
-    final CommandDispatcher<CommandSourceStack> dispatcher,
-    final CommandBuildContext commandBuildContext,
-    final Commands.CommandSelection commandSelection
-  ) {
-    dispatcher.register(literal("better-fabric-console")
-      .requires(Commands.hasPermission(Commands.LEVEL_OWNERS))
-      .executes(this::executeCommand));
-  }
-
-  private int executeCommand(final CommandContext<CommandSourceStack> ctx) {
-    ctx.getSource().sendMessage(text()
-      .color(GRAY)
-      .append(text("Better Fabric Console", PINK, BOLD))
-      .append(text().content(" v").decorate(ITALIC))
-      .append(text(BetterFabricConsolePreLaunch.instance().modContainer().getMetadata().getVersion().getFriendlyString())));
-    return Command.SINGLE_SUCCESS;
   }
 
   public Config config() {

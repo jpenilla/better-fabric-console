@@ -25,11 +25,9 @@ package xyz.jpenilla.betterfabricconsole;
 
 import com.mojang.logging.LogUtils;
 import java.io.IOException;
-import java.io.InputStream;
 import java.lang.reflect.Method;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.StandardCopyOption;
 import java.util.List;
 import java.util.Map;
 import net.fabricmc.loader.api.FabricLoader;
@@ -44,6 +42,7 @@ import org.slf4j.Logger;
 import org.spongepowered.configurate.CommentedConfigurationNode;
 import org.spongepowered.configurate.hocon.HoconConfigurationLoader;
 import xyz.jpenilla.betterfabricconsole.configuration.Config;
+import xyz.jpenilla.betterfabricconsole.configuration.Log4jConfigManager;
 import xyz.jpenilla.betterfabricconsole.console.ConsoleSetup;
 import xyz.jpenilla.betterfabricconsole.console.ConsoleState;
 
@@ -56,6 +55,7 @@ public final class BetterFabricConsolePreLaunch implements PreLaunchEntrypoint {
 
   private @Nullable ModContainer modContainer;
   private @Nullable Config config;
+  private @Nullable Log4jConfigManager log4jConfigManager;
   private @Nullable ConsoleState consoleState;
 
   @Override
@@ -69,10 +69,11 @@ public final class BetterFabricConsolePreLaunch implements PreLaunchEntrypoint {
 
     this.modContainer = FabricLoader.getInstance().getModContainer("better-fabric-console")
       .orElseThrow(() -> new IllegalStateException("Could not find mod container for better-fabric-console"));
+    this.log4jConfigManager = new Log4jConfigManager(this.configDir(), this.modContainer());
     this.loadModConfig();
-    this.extractLog4jConfig();
+    final Path log4jConfigPath = this.log4jConfigManager.prepareConfig();
     this.initConsole();
-    Configurator.reconfigure(this.log4jConfigPath().toUri());
+    Configurator.reconfigure(log4jConfigPath.toUri());
   }
 
   private Path configDir() {
@@ -89,10 +90,6 @@ public final class BetterFabricConsolePreLaunch implements PreLaunchEntrypoint {
       throw new IllegalStateException("Config directory is not a directory!");
     }
     return dir;
-  }
-
-  private Path log4jConfigPath() {
-    return this.configDir().resolve("log4j2.xml");
   }
 
   private void loadModConfig() {
@@ -126,22 +123,6 @@ public final class BetterFabricConsolePreLaunch implements PreLaunchEntrypoint {
     }
   }
 
-  private void extractLog4jConfig() {
-    final Path targetPath = this.log4jConfigPath();
-    if (Files.isRegularFile(targetPath)) {
-      return;
-    }
-
-    final Path bundledConfigPath = this.modContainer().findPath("better-fabric-console-default-log4j2.xml")
-      .orElseThrow(() -> new IllegalStateException("Could not find better-fabric-console-default-log4j2.xml in mod container"));
-
-    try (final InputStream inputStream = Files.newInputStream(bundledConfigPath)) {
-      Files.copy(inputStream, targetPath, StandardCopyOption.REPLACE_EXISTING);
-    } catch (final IOException ex) {
-      throw new RuntimeException("Failed to extract better-fabric-console-default-log4j2.xml", ex);
-    }
-  }
-
   public Config config() {
     if (this.config == null) {
       throw new IllegalStateException("Config not loaded!");
@@ -151,6 +132,10 @@ public final class BetterFabricConsolePreLaunch implements PreLaunchEntrypoint {
 
   public ModContainer modContainer() {
     return requireNonNull(this.modContainer);
+  }
+
+  public Log4jConfigManager log4jConfigManager() {
+    return requireNonNull(this.log4jConfigManager);
   }
 
   public ConsoleState consoleState() {
