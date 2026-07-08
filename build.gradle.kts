@@ -55,7 +55,7 @@ fabricModJson {
   mixin("better-fabric-console.mixins.json")
   depends("fabricloader", ">=${libs.versions.fabric.loader.get()}")
   depends("fabric-api", "*")
-  depends("minecraft", ">=$minecraftVersion", "<26.2")
+  depends("minecraft", ">=$minecraftVersion")
   depends("adventure-platform-fabric", "*")
   breaks("better_log4j_config", "*")
   breaks("jline4mcdsrv", "*")
@@ -75,6 +75,7 @@ publishMods.modrinth {
   changelog = providers.environmentVariable("RELEASE_NOTES")
   accessToken = providers.environmentVariable("MODRINTH_TOKEN")
   minecraftVersions.add(minecraftVersion)
+  minecraftVersions.add("26.2")
   modLoaders.add("fabric")
   environment = ModrinthEnvironment.DEDICATED_SERVER_ONLY
   requires("fabric-api")
