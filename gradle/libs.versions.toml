@@ -9,7 +9,7 @@ fabric-api = "0.146.0+26.1.2"
 
 log4j = "2.25.2"
 jline = "4.3.1"
-adventure-platform-fabric = "6.9.0"
+adventure-platform-fabric = "7.1.1"
 configurate-hocon = "4.2.0"
 
 [plugins]
