@@ -24,10 +24,8 @@
 package xyz.jpenilla.betterfabricconsole.adventure;
 
 import net.kyori.adventure.audience.Audience;
-import net.kyori.adventure.audience.MessageType;
 import net.kyori.adventure.chat.ChatType;
 import net.kyori.adventure.chat.SignedMessage;
-import net.kyori.adventure.identity.Identity;
 import net.kyori.adventure.platform.modcommon.impl.AdventureCommon;
 import net.kyori.adventure.platform.modcommon.impl.MinecraftAudiencesInternal;
 import net.kyori.adventure.text.Component;
@@ -60,12 +58,6 @@ public final class CommandSourceAudience implements Audience {
   public void sendMessage(final @NonNull SignedMessage signedMessage, final ChatType.@NonNull Bound boundChatType) {
     final Component message = signedMessage.unsignedContent() != null ? signedMessage.unsignedContent() : Component.text(signedMessage.message());
     this.output.sendSystemMessage(AdventureCommon.chatTypeToNative(boundChatType, this.serializer).decorate(this.serializer.asNative(message)));
-  }
-
-  @Override
-  @Deprecated
-  public void sendMessage(final @NonNull Identity source, final @NonNull Component text, final @NonNull MessageType type) {
-    this.output.sendSystemMessage(this.serializer.asNative(text));
   }
 
   @Override

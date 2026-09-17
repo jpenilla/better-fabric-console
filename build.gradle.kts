@@ -75,7 +75,6 @@ publishMods.modrinth {
   changelog = providers.environmentVariable("RELEASE_NOTES")
   accessToken = providers.environmentVariable("MODRINTH_TOKEN")
   minecraftVersions.add(minecraftVersion)
-  minecraftVersions.add("26.2")
   modLoaders.add("fabric")
   environment = ModrinthEnvironment.DEDICATED_SERVER_ONLY
   requires("fabric-api")
