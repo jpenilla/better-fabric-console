@@ -8,7 +8,7 @@ fabric-loader = "0.19.5"
 fabric-api = "0.160.6+26.3"
 
 log4j = "2.26.1"
-jline = "4.4.3"
+jline = "4.4.5"
 adventure-platform-fabric = "7.2.0"
 configurate-hocon = "4.2.0"
 
