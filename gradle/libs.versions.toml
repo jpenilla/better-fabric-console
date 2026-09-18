@@ -5,7 +5,7 @@ resource-factory-fabric-convention = "1.3.1"
 
 minecraft = "26.3"
 fabric-loader = "0.19.5"
-fabric-api = "0.160.6+26.3"
+fabric-api = "0.161.0+26.3"
 
 log4j = "2.26.1"
 jline = "4.4.5"
