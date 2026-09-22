@@ -24,10 +24,13 @@
 package xyz.jpenilla.betterfabricconsole.console;
 
 import java.nio.file.Paths;
+import org.jline.keymap.KeyMap;
+import org.jline.reader.Binding;
 import org.jline.reader.Completer;
 import org.jline.reader.Highlighter;
 import org.jline.reader.LineReader;
 import org.jline.reader.LineReaderBuilder;
+import org.jline.reader.Macro;
 import org.jline.reader.Parser;
 import org.jspecify.annotations.NullMarked;
 
@@ -43,7 +46,7 @@ public final class ConsoleSetup {
   ) {
     System.setProperty("org.jline.reader.support.parsedline", "true"); // to hide a warning message about the parser not supporting
 
-    return LineReaderBuilder.builder()
+    final LineReader lineReader = LineReaderBuilder.builder()
       .appName("Dedicated Server")
       .variable(LineReader.HISTORY_FILE, Paths.get(".console_history"))
       .completer(completer)
@@ -54,6 +57,16 @@ public final class ConsoleSetup {
       .option(LineReader.Option.DISABLE_EVENT_EXPANSION, true)
       .option(LineReader.Option.COMPLETE_IN_WORD, true)
       .build();
+
+    bindNumpadDigits(lineReader);
+    return lineReader;
+  }
+
+  private static void bindNumpadDigits(final LineReader lineReader) {
+    final KeyMap<Binding> keys = lineReader.getKeyMaps().get(LineReader.MAIN);
+    for (int i = 0; i < 10; i++) {
+      keys.bind(new Macro(Integer.toString(i)), "\033O" + (char) ('p' + i));
+    }
   }
 
   public static ConsoleState init() {
