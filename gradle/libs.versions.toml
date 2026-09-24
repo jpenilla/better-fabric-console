@@ -1,6 +1,6 @@
 [versions]
 indra = "4.1.0"
-mod-publish-plugin = "2.2.0"
+mod-publish-plugin = "2.2.1"
 resource-factory-fabric-convention = "1.4.0"
 
 minecraft = "26.3"
