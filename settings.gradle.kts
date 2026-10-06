@@ -24,7 +24,7 @@ pluginManagement {
 }
 
 plugins {
-  id("xyz.jpenilla.quiet-fabric-loom-repositories") version "1.18-SNAPSHOT"
+  id("xyz.jpenilla.quiet-fabric-loom-repositories") version "1.18.344"
   id("org.gradle.toolchains.foojay-resolver-convention") version "1.0.0"
 }
 
