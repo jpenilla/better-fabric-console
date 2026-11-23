@@ -34,7 +34,8 @@ import java.util.concurrent.CompletableFuture;
 import net.kyori.adventure.platform.modcommon.MinecraftServerAudiences;
 import net.kyori.adventure.text.serializer.ansi.ANSIComponentSerializer;
 import net.kyori.ansi.ColorLevel;
-import net.minecraft.commands.CommandSourceStack;
+import net.minecraft.commands.SuggestionBox;
+import net.minecraft.commands.suggestions.SuggestionContext;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.ComponentUtils;
 import net.minecraft.server.MinecraftServer;
@@ -55,8 +56,9 @@ public record MinecraftCommandCompleter(MinecraftServer server, MinecraftServerA
   @Override
   public void complete(final LineReader reader, final ParsedLine line, final List<Candidate> candidates) {
     final StringReader stringReader = Util.prepareStringReader(line.line());
-    final ParseResults<CommandSourceStack> results = this.server.getCommands().getDispatcher().parse(stringReader, this.server.createCommandSourceStack());
-    final CompletableFuture<Suggestions> suggestionsFuture = this.server.getCommands().getDispatcher().getCompletionSuggestions(results, line.cursor());
+    final SuggestionBox.Result result = ConsoleSuggestionContext.parse(this.server, stringReader);
+    final ParseResults<SuggestionContext> results = result.parseResults();
+    final CompletableFuture<Suggestions> suggestionsFuture = result.computeSuggestions(line.cursor());
     final Suggestions suggestions = suggestionsFuture.join();
 
     final ParseContext parseContext = new ParseContext(line.line(), results.getContext().findSuggestionContext(line.cursor()).startPos);

@@ -29,6 +29,7 @@ import com.mojang.brigadier.context.CommandContext;
 import java.io.IOException;
 import net.kyori.adventure.text.format.TextColor;
 import net.minecraft.commands.CommandBuildContext;
+import net.minecraft.commands.CommandPermissionLevels;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import org.jspecify.annotations.NullMarked;
@@ -57,7 +58,7 @@ public final class ModCommands {
     final Commands.CommandSelection commandSelection
   ) {
     dispatcher.register(literal("better-fabric-console")
-      .requires(Commands.hasPermission(Commands.LEVEL_OWNERS))
+      .requires(Commands.hasPermission(CommandPermissionLevels.LEVEL_OWNERS))
       .executes(ModCommands::executeVersion)
       .then(literal("dismiss-log4j-config-update")
         .executes(ModCommands::executeDismissLog4jConfigUpdate)));

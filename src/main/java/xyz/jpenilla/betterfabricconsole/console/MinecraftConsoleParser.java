@@ -31,7 +31,7 @@ import com.mojang.brigadier.context.ParsedCommandNode;
 import com.mojang.brigadier.context.StringRange;
 import java.util.ArrayList;
 import java.util.List;
-import net.minecraft.commands.CommandSourceStack;
+import net.minecraft.commands.suggestions.SuggestionContext;
 import net.minecraft.server.dedicated.DedicatedServer;
 import org.jline.reader.ParsedLine;
 import org.jline.reader.Parser;
@@ -42,16 +42,16 @@ import org.jspecify.annotations.NullMarked;
 public record MinecraftConsoleParser(DedicatedServer server) implements Parser {
   @Override
   public ParsedLine parse(final String line, final int cursor, final ParseContext context) throws SyntaxError {
-    final ParseResults<CommandSourceStack> results = this.server.getCommands().getDispatcher().parse(new StringReader(line), this.server.createCommandSourceStack());
+    final ParseResults<SuggestionContext> results = ConsoleSuggestionContext.parse(this.server, new StringReader(line)).parseResults();
     final ImmutableStringReader reader = results.getReader();
     final List<String> words = new ArrayList<>();
-    CommandContextBuilder<CommandSourceStack> currentContext = results.getContext();
+    CommandContextBuilder<SuggestionContext> currentContext = results.getContext();
     int currentWordIdx = -1;
     int wordIdx = -1;
     int inWordCursor = -1;
     if (currentContext.getRange().getLength() > 0) {
       do {
-        for (final ParsedCommandNode<CommandSourceStack> node : currentContext.getNodes()) {
+        for (final ParsedCommandNode<SuggestionContext> node : currentContext.getNodes()) {
           final StringRange nodeRange = node.getRange();
           final String current = nodeRange.get(reader);
           words.add(current);

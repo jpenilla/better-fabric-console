@@ -28,7 +28,7 @@ import com.mojang.brigadier.StringReader;
 import com.mojang.brigadier.context.ParsedCommandNode;
 import com.mojang.brigadier.tree.LiteralCommandNode;
 import java.util.regex.Pattern;
-import net.minecraft.commands.CommandSourceStack;
+import net.minecraft.commands.suggestions.SuggestionContext;
 import net.minecraft.server.MinecraftServer;
 import org.jline.reader.Highlighter;
 import org.jline.reader.LineReader;
@@ -48,7 +48,7 @@ public record MinecraftCommandHighlighter(
   public AttributedString highlight(final LineReader reader, final String buffer) {
     final AttributedStringBuilder builder = new AttributedStringBuilder();
     final StringReader stringReader = Util.prepareStringReader(buffer);
-    final ParseResults<CommandSourceStack> results = this.server.getCommands().getDispatcher().parse(stringReader, this.server.createCommandSourceStack());
+    final ParseResults<SuggestionContext> results = ConsoleSuggestionContext.parse(this.server, stringReader).parseResults();
     int pos = 0;
     if (buffer.startsWith("/")) {
       builder.append("/", AttributedStyle.DEFAULT);
@@ -56,7 +56,7 @@ public record MinecraftCommandHighlighter(
     }
 
     int colorIndex = -1;
-    for (final ParsedCommandNode<CommandSourceStack> node : results.getContext().getLastChild().getNodes()) {
+    for (final ParsedCommandNode<SuggestionContext> node : results.getContext().getLastChild().getNodes()) {
       if (node.getRange().getStart() >= buffer.length()) {
         break;
       }
